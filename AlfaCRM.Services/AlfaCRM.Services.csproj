@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Analytics\" />
+      <Folder Include="Entity\" />
+      <Folder Include="Mapper\" />
+      <Folder Include="Security\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AlfaCRM.Domain\AlfaCRM.Domain.csproj" />
+      <ProjectReference Include="..\AlfaCRM.Infrastructure\AlfaCRM.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+    </ItemGroup>
+
+</Project>
