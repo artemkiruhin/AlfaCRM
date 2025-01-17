@@ -8,5 +8,6 @@ public class VacancyReplyEntity
     public string? Email { get; set; }
     public string? Description { get; set; }
     public Guid FileId { get; set; }
+    public virtual FileEntity File { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 }

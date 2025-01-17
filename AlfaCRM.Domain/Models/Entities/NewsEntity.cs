@@ -12,6 +12,7 @@ public class NewsEntity
     public virtual EmployeeEntity Publisher { get; set; } = null!;
 
     public virtual ICollection<DepartmentEntity> Departments { get; set; } = [];
+    public virtual ICollection<NewsCommentEntity> Comments { get; set; } = [];
     
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

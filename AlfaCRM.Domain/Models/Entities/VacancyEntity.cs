@@ -18,4 +18,7 @@ public class VacancyEntity
     public VacancyType Type { get; set; }
     
     public Guid PublisherId { get; set; }
+    public virtual EmployeeEntity Publisher { get; set; } = null!;
+    
+    public virtual ICollection<VacancyReplyEntity> Replies { get; set; } = [];
 }

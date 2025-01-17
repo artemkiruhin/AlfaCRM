@@ -8,6 +8,8 @@ public class FileEntity
     public DateTime UploadedAt { get; set; } 
     
     public Guid? VacancyId { get; set; }
+    public virtual VacancyEntity? Vacancy { get; set; } 
     
     public Guid? NotWorkingDayBidId { get; set; }
+    public virtual NotWorkingDayBidEntity? NotWorkingDayBid { get; set; } 
 }

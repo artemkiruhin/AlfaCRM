@@ -11,10 +11,10 @@ public class TaskCaseEntity
     
     public TaskCaseStatusEntity Status { get; set; }
 
-    
+    public ICollection<TaskCaseCommentEntity> Comments { get; set; } = [];
     
     public Guid TypeId { get; set; }
-    
+    public virtual TaskCaseTypeEntity Type { get; set; } = null!;
     
     public DateTime CreatedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
