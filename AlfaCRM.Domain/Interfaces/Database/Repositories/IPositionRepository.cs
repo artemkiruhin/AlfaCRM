@@ -5,6 +5,6 @@ namespace AlfaCRM.Domain.Interfaces.Database.Repositories;
 
 public interface IPositionRepository : ICrudRepository<PositionEntity>
 {
-    Task<PositionEntity?> GetByName(string name);
+    Task<IEnumerable<PositionEntity>> GetByName(string name);
     Task<IEnumerable<PositionEntity>> GetBySalary(decimal salary);
 }
