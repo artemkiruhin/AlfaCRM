@@ -7,6 +7,5 @@ public interface IEmployeeActionRepository : ICrudRepository<EmployeeActionLogEn
 {
     Task<IEnumerable<EmployeeActionLogEntity>> GetByEmployeeId(Guid employeeId, CancellationToken ct);
     Task<IEnumerable<EmployeeActionLogEntity>> GetByDescription(string description, CancellationToken ct);
-    Task<IEnumerable<EmployeeActionLogEntity>> GetByDate(DateTime date, CancellationToken ct);
     Task<IEnumerable<EmployeeActionLogEntity>> GetByDate(DateTime from, DateTime to, CancellationToken ct);
 }

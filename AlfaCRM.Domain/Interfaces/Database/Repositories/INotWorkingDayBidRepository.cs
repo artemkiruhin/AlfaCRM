@@ -9,6 +9,5 @@ public interface INotWorkingDayBidRepository : ICrudRepository<NotWorkingDayBidE
     Task<IEnumerable<NotWorkingDayBidEntity>> GetByEmployee(string username, CancellationToken ct);
     Task<IEnumerable<NotWorkingDayBidEntity>> GetByType(BidTypeEntity type, CancellationToken ct);
     Task<IEnumerable<NotWorkingDayBidEntity>> GetByPeriod(DateTime from, DateTime to, CancellationToken ct);
-    Task<IEnumerable<NotWorkingDayBidEntity>> GetByCreated(DateTime date, CancellationToken ct);
     Task<IEnumerable<NotWorkingDayBidEntity>> GetByCreated(DateTime from, DateTime to, CancellationToken ct);
 }

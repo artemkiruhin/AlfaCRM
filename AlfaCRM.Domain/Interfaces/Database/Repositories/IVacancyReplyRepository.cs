@@ -10,6 +10,5 @@ public interface IVacancyReplyRepository : ICrudRepository<VacancyReplyEntity>
     Task<IEnumerable<VacancyReplyEntity>> GetByEmail(string email, CancellationToken ct);
     Task<IEnumerable<VacancyReplyEntity>> GetByDescriptionContent(string descriptionContent, CancellationToken ct);
     Task<VacancyReplyEntity?> GetByFileId(Guid id, CancellationToken ct);
-    Task<IEnumerable<VacancyReplyEntity>> GetByDate(DateTime created, CancellationToken ct);
     Task<IEnumerable<VacancyReplyEntity>> GetByDate(DateTime from, DateTime to, CancellationToken ct);
 }

@@ -13,8 +13,6 @@ public interface ITaskCaseRepository : ICrudRepository<TaskCaseEntity>
     Task<IEnumerable<TaskCaseEntity>> GetByCommentContent(string content, CancellationToken ct);
     Task<IEnumerable<TaskCaseEntity>> GetByType(Guid typeId, CancellationToken ct);
     Task<IEnumerable<TaskCaseEntity>> GetClosed(bool isClosed, CancellationToken ct);
-    Task<IEnumerable<TaskCaseEntity>> GetByCreatedDate(DateTime created, CancellationToken ct);
     Task<IEnumerable<TaskCaseEntity>> GetByCreatedDate(DateTime from, DateTime to, CancellationToken ct);
-    Task<IEnumerable<TaskCaseEntity>> GetByClosedDate(DateTime closed, CancellationToken ct);
     Task<IEnumerable<TaskCaseEntity>> GetByClosedDate(DateTime from, DateTime to, CancellationToken ct);
 }

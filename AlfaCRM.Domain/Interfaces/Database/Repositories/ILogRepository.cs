@@ -7,6 +7,5 @@ public interface ILogRepository : ICrudRepository<LogEntity>
 {
     Task<IEnumerable<LogEntity>> GetByMessage(string message, CancellationToken ct);
     Task<IEnumerable<LogEntity>> GetByType(LogTypeEntity logType, CancellationToken ct);
-    Task<IEnumerable<LogEntity>> GetByDate(DateTime date, CancellationToken ct);
     Task<IEnumerable<LogEntity>> GetByDate(DateTime from, DateTime to, CancellationToken ct);
 }
