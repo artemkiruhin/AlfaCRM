@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Interfaces\Database\Repositories\" />
       <Folder Include="Interfaces\Services\" />
       <Folder Include="Models\DTOs\" />
     </ItemGroup>
