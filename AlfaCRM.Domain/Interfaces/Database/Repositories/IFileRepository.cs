@@ -5,5 +5,5 @@ namespace AlfaCRM.Domain.Interfaces.Database.Repositories;
 
 public interface IFileRepository : ICrudRepository<FileEntity>
 {
-    Task<IEnumerable<FileEntity>> GetByType(FileType type);
+    Task<IEnumerable<FileEntity>> GetByType(FileType type, CancellationToken ct);
 }
