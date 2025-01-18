@@ -3,7 +3,7 @@ using AlfaCRM.Domain.Models.Entities;
 
 namespace AlfaCRM.Domain.Interfaces.Database.Repositories;
 
-public interface IFeedbackInterface : ICrudRepository<FeedbackEntity>
+public interface IFeedbackRepository : ICrudRepository<FeedbackEntity>
 {
     Task<IEnumerable<FeedbackEntity>> GetByContent(string content, CancellationToken ct);
     Task<IEnumerable<FeedbackEntity>> GetByEmail(string email, CancellationToken ct);
