@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <Folder Include="Interfaces\Services\" />
-      <Folder Include="Models\DTOs\" />
     </ItemGroup>
 
 </Project>
