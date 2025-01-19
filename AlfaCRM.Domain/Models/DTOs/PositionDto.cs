@@ -1,9 +1,10 @@
 ﻿namespace AlfaCRM.Domain.Models.DTOs;
 
-public class PositionDto
+public record PositionDto
 {
-    public Guid Id { get; set; }
-    public required string Name { get; set; }
-    public decimal Salary { get; set; }
-    public bool IsSalaryGross { get; set; }
+    public Guid Id { get; init; }
+    public required string Name { get; init; }
+    public decimal Salary { get; init; }
+    public bool IsSalaryGross { get; init; }
+    public int EmployeesCount { get; init; }
 }

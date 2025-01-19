@@ -2,6 +2,7 @@
 
 public record DepartmentDto
 {
-    public Guid Id { get; set; }
-    public required string Name { get; set; }
+    public Guid Id { get; init; }
+    public required string Name { get; init; }
+    public int EmployeesCount { get; init; }
 }

@@ -1,9 +1,9 @@
 ﻿namespace AlfaCRM.Domain.Models.DTOs;
 
-public class LogDto
+public record LogDto
 {
-    public Guid Id { get; set; }
-    public required string Message { get; set; }
-    public required string Type { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public Guid Id { get; init; }
+    public required string Message { get; init; }
+    public required string Type { get; init; }
+    public DateTime CreatedAt { get; init; }
 }
