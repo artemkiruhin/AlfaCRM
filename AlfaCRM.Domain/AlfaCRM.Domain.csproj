@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <Folder Include="Interfaces\Services\Analytics\" />
-      <Folder Include="Interfaces\Services\Entity\" />
     </ItemGroup>
 
 </Project>
