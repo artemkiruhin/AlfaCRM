@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-
-namespace AlfaCRM.Domain.Models.Entities;
+﻿namespace AlfaCRM.Domain.Models.Entities;
 
 public class EmployeeEntity
 {
