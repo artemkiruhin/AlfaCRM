@@ -2,5 +2,5 @@
 
 public interface IBaseService
 {
-    Task<bool> DeleteAsync(Guid id);
+    Task<bool> DeleteAsync(Guid senderId, Guid id);
 }
