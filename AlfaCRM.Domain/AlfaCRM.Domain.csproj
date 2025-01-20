@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <Folder Include="Interfaces\Services\Analytics\" />
+      <Folder Include="Models\Contracts\" />
     </ItemGroup>
 
 </Project>
