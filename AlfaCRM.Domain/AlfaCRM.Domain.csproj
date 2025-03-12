@@ -14,7 +14,6 @@
       <Folder Include="Interfaces\Services\Security\" />
       <Folder Include="Models\Contracts\" />
       <Folder Include="Models\DTOs\" />
-      <Folder Include="Models\Entities\" />
     </ItemGroup>
 
 </Project>
