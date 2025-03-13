@@ -13,7 +13,6 @@
       <Folder Include="Interfaces\Services\Mapper\" />
       <Folder Include="Interfaces\Services\Security\" />
       <Folder Include="Models\Contracts\" />
-      <Folder Include="Models\DTOs\" />
     </ItemGroup>
 
 </Project>
