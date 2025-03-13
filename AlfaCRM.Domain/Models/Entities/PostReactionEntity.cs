@@ -10,4 +10,16 @@ public class PostReactionEntity
     
     public virtual PostEntity Post { get; set; } = null!;
     public virtual UserEntity Sender { get; set; } = null!;
+
+    public static PostReactionEntity Create(Guid postId, Guid senderId, ReactionType type)
+    {
+        return new()
+        {
+            Id = Guid.NewGuid(),
+            PostId = postId,
+            SenderId = senderId,
+            Type = type,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
 }

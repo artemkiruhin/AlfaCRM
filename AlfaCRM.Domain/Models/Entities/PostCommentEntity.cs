@@ -12,4 +12,17 @@ public class PostCommentEntity
     
     public virtual PostEntity Post { get; set; } = null!;
     public virtual UserEntity Sender { get; set; } = null!;
+
+    public static PostCommentEntity Create(string content, Guid postId, Guid senderId)
+    {
+        return new()
+        {
+            Id = Guid.NewGuid(),
+            Content = content,
+            CreatedAt = DateTime.UtcNow,
+            IsDeleted = false,
+            PostId = postId,
+            SenderId = senderId
+        };
+    }
 }

@@ -7,4 +7,13 @@ public class DepartmentEntity
 
     public virtual ICollection<UserEntity> Users { get; set; } = [];
     public virtual ICollection<PostEntity> Posts { get; set; } = [];
+
+    public static DepartmentEntity Create(string name)
+    {
+        return new()
+        {
+            Id = Guid.NewGuid(),
+            Name = name
+        };
+    }
 }
