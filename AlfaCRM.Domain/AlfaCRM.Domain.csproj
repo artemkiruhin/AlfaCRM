@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Interfaces\Database\Repositories\Base\" />
       <Folder Include="Interfaces\Services\Analytics\" />
       <Folder Include="Interfaces\Services\Entity\Base\" />
       <Folder Include="Interfaces\Services\Mapper\" />
