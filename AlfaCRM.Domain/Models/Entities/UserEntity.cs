@@ -15,8 +15,8 @@ public class UserEntity
     public bool HasPublishedRights { get; set; }
     public bool IsBlocked { get; set; }
 
-    public Guid DepartmentId { get; set; }
-    public virtual DepartmentEntity Department { get; set; } = null!;
+    public Guid? DepartmentId { get; set; }
+    public virtual DepartmentEntity? Department { get; set; } = null!;
 
     public virtual ICollection<PostEntity> Posts { get; set; } = [];
     public virtual ICollection<PostCommentEntity> Comments { get; set; } = [];
@@ -31,7 +31,7 @@ public class UserEntity
         bool isMale,
         bool isAdmin,
         bool hasPublishedRights,
-        Guid departmentId)
+        Guid? departmentId)
     {
         return new()
         {
