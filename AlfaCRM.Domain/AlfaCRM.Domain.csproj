@@ -10,7 +10,6 @@
       <Folder Include="Interfaces\Services\Analytics\" />
       <Folder Include="Interfaces\Services\Entity\Base\" />
       <Folder Include="Interfaces\Services\Mapper\" />
-      <Folder Include="Interfaces\Services\Security\" />
     </ItemGroup>
 
 </Project>
