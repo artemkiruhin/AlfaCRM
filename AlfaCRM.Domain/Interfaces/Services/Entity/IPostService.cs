@@ -9,8 +9,8 @@ public interface IPostService
     Task<bool> Update(PostUpdateRequest request);
     Task<bool> Delete(Guid id);
     
-    Task<List<PostShortDTO>> GetAllShort();
-    Task<List<PostDetailedDTO>> GetAll();
+    Task<List<PostShortDTO>> GetAllShort(Guid? departmentId);
+    Task<List<PostDetailedDTO>> GetAll(Guid? departmentId);
     Task<PostDetailedDTO> GetById(Guid id);
     Task<PostShortDTO> GetByIdShort(Guid id);
     
