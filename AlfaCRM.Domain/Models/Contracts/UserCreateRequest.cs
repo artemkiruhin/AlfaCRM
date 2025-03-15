@@ -4,7 +4,7 @@ public record UserCreateRequest(
     string Email,
     string Username,
     string PasswordHash,
-    DateTime HiredAt,
+    DateTime? HiredAt,
     DateTime Birthday,
     bool IsMale,
     bool IsAdmin,

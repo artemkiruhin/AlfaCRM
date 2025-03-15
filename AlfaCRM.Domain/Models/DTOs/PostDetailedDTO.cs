@@ -10,7 +10,7 @@ public record PostDetailedDTO(
     bool IsImportant,
     bool IsActual,
     UserShortDTO Publisher,
-    DepartmentShortDTO Department,
+    DepartmentShortDTO? Department,
     List<PostReactionShortDTO> Reactions,
     List<PostCommentShortDTO> Comments
 );

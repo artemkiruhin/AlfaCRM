@@ -13,6 +13,6 @@ public record UserDetailedDTO(
     bool IsAdmin,
     bool HasPublishedRights,
     bool IsBlocked,
-    DepartmentShortDTO Department,
+    DepartmentShortDTO? Department,
     List<PostShortDTO> Posts
 );
