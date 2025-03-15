@@ -10,7 +10,6 @@
       <Folder Include="Analytics\" />
       <Folder Include="Entity\" />
       <Folder Include="Mapper\" />
-      <Folder Include="Security\" />
     </ItemGroup>
 
     <ItemGroup>
