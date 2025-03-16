@@ -7,11 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Analytics\" />
-      <Folder Include="Mapper\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\AlfaCRM.Domain\AlfaCRM.Domain.csproj" />
       <ProjectReference Include="..\AlfaCRM.Infrastructure\AlfaCRM.Infrastructure.csproj" />
     </ItemGroup>
