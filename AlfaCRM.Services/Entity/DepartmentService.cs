@@ -15,6 +15,51 @@ public class DepartmentService : IDepartmentService
         _database = database;
     }
 
+    private DepartmentShortDTO MapShort(DepartmentEntity entity)
+    {
+        return new DepartmentShortDTO(
+            Id: entity.Id,
+            Name: entity.Name
+        );
+    }
+
+    private List<DepartmentShortDTO> MapShortRange(IEnumerable<DepartmentEntity> entities)
+    {
+        return entities.Select(entitiy => new DepartmentShortDTO(
+            Id: entitiy.Id,
+            Name: entitiy.Name
+        )).ToList();
+    }
+    
+    private DepartmentDetailedDTO MapDetailed(DepartmentEntity entity)
+    {
+        return new DepartmentDetailedDTO(
+            Id: entity.Id,
+            Name: entity.Name,
+            Users: entity.Users.Select(user => new UserShortDTO(
+                Id: user.Id,
+                Username: user.Username,
+                Email: user.Email,
+                DepartmentName: entity.Name
+            )).ToList()
+        );
+    }
+
+    private List<DepartmentDetailedDTO> MapDetailedRange(IEnumerable<DepartmentEntity> entities)
+    {
+        return entities.Select(department => new DepartmentDetailedDTO(
+            Id: department.Id,
+            Name: department.Name,
+            Users: department.Users.Select(user => new UserShortDTO(
+                Id: user.Id,
+                Username: user.Username,
+                Email: user.Email,
+                DepartmentName: department.Name
+            )).ToList()
+        )).ToList();
+    }
+
+    
     public async Task<Result<Guid>> Create(DepartmentCreateRequest request, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -95,11 +140,7 @@ public class DepartmentService : IDepartmentService
         try
         {
             var entities = await _database.DepartmentRepository.GetAllAsync(ct);
-            var dtos = entities.Select(department => new DepartmentShortDTO(
-                Id: department.Id,
-                Name: department.Name
-            )).ToList();
-
+            var dtos = MapShortRange(entities);
             return Result<List<DepartmentShortDTO>>.Success(dtos);
         }
         catch (Exception ex)
@@ -113,22 +154,7 @@ public class DepartmentService : IDepartmentService
         try
         {
             var entities = await _database.DepartmentRepository.GetAllAsync(ct);
-            var dtos = entities.Select(department =>
-            {
-                var departmentUsers = department.Users.Select(user => new UserShortDTO(
-                    Id: user.Id,
-                    Username: user.Username,
-                    Email: user.Email,
-                    DepartmentName: department.Name
-                )).ToList();
-
-                return new DepartmentDetailedDTO(
-                    Id: department.Id,
-                    Name: department.Name,
-                    Users: departmentUsers
-                );
-            }).ToList();
-
+            var dtos = MapDetailedRange(entities);
             return Result<List<DepartmentDetailedDTO>>.Success(dtos);
         }
         catch (Exception ex)
@@ -144,19 +170,7 @@ public class DepartmentService : IDepartmentService
             var entity = await _database.DepartmentRepository.GetByIdAsync(id, ct);
             if (entity == null) return Result<DepartmentDetailedDTO>.Failure("Department not found");
             
-            var departmentUsers = entity.Users.Select(user => new UserShortDTO(
-                Id: user.Id,
-                Username: user.Username,
-                Email: user.Email,
-                DepartmentName: entity.Name
-            )).ToList();
-
-            var dto = new DepartmentDetailedDTO(
-                Id: entity.Id,
-                Name: entity.Name,
-                Users: departmentUsers
-            );
-
+            var dto = MapDetailed(entity);
             return Result<DepartmentDetailedDTO>.Success(dto);
         }
         catch (Exception ex)
@@ -171,12 +185,8 @@ public class DepartmentService : IDepartmentService
         {
             var entity = await _database.DepartmentRepository.GetByIdAsync(id, ct);
             if (entity == null) return Result<DepartmentShortDTO>.Failure("Department not found");
-            
-            var dto = new DepartmentShortDTO(
-                Id: entity.Id,
-                Name: entity.Name
-            );
 
+            var dto = MapShort(entity);
             return Result<DepartmentShortDTO>.Success(dto);
         }
         catch (Exception ex)

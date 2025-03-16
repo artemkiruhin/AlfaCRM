@@ -15,6 +15,38 @@ public class PostCommentService : IPostCommentService
         _database = database;
     }
 
+    private PostCommentShortDTO MapShort(PostCommentEntity entity)
+    {
+        return new PostCommentShortDTO(
+            Id: entity.Id,
+            Content: entity.Content,
+            IsDeleted: entity.IsDeleted,
+            CreatedAt: entity.CreatedAt,
+            Sender: new UserShortDTO(
+                Id: entity.SenderId,
+                Username: entity.Sender.Username,
+                Email: entity.Sender.Email,
+                DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела"
+            )
+        );
+    }
+
+    private List<PostCommentShortDTO> MapShortRange(IEnumerable<PostCommentEntity> entities)
+    {
+        return entities.Select(entity => new PostCommentShortDTO(
+            Id: entity.Id,
+            Content: entity.Content,
+            IsDeleted: entity.IsDeleted,
+            CreatedAt: entity.CreatedAt,
+            Sender: new UserShortDTO(
+                Id: entity.SenderId,
+                Username: entity.Sender.Username,
+                Email: entity.Sender.Email,
+                DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела"
+            )
+        )).ToList();
+    }
+
     public async Task<Result<Guid>> Create(PostCommentCreateRequest request, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -69,18 +101,7 @@ public class PostCommentService : IPostCommentService
         try
         {
             var comments = await _database.PostCommentRepository.FindRangeAsync(comment => comment.PostId == postId, ct);
-            var dtos = comments.Select(comment => new PostCommentShortDTO(
-                Id: comment.Id,
-                Content: comment.Content,
-                IsDeleted: comment.IsDeleted,
-                CreatedAt: comment.CreatedAt,
-                Sender: new UserShortDTO(
-                    Id: comment.SenderId,
-                    Username: comment.Sender.Username,
-                    Email: comment.Sender.Email,
-                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
-                )
-            )).ToList();
+            var dtos = MapShortRange(comments);
             
             return Result<List<PostCommentShortDTO>>.Success(dtos);
         }
@@ -97,18 +118,7 @@ public class PostCommentService : IPostCommentService
             var comment = await _database.PostCommentRepository.GetByIdAsync(id, ct);
             if (comment == null) return Result<PostCommentShortDTO>.Failure("Comment not found");
 
-            var dto = new PostCommentShortDTO(
-                Id: comment.Id,
-                Content: comment.Content,
-                IsDeleted: comment.IsDeleted,
-                CreatedAt: comment.CreatedAt,
-                Sender: new UserShortDTO(
-                    Id: comment.SenderId,
-                    Username: comment.Sender.Username,
-                    Email: comment.Sender.Email,
-                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
-                )
-            );
+            var dto = MapShort(comment);
             
             return Result<PostCommentShortDTO>.Success(dto);
         }

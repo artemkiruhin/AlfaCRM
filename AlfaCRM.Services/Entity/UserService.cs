@@ -17,7 +17,83 @@ public class UserService : IUserService
         _database = database;
         _jwtService = jwtService;
     }
-    
+
+    private UserShortDTO MapToShortDTO(UserEntity entity)
+    {
+        return new UserShortDTO(
+            Id: entity.Id,
+            Username: entity.Username,
+            Email: entity.Email,
+            DepartmentName: entity.Department?.Name ?? "Нет отдела"
+        );
+    }
+
+    private List<UserShortDTO> MapToShortDTORange(IEnumerable<UserEntity> entities)
+    {
+        return entities.Select(entity => new UserShortDTO(
+            Id: entity.Id,
+            Username: entity.Username,
+            Email: entity.Email,
+            DepartmentName: entity.Department?.Name ?? "Нет отдела"
+        )).ToList();
+    }
+
+    private UserDetailedDTO MapToDetailedDTO(UserEntity entity)
+    {
+        return new UserDetailedDTO(
+            Id: entity.Id,
+            Username: entity.Username,
+            Email: entity.Email,
+            PasswordHash: entity.PasswordHash,
+            HiredAt: entity.HiredAt,
+            FiredAt: entity.FiredAt,
+            Birthday: entity.Birthday,
+            IsMale: entity.IsMale,
+            IsActive: entity.IsActive,
+            IsAdmin: entity.IsAdmin,
+            HasPublishedRights: entity.HasPublishedRights,
+            IsBlocked: entity.IsBlocked,
+            Department: entity.DepartmentId.HasValue
+                ? new DepartmentShortDTO(
+                    Id: entity.DepartmentId.Value,
+                    Name: entity.Department.Name
+                )
+                : null,
+            Posts: entity.Posts.Select(post => new PostShortDTO(
+                Id: post.Id,
+                Title: post.Title
+            )).ToList()
+        );
+    }
+
+    private List<UserDetailedDTO> MapToDetailedDTORange(IEnumerable<UserEntity> entities)
+    {
+        return entities.Select(entity => new UserDetailedDTO(
+            Id: entity.Id,
+            Username: entity.Username,
+            Email: entity.Email,
+            PasswordHash: entity.PasswordHash,
+            HiredAt: entity.HiredAt,
+            FiredAt: entity.FiredAt,
+            Birthday: entity.Birthday,
+            IsMale: entity.IsMale,
+            IsActive: entity.IsActive,
+            IsAdmin: entity.IsAdmin,
+            HasPublishedRights: entity.HasPublishedRights,
+            IsBlocked: entity.IsBlocked,
+            Department: entity.DepartmentId.HasValue
+                ? new DepartmentShortDTO(
+                    Id: entity.DepartmentId.Value,
+                    Name: entity.Department.Name
+                )
+                : null,
+            Posts: entity.Posts.Select(post => new PostShortDTO(
+                Id: post.Id,
+                Title: post.Title
+            )).ToList()
+        )).ToList();
+    }
+
     public async Task<Result<(Guid id, string token)>> Login(LoginRequest request, CancellationToken ct)
     {
         try
@@ -28,7 +104,7 @@ public class UserService : IUserService
                 ct
             );
             if (user == null) return Result<(Guid id, string token)>.Failure("User not found");
-            
+
             var token = _jwtService.GenerateToken(user.Id);
             return Result<(Guid id, string token)>.Success((user.Id, token));
         }
@@ -45,7 +121,7 @@ public class UserService : IUserService
         {
             var user = await _database.UserRepository.GetByUsernameAsync(request.Username, ct);
             if (user != null) return Result<Guid>.Failure("Username already exists");
-            
+
             var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
             if (department == null) return Result<Guid>.Failure("Department not found");
 
@@ -60,13 +136,13 @@ public class UserService : IUserService
                 hasPublishedRights: request.HasPublishedRights,
                 departmentId: request.DepartmentId
             );
-            
+
             await _database.UserRepository.CreateAsync(newUser, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
-            return result > 0 
-                ? Result<Guid>.Success(newUser.Id) 
+
+            return result > 0
+                ? Result<Guid>.Success(newUser.Id)
                 : Result<Guid>.Failure("Failed to create user");
         }
         catch (Exception e)
@@ -83,31 +159,31 @@ public class UserService : IUserService
         {
             var user = await _database.UserRepository.GetByIdAsync(request.Id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
-            
+
             if (!string.IsNullOrEmpty(request.Email))
             {
                 var userByEmail = await _database.UserRepository.FindAsync(u => u.Email == request.Email, ct);
                 if (userByEmail != null) return Result<Guid>.Failure("Email already exists");
-                
+
                 user.Email = request.Email;
             }
-            
+
             if (request.IsAdmin.HasValue) user.IsAdmin = request.IsAdmin.Value;
             if (request.HasPublishedRights.HasValue) user.HasPublishedRights = request.HasPublishedRights.Value;
-            
+
             if (request.DepartmentId.HasValue)
             {
                 var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId.Value, ct);
                 if (department == null) return Result<Guid>.Failure("Department not found");
                 user.DepartmentId = request.DepartmentId.Value;
             }
-            
+
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
-            return result > 0 
-                ? Result<Guid>.Success(user.Id) 
+
+            return result > 0
+                ? Result<Guid>.Success(user.Id)
                 : Result<Guid>.Failure("Failed to update user");
         }
         catch (Exception e)
@@ -124,13 +200,13 @@ public class UserService : IUserService
         {
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
-            
+
             _database.UserRepository.Delete(user, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
-            return result > 0 
-                ? Result<Guid>.Success(user.Id) 
+
+            return result > 0
+                ? Result<Guid>.Success(user.Id)
                 : Result<Guid>.Failure("Failed to delete user");
         }
         catch (Exception e)
@@ -145,14 +221,7 @@ public class UserService : IUserService
         try
         {
             var users = await _database.UserRepository.GetAllAsync(ct);
-        
-            var dtos = users.Select(user => new UserShortDTO(
-                Id: user.Id,
-                Username: user.Username,
-                Email: user.Email,
-                DepartmentName: user.Department?.Name ?? "Нет отдела"
-            )).ToList();
-        
+            var dtos = MapToShortDTORange(users);
             return Result<List<UserShortDTO>>.Success(dtos);
         }
         catch (Exception e)
@@ -166,32 +235,7 @@ public class UserService : IUserService
         try
         {
             var users = await _database.UserRepository.GetAllAsync(ct);
-
-            var dtos = users.Select(user => new UserDetailedDTO(
-                Id: user.Id,
-                Username: user.Username,
-                Email: user.Email,
-                PasswordHash: user.PasswordHash,
-                HiredAt: user.HiredAt,
-                FiredAt: user.FiredAt,
-                Birthday: user.Birthday,
-                IsMale: user.IsMale,
-                IsActive: user.IsActive,
-                IsAdmin: user.IsAdmin,
-                HasPublishedRights: user.HasPublishedRights,
-                IsBlocked: user.IsBlocked,
-                Department: user.DepartmentId.HasValue
-                    ? new DepartmentShortDTO(
-                        Id: user.DepartmentId.Value,
-                        Name: user.Department.Name
-                    )
-                    : null,
-                Posts: user.Posts.Select(post => new PostShortDTO(
-                    Id: post.Id,
-                    Title: post.Title
-                )).ToList()
-            )).ToList();
-        
+            var dtos = MapToDetailedDTORange(users);
             return Result<List<UserDetailedDTO>>.Success(dtos);
         }
         catch (Exception e)
@@ -207,31 +251,7 @@ public class UserService : IUserService
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<UserDetailedDTO>.Failure("User not found");
 
-            var dto = new UserDetailedDTO(
-                Id: user.Id,
-                Username: user.Username,
-                Email: user.Email,
-                PasswordHash: user.PasswordHash,
-                HiredAt: user.HiredAt,
-                FiredAt: user.FiredAt,
-                Birthday: user.Birthday,
-                IsMale: user.IsMale,
-                IsActive: user.IsActive,
-                IsAdmin: user.IsAdmin,
-                HasPublishedRights: user.HasPublishedRights,
-                IsBlocked: user.IsBlocked,
-                Department: user.DepartmentId.HasValue
-                    ? new DepartmentShortDTO(
-                        Id: user.DepartmentId.Value,
-                        Name: user.Department.Name
-                    )
-                    : null,
-                Posts: user.Posts.Select(post => new PostShortDTO(
-                    Id: post.Id,
-                    Title: post.Title
-                )).ToList()
-            );
-        
+            var dto = MapToDetailedDTO(user);
             return Result<UserDetailedDTO>.Success(dto);
         }
         catch (Exception e)
@@ -246,14 +266,8 @@ public class UserService : IUserService
         {
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<UserShortDTO>.Failure("User not found");
-        
-            var dto = new UserShortDTO(
-                Id: user.Id,
-                Username: user.Username,
-                Email: user.Email,
-                DepartmentName: user.Department?.Name ?? "Нет отдела"
-            );
-        
+
+            var dto = MapToShortDTO(user);
             return Result<UserShortDTO>.Success(dto);
         }
         catch (Exception e)
@@ -269,15 +283,15 @@ public class UserService : IUserService
         {
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
-            
+
             user.IsBlocked = true;
-            
+
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
-            return result > 0 
-                ? Result<Guid>.Success(user.Id) 
+
+            return result > 0
+                ? Result<Guid>.Success(user.Id)
                 : Result<Guid>.Failure("Failed to block user");
         }
         catch (Exception e)
@@ -290,22 +304,22 @@ public class UserService : IUserService
     public async Task<Result<Guid>> ResetPassword(Guid id, string oldPassword, string newPassword, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
-        
+
         if (oldPassword == newPassword) return Result<Guid>.Failure("New password must be different from the old one");
         try
         {
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
-            
+
             if (user.PasswordHash != oldPassword) return Result<Guid>.Failure("Old password is incorrect");
             user.PasswordHash = newPassword;
-            
+
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
-            return result > 0 
-                ? Result<Guid>.Success(user.Id) 
+
+            return result > 0
+                ? Result<Guid>.Success(user.Id)
                 : Result<Guid>.Failure("Failed to reset password");
         }
         catch (Exception e)
@@ -318,20 +332,20 @@ public class UserService : IUserService
     public async Task<Result<Guid>> ResetPasswordAsAdmin(Guid id, string newPassword, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
-        
+
         try
         {
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
-            
+
             user.PasswordHash = newPassword;
-            
+
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
-            return result > 0 
-                ? Result<Guid>.Success(user.Id) 
+
+            return result > 0
+                ? Result<Guid>.Success(user.Id)
                 : Result<Guid>.Failure("Failed to reset password");
         }
         catch (Exception e)
