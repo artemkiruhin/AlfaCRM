@@ -15,42 +15,42 @@ public class BaseRepository<TEntity> : ICrudRepository<TEntity> where TEntity : 
         DbSet = context.Set<TEntity>();
     }
     
-    public async Task<IEnumerable<TEntity>> GetAllAsync()
+    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().ToListAsync();
+        return await DbSet.AsNoTracking().ToListAsync(ct);
     }
 
-    public async Task<TEntity?> GetByIdAsync(Guid id)
+    public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        return await DbSet.FindAsync(id);
+        return await DbSet.FindAsync(new object[] { id }, ct);
     }
 
-    public async Task<TEntity> CreateAsync(TEntity entity)
+    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct)
     {
-        var result = await DbSet.AddAsync(entity);
+        var result = await DbSet.AddAsync(entity, ct);
         return result.Entity;
     }
 
-    public TEntity Update(TEntity entity)
+    public TEntity Update(TEntity entity, CancellationToken ct)
     {
         Context.Attach(entity);
         Context.Entry(entity).State = EntityState.Modified;
         return entity;
     }
 
-    public TEntity Delete(TEntity entity)
+    public TEntity Delete(TEntity entity, CancellationToken ct)
     {
         var result = DbSet.Remove(entity);
         return result.Entity;
     }
 
-    public async Task<IEnumerable<TEntity>> FindRangeAsync(Expression<Func<TEntity, bool>> predicate)
+    public async Task<IEnumerable<TEntity>> FindRangeAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().Where(predicate).ToListAsync();
+        return await DbSet.AsNoTracking().Where(predicate).ToListAsync(ct);
     }
 
-    public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
+        return await DbSet.AsNoTracking().FirstOrDefaultAsync(predicate, ct);
     }
 }

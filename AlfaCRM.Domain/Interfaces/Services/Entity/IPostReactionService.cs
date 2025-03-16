@@ -5,6 +5,6 @@ namespace AlfaCRM.Domain.Interfaces.Services.Entity;
 
 public interface IPostReactionService
 {
-    Task<Result<Guid>> Create(PostReactionCreateRequest request);
-    Task<Result<Guid>> Delete(Guid id);
+    Task<Result<Guid>> Create(PostReactionCreateRequest request, CancellationToken ct);
+    Task<Result<Guid>> Delete(Guid id, CancellationToken ct);
 }

@@ -5,5 +5,5 @@ namespace AlfaCRM.Domain.Interfaces.Database.Repositories;
 
 public interface IDepartmentRepository : ICrudRepository<DepartmentEntity>
 {
-    Task<DepartmentEntity?> GetDepartmentByName(string name);
+    Task<DepartmentEntity?> GetDepartmentByName(string name, CancellationToken ct);
 }

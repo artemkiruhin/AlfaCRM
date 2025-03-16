@@ -15,14 +15,14 @@ public class PostReactionService : IPostReactionService
         _database = database;
     }
     
-    public async Task<Result<Guid>> Create(PostReactionCreateRequest request)
+    public async Task<Result<Guid>> Create(PostReactionCreateRequest request, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
         try
         {
             var existingReactions = await _database.PostReactionRepository
-                .FindRangeAsync(reaction => reaction.PostId == request.PostId);
+                .FindRangeAsync(reaction => reaction.PostId == request.PostId, ct);
             
             var reactionsToDelete = existingReactions
                 .Where(reaction => reaction.Type != request.Type)
@@ -30,7 +30,7 @@ public class PostReactionService : IPostReactionService
 
             foreach (var reaction in reactionsToDelete)
             {
-                _database.PostReactionRepository.Delete(reaction);
+                _database.PostReactionRepository.Delete(reaction, ct);
             }
             
             if (!existingReactions.Any())
@@ -41,7 +41,7 @@ public class PostReactionService : IPostReactionService
                     type: request.Type
                 );
 
-                await _database.PostReactionRepository.CreateAsync(newReaction);
+                await _database.PostReactionRepository.CreateAsync(newReaction, ct);
             }
             
             var result = await _database.SaveChangesAsync(CancellationToken.None);
@@ -58,19 +58,19 @@ public class PostReactionService : IPostReactionService
         }
     }
 
-    public async Task<Result<Guid>> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
         try
         {
-            var dbReaction = await _database.PostReactionRepository.GetByIdAsync(id);
+            var dbReaction = await _database.PostReactionRepository.GetByIdAsync(id, ct);
             if (dbReaction == null)
             {
                 return Result<Guid>.Failure("Reaction not found");
             }
 
-            _database.PostReactionRepository.Delete(dbReaction);
+            _database.PostReactionRepository.Delete(dbReaction, ct);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 

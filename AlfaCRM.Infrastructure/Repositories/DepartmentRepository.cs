@@ -7,8 +7,8 @@ namespace AlfaCRM.Infrastructure.Repositories;
 
 public class DepartmentRepository(AppDbContext context) : BaseRepository<DepartmentEntity>(context), IDepartmentRepository
 {
-    public async Task<DepartmentEntity?> GetDepartmentByName(string name)
+    public async Task<DepartmentEntity?> GetDepartmentByName(string name, CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().FirstOrDefaultAsync(department => department.Name == name);
+        return await DbSet.AsNoTracking().FirstOrDefaultAsync(department => department.Name == name, ct);
     }
 }

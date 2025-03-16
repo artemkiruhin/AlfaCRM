@@ -16,9 +16,9 @@ public class PostService : IPostService
         _database = database;
     }
     
-    public async Task<Result<Guid>> Create(PostCreateRequest request)
+    public async Task<Result<Guid>> Create(PostCreateRequest request, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
             var newPost = PostEntity.Create(
@@ -30,9 +30,9 @@ public class PostService : IPostService
                 publisherId: request.PublisherId
             );
             
-            await _database.PostRepository.CreateAsync(newPost);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            await _database.PostRepository.CreateAsync(newPost, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(newPost.Id) 
@@ -40,17 +40,17 @@ public class PostService : IPostService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while creating post: {e.Message}");
         }
     }
 
-    public async Task<Result<Guid>> Update(PostUpdateRequest request)
+    public async Task<Result<Guid>> Update(PostUpdateRequest request, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var dbPost = await _database.PostRepository.GetByIdAsync(request.PostId);
+            var dbPost = await _database.PostRepository.GetByIdAsync(request.PostId, ct);
             if (dbPost == null) return Result<Guid>.Failure("Post not found");
             
             if (!string.IsNullOrEmpty(request.Title)) dbPost.Title = request.Title;
@@ -61,9 +61,9 @@ public class PostService : IPostService
             
             dbPost.ModifiedAt = DateTime.UtcNow;
             
-            _database.PostRepository.Update(dbPost);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.PostRepository.Update(dbPost, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(dbPost.Id) 
@@ -71,22 +71,22 @@ public class PostService : IPostService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while updating post: {e.Message}");
         }
     }
 
-    public async Task<Result<Guid>> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var dbPost = await _database.PostRepository.GetByIdAsync(id);
+            var dbPost = await _database.PostRepository.GetByIdAsync(id, ct);
             if (dbPost == null) return Result<Guid>.Failure("Post not found");
             
-            _database.PostRepository.Delete(dbPost);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.PostRepository.Delete(dbPost, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(dbPost.Id) 
@@ -94,18 +94,18 @@ public class PostService : IPostService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while deleting post: {e.Message}");
         }
     }
 
-    public async Task<Result<List<PostShortDTO>>> GetAllShort(Guid? departmentId)
+    public async Task<Result<List<PostShortDTO>>> GetAllShort(Guid? departmentId, CancellationToken ct)
     {
         try
         {
             var posts = departmentId.HasValue
-                ? await _database.PostRepository.GetPostForDepartment(departmentId.Value)
-                : await _database.PostRepository.GetAllAsync();
+                ? await _database.PostRepository.GetPostForDepartment(departmentId.Value, ct)
+                : await _database.PostRepository.GetAllAsync(ct);
         
             var dtos = posts.Select(post => new PostShortDTO(
                 Id: post.Id,
@@ -120,13 +120,13 @@ public class PostService : IPostService
         }
     }
 
-    public async Task<Result<List<PostDetailedDTO>>> GetAll(Guid? departmentId)
+    public async Task<Result<List<PostDetailedDTO>>> GetAll(Guid? departmentId, CancellationToken ct)
     {
         try
         {
             var posts = departmentId.HasValue
-                ? await _database.PostRepository.GetPostForDepartment(departmentId.Value)
-                : await _database.PostRepository.GetAllAsync();
+                ? await _database.PostRepository.GetPostForDepartment(departmentId.Value, ct)
+                : await _database.PostRepository.GetAllAsync(ct);
 
             var dtos = posts.Select(post => new PostDetailedDTO(
                 Id: post.Id,
@@ -182,11 +182,11 @@ public class PostService : IPostService
         }
     }
 
-    public async Task<Result<PostDetailedDTO>> GetById(Guid id)
+    public async Task<Result<PostDetailedDTO>> GetById(Guid id, CancellationToken ct)
     {
         try
         {
-            var post = await _database.PostRepository.GetByIdAsync(id);
+            var post = await _database.PostRepository.GetByIdAsync(id, ct);
             if (post == null) return Result<PostDetailedDTO>.Failure("Post not found");
 
             var dto = new PostDetailedDTO(
@@ -243,11 +243,11 @@ public class PostService : IPostService
         }
     }
 
-    public async Task<Result<PostShortDTO>> GetByIdShort(Guid id)
+    public async Task<Result<PostShortDTO>> GetByIdShort(Guid id, CancellationToken ct)
     {
         try
         {
-            var post = await _database.PostRepository.GetByIdAsync(id);
+            var post = await _database.PostRepository.GetByIdAsync(id, ct);
             if (post == null) return Result<PostShortDTO>.Failure("Post not found");
         
             var dto = new PostShortDTO(
@@ -263,20 +263,20 @@ public class PostService : IPostService
         }
     }
 
-    public async Task<Result<Guid>> Block(Guid id)
+    public async Task<Result<Guid>> Block(Guid id, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var dbPost = await _database.PostRepository.GetByIdAsync(id);
+            var dbPost = await _database.PostRepository.GetByIdAsync(id, ct);
             if (dbPost == null) return Result<Guid>.Failure("Post not found");
             
             dbPost.ModifiedAt = DateTime.UtcNow;
             dbPost.IsActual = false;
             
-            _database.PostRepository.Update(dbPost);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.PostRepository.Update(dbPost, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(dbPost.Id) 
@@ -284,7 +284,7 @@ public class PostService : IPostService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while blocking post: {e.Message}");
         }
     }

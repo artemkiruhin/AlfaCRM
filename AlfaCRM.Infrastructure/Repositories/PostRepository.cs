@@ -8,6 +8,7 @@ namespace AlfaCRM.Infrastructure.Repositories;
 public class PostRepository(AppDbContext context) : BaseRepository<PostEntity>(context), IPostRepository
 {
     public async Task<IEnumerable<PostEntity>> GetImportantPostsAsync(
+        CancellationToken ct,
         bool isImportant, 
         Guid? departmentId, 
         bool includeDeleted = false)
@@ -20,24 +21,24 @@ public class PostRepository(AppDbContext context) : BaseRepository<PostEntity>(c
                 (includeDeleted || !post.IsActual)
             )
             .OrderByDescending(post => post.CreatedAt)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<PostEntity>> GetActualPostsAsync(bool isActual, Guid? departmentId)
+    public async Task<IEnumerable<PostEntity>> GetActualPostsAsync(bool isActual, Guid? departmentId, CancellationToken ct)
     {
         return await DbSet.AsNoTracking().Where(post =>
             post.IsActual == isActual &&
             (departmentId == null || post.DepartmentId == departmentId)
-        ).ToListAsync();
+        ).ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<PostEntity>> GetPostForDepartment(Guid departmentId)
+    public async Task<IEnumerable<PostEntity>> GetPostForDepartment(Guid departmentId, CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().Where(post => post.DepartmentId == departmentId).ToListAsync();
+        return await DbSet.AsNoTracking().Where(post => post.DepartmentId == departmentId).ToListAsync(ct);
     }
 
-    public async Task<IEnumerable<PostEntity>> GetCommonPosts()
+    public async Task<IEnumerable<PostEntity>> GetCommonPosts(CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().Where(post => post.DepartmentId == null).ToListAsync();
+        return await DbSet.AsNoTracking().Where(post => post.DepartmentId == null).ToListAsync(ct);
     }
 }

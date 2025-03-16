@@ -18,13 +18,14 @@ public class UserService : IUserService
         _jwtService = jwtService;
     }
     
-    public async Task<Result<(Guid id, string token)>> Login(LoginRequest request)
+    public async Task<Result<(Guid id, string token)>> Login(LoginRequest request, CancellationToken ct)
     {
         try
         {
             var user = await _database.UserRepository.GetByUsernameAndPasswordAsync(
                 request.Username,
-                request.PasswordHash
+                request.PasswordHash,
+                ct
             );
             if (user == null) return Result<(Guid id, string token)>.Failure("User not found");
             
@@ -37,15 +38,15 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<Guid>> Create(UserCreateRequest request)
+    public async Task<Result<Guid>> Create(UserCreateRequest request, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var user = await _database.UserRepository.GetByUsernameAsync(request.Username);
+            var user = await _database.UserRepository.GetByUsernameAsync(request.Username, ct);
             if (user != null) return Result<Guid>.Failure("Username already exists");
             
-            var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId);
+            var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
             if (department == null) return Result<Guid>.Failure("Department not found");
 
             var newUser = UserEntity.Create(
@@ -60,9 +61,9 @@ public class UserService : IUserService
                 departmentId: request.DepartmentId
             );
             
-            await _database.UserRepository.CreateAsync(newUser);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            await _database.UserRepository.CreateAsync(newUser, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(newUser.Id) 
@@ -70,22 +71,22 @@ public class UserService : IUserService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while creating user: {e.Message}");
         }
     }
 
-    public async Task<Result<Guid>> Update(UserUpdateRequest request)
+    public async Task<Result<Guid>> Update(UserUpdateRequest request, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(request.Id);
+            var user = await _database.UserRepository.GetByIdAsync(request.Id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
             
             if (!string.IsNullOrEmpty(request.Email))
             {
-                var userByEmail = await _database.UserRepository.FindAsync(u => u.Email == request.Email);
+                var userByEmail = await _database.UserRepository.FindAsync(u => u.Email == request.Email, ct);
                 if (userByEmail != null) return Result<Guid>.Failure("Email already exists");
                 
                 user.Email = request.Email;
@@ -96,14 +97,14 @@ public class UserService : IUserService
             
             if (request.DepartmentId.HasValue)
             {
-                var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId.Value);
+                var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId.Value, ct);
                 if (department == null) return Result<Guid>.Failure("Department not found");
                 user.DepartmentId = request.DepartmentId.Value;
             }
             
-            _database.UserRepository.Update(user);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.UserRepository.Update(user, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(user.Id) 
@@ -111,22 +112,22 @@ public class UserService : IUserService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while updating user: {e.Message}");
         }
     }
 
-    public async Task<Result<Guid>> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(id);
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
             
-            _database.UserRepository.Delete(user);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.UserRepository.Delete(user, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(user.Id) 
@@ -134,16 +135,16 @@ public class UserService : IUserService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while deleting user: {e.Message}");
         }
     }
 
-    public async Task<Result<List<UserShortDTO>>> GetAllShort()
+    public async Task<Result<List<UserShortDTO>>> GetAllShort(CancellationToken ct)
     {
         try
         {
-            var users = await _database.UserRepository.GetAllAsync();
+            var users = await _database.UserRepository.GetAllAsync(ct);
         
             var dtos = users.Select(user => new UserShortDTO(
                 Id: user.Id,
@@ -160,11 +161,11 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<List<UserDetailedDTO>>> GetAll()
+    public async Task<Result<List<UserDetailedDTO>>> GetAll(CancellationToken ct)
     {
         try
         {
-            var users = await _database.UserRepository.GetAllAsync();
+            var users = await _database.UserRepository.GetAllAsync(ct);
 
             var dtos = users.Select(user => new UserDetailedDTO(
                 Id: user.Id,
@@ -199,11 +200,11 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<UserDetailedDTO>> GetById(Guid id)
+    public async Task<Result<UserDetailedDTO>> GetById(Guid id, CancellationToken ct)
     {
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(id);
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<UserDetailedDTO>.Failure("User not found");
 
             var dto = new UserDetailedDTO(
@@ -239,11 +240,11 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<UserShortDTO>> GetByIdShort(Guid id)
+    public async Task<Result<UserShortDTO>> GetByIdShort(Guid id, CancellationToken ct)
     {
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(id);
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<UserShortDTO>.Failure("User not found");
         
             var dto = new UserShortDTO(
@@ -261,19 +262,19 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<Guid>> Block(Guid id)
+    public async Task<Result<Guid>> Block(Guid id, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(id);
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
             
             user.IsBlocked = true;
             
-            _database.UserRepository.Update(user);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.UserRepository.Update(user, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(user.Id) 
@@ -281,27 +282,27 @@ public class UserService : IUserService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while blocking user: {e.Message}");
         }
     }
 
-    public async Task<Result<Guid>> ResetPassword(Guid id, string oldPassword, string newPassword)
+    public async Task<Result<Guid>> ResetPassword(Guid id, string oldPassword, string newPassword, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         
         if (oldPassword == newPassword) return Result<Guid>.Failure("New password must be different from the old one");
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(id);
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
             
             if (user.PasswordHash != oldPassword) return Result<Guid>.Failure("Old password is incorrect");
             user.PasswordHash = newPassword;
             
-            _database.UserRepository.Update(user);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.UserRepository.Update(user, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(user.Id) 
@@ -309,25 +310,25 @@ public class UserService : IUserService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while resetting password: {e.Message}");
         }
     }
 
-    public async Task<Result<Guid>> ResetPasswordAsAdmin(Guid id, string newPassword)
+    public async Task<Result<Guid>> ResetPasswordAsAdmin(Guid id, string newPassword, CancellationToken ct)
     {
-        await _database.BeginTransactionAsync(CancellationToken.None);
+        await _database.BeginTransactionAsync(ct);
         
         try
         {
-            var user = await _database.UserRepository.GetByIdAsync(id);
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
             
             user.PasswordHash = newPassword;
             
-            _database.UserRepository.Update(user);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
-            await _database.CommitTransactionAsync(CancellationToken.None);
+            _database.UserRepository.Update(user, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
             
             return result > 0 
                 ? Result<Guid>.Success(user.Id) 
@@ -335,7 +336,7 @@ public class UserService : IUserService
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(CancellationToken.None);
+            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while resetting password: {e.Message}");
         }
     }

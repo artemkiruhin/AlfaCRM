@@ -5,5 +5,5 @@ namespace AlfaCRM.Domain.Interfaces.Database.Repositories;
 
 public interface IPostCommentRepository : ICrudRepository<PostCommentEntity>
 {
-    Task<IEnumerable<PostCommentEntity>> GetDeletedCommentsAsync(Guid postId);
+    Task<IEnumerable<PostCommentEntity>> GetDeletedCommentsAsync(Guid postId, CancellationToken ct);
 }
