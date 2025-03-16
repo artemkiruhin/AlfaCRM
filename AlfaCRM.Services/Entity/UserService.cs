@@ -11,11 +11,13 @@ public class UserService : IUserService
 {
     private readonly IUnitOfWork _database;
     private readonly IJwtService _jwtService;
+    private readonly IHashService _hasher;
 
-    public UserService(IUnitOfWork database, IJwtService jwtService)
+    public UserService(IUnitOfWork database, IJwtService jwtService, IHashService hasher)
     {
         _database = database;
         _jwtService = jwtService;
+        _hasher = hasher;
     }
 
     private UserShortDTO MapToShortDTO(UserEntity entity)
@@ -100,7 +102,7 @@ public class UserService : IUserService
         {
             var user = await _database.UserRepository.GetByUsernameAndPasswordAsync(
                 request.Username,
-                request.PasswordHash,
+                _hasher.ComputeHash(request.PasswordHash),
                 ct
             );
             if (user == null) return Result<(Guid id, string token)>.Failure("User not found");
@@ -128,7 +130,7 @@ public class UserService : IUserService
             var newUser = UserEntity.Create(
                 email: request.Email,
                 username: request.Username,
-                passwordHash: request.PasswordHash,
+                passwordHash: _hasher.ComputeHash(request.PasswordHash),
                 hiredAt: request.HiredAt.HasValue ? request.HiredAt.Value : DateTime.UtcNow,
                 birthday: request.Birthday,
                 isMale: request.IsMale,
@@ -311,8 +313,11 @@ public class UserService : IUserService
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
 
-            if (user.PasswordHash != oldPassword) return Result<Guid>.Failure("Old password is incorrect");
-            user.PasswordHash = newPassword;
+            var oldPasswordHashed = _hasher.ComputeHash(oldPassword);
+            var newPasswordHashed = _hasher.ComputeHash(newPassword);
+            
+            if (user.PasswordHash != oldPasswordHashed) return Result<Guid>.Failure("Old password is incorrect");
+            user.PasswordHash = newPasswordHashed;
 
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
@@ -338,7 +343,7 @@ public class UserService : IUserService
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
             if (user == null) return Result<Guid>.Failure("User not found");
 
-            user.PasswordHash = newPassword;
+            user.PasswordHash = _hasher.ComputeHash(newPassword);
 
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);

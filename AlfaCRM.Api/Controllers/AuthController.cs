@@ -29,7 +29,7 @@ namespace AlfaCRM.Api.Controllers
                 if (string.IsNullOrEmpty(request.PasswordHash) || string.IsNullOrWhiteSpace(request.PasswordHash))
                     return BadRequest("Password is required");
                 
-                var result = await _userService.Login(new LoginRequest(request.Username, _hasher.ComputeHash(request.PasswordHash)), ct);
+                var result = await _userService.Login(new LoginRequest(request.Username, request.PasswordHash), ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 
                 Response.Cookies.Append("jwt", result.Data.token, new CookieOptions
