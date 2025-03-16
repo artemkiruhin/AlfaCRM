@@ -16,7 +16,7 @@ public class PostService : IPostService
         _database = database;
     }
     
-    public async Task<bool> Create(PostCreateRequest request)
+    public async Task<Result<Guid>> Create(PostCreateRequest request)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
         try
@@ -34,22 +34,24 @@ public class PostService : IPostService
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
             
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(newPost.Id) 
+                : Result<Guid>.Failure("Failed to create post");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            throw;
+            return Result<Guid>.Failure($"Error while creating post: {e.Message}");
         }
     }
 
-    public async Task<bool> Update(PostUpdateRequest request)
+    public async Task<Result<Guid>> Update(PostUpdateRequest request)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
         try
         {
             var dbPost = await _database.PostRepository.GetByIdAsync(request.PostId);
-            if (dbPost == null) throw new KeyNotFoundException();
+            if (dbPost == null) return Result<Guid>.Failure("Post not found");
             
             if (!string.IsNullOrEmpty(request.Title)) dbPost.Title = request.Title;
             if (!string.IsNullOrEmpty(request.Subtitle)) dbPost.Subtitle = request.Subtitle;
@@ -63,179 +65,211 @@ public class PostService : IPostService
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
             
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbPost.Id) 
+                : Result<Guid>.Failure("Failed to update post");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            throw;
+            return Result<Guid>.Failure($"Error while updating post: {e.Message}");
         }
     }
 
-    public async Task<bool> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
         try
         {
             var dbPost = await _database.PostRepository.GetByIdAsync(id);
-            if (dbPost == null) throw new KeyNotFoundException();
+            if (dbPost == null) return Result<Guid>.Failure("Post not found");
             
             _database.PostRepository.Delete(dbPost);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
             
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbPost.Id) 
+                : Result<Guid>.Failure("Failed to delete post");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            throw;
+            return Result<Guid>.Failure($"Error while deleting post: {e.Message}");
         }
     }
 
-    public async Task<List<PostShortDTO>> GetAllShort(Guid? departmentId)
+    public async Task<Result<List<PostShortDTO>>> GetAllShort(Guid? departmentId)
     {
-        var posts = departmentId.HasValue
-            ? await _database.PostRepository.GetPostForDepartment(departmentId.Value)
-            : await _database.PostRepository.GetAllAsync();
+        try
+        {
+            var posts = departmentId.HasValue
+                ? await _database.PostRepository.GetPostForDepartment(departmentId.Value)
+                : await _database.PostRepository.GetAllAsync();
         
-        var dtos = posts.Select(post => new PostShortDTO(
-            Id: post.Id,
-            Title: post.Title
-        )).ToList();
+            var dtos = posts.Select(post => new PostShortDTO(
+                Id: post.Id,
+                Title: post.Title
+            )).ToList();
         
-        return dtos;
+            return Result<List<PostShortDTO>>.Success(dtos);
+        }
+        catch (Exception e)
+        {
+            return Result<List<PostShortDTO>>.Failure($"Error while retrieving posts: {e.Message}");
+        }
     }
 
-    public async Task<List<PostDetailedDTO>> GetAll(Guid? departmentId)
+    public async Task<Result<List<PostDetailedDTO>>> GetAll(Guid? departmentId)
     {
-        var posts = departmentId.HasValue
-            ? await _database.PostRepository.GetPostForDepartment(departmentId.Value)
-            : await _database.PostRepository.GetAllAsync();
+        try
+        {
+            var posts = departmentId.HasValue
+                ? await _database.PostRepository.GetPostForDepartment(departmentId.Value)
+                : await _database.PostRepository.GetAllAsync();
 
-        var dtos = posts.Select(post => new PostDetailedDTO(
-            Id: post.Id,
-            Title: post.Title,
-            Subtitle: post.Subtitle,
-            Content: post.Content,
-            CreatedAt: post.CreatedAt,
-            ModifiedAt: post.ModifiedAt,
-            IsImportant: post.IsImportant,
-            IsActual: post.IsActual,
-            Publisher: new UserShortDTO(
-                Id: post.PublisherId,
-                Username: post.Publisher.Username,
-                Email: post.Publisher.Email,
-                DepartmentName: post.Publisher.Department.Name
-            ),
-            Department: post.DepartmentId.HasValue
-                ? new DepartmentShortDTO(
-                    Id: post.DepartmentId.Value,
-                    Name: post.Department.Name
-                )
-                : null,
-            Reactions: post.Reactions.Select(reaction => new PostReactionShortDTO(
-                Id: reaction.Id,
-                Sender: new UserShortDTO(
-                    Id: reaction.SenderId,
-                    Username: reaction.Sender.Username,
-                    Email: reaction.Sender.Email,
-                    DepartmentName: reaction.Sender.Department.Name
+            var dtos = posts.Select(post => new PostDetailedDTO(
+                Id: post.Id,
+                Title: post.Title,
+                Subtitle: post.Subtitle,
+                Content: post.Content,
+                CreatedAt: post.CreatedAt,
+                ModifiedAt: post.ModifiedAt,
+                IsImportant: post.IsImportant,
+                IsActual: post.IsActual,
+                Publisher: new UserShortDTO(
+                    Id: post.PublisherId,
+                    Username: post.Publisher.Username,
+                    Email: post.Publisher.Email,
+                    DepartmentName: post.Publisher.Department.Name
                 ),
-                CreatedAt: reaction.CreatedAt,
-                Type: nameof(reaction.Type)
-            )).ToList(),
-            Comments: post.Comments.Select(comment => new PostCommentShortDTO(
-                Id: comment.Id,
-                Content: comment.Content,
-                IsDeleted: comment.IsDeleted,
-                CreatedAt: comment.CreatedAt,
-                Sender: new UserShortDTO(
-                    Id: comment.SenderId,
-                    Username: comment.Sender.Username,
-                    Email: comment.Sender.Email,
-                    DepartmentName: comment.Sender.Department.Name
-                )
-            )).ToList()
-        )).ToList();
+                Department: post.DepartmentId.HasValue
+                    ? new DepartmentShortDTO(
+                        Id: post.DepartmentId.Value,
+                        Name: post.Department.Name
+                    )
+                    : null,
+                Reactions: post.Reactions.Select(reaction => new PostReactionShortDTO(
+                    Id: reaction.Id,
+                    Sender: new UserShortDTO(
+                        Id: reaction.SenderId,
+                        Username: reaction.Sender.Username,
+                        Email: reaction.Sender.Email,
+                        DepartmentName: reaction.Sender.Department.Name
+                    ),
+                    CreatedAt: reaction.CreatedAt,
+                    Type: nameof(reaction.Type)
+                )).ToList(),
+                Comments: post.Comments.Select(comment => new PostCommentShortDTO(
+                    Id: comment.Id,
+                    Content: comment.Content,
+                    IsDeleted: comment.IsDeleted,
+                    CreatedAt: comment.CreatedAt,
+                    Sender: new UserShortDTO(
+                        Id: comment.SenderId,
+                        Username: comment.Sender.Username,
+                        Email: comment.Sender.Email,
+                        DepartmentName: comment.Sender.Department.Name
+                    )
+                )).ToList()
+            )).ToList();
 
-        return dtos;
+            return Result<List<PostDetailedDTO>>.Success(dtos);
+        }
+        catch (Exception e)
+        {
+            return Result<List<PostDetailedDTO>>.Failure($"Error while retrieving posts: {e.Message}");
+        }
     }
 
-    public async Task<PostDetailedDTO> GetById(Guid id)
+    public async Task<Result<PostDetailedDTO>> GetById(Guid id)
     {
-        var post = await _database.PostRepository.GetByIdAsync(id);
-        if (post == null) throw new KeyNotFoundException();
+        try
+        {
+            var post = await _database.PostRepository.GetByIdAsync(id);
+            if (post == null) return Result<PostDetailedDTO>.Failure("Post not found");
 
-        var dtos = new PostDetailedDTO(
-            Id: post.Id,
-            Title: post.Title,
-            Subtitle: post.Subtitle,
-            Content: post.Content,
-            CreatedAt: post.CreatedAt,
-            ModifiedAt: post.ModifiedAt,
-            IsImportant: post.IsImportant,
-            IsActual: post.IsActual,
-            Publisher: new UserShortDTO(
-                Id: post.PublisherId,
-                Username: post.Publisher.Username,
-                Email: post.Publisher.Email,
-                DepartmentName: post.Publisher.Department.Name
-            ),
-            Department: post.DepartmentId.HasValue
-                ? new DepartmentShortDTO(
-                    Id: post.DepartmentId.Value,
-                    Name: post.Department.Name
-                )
-                : null,
-            Reactions: post.Reactions.Select(reaction => new PostReactionShortDTO(
-                Id: reaction.Id,
-                Sender: new UserShortDTO(
-                    Id: reaction.SenderId,
-                    Username: reaction.Sender.Username,
-                    Email: reaction.Sender.Email,
-                    DepartmentName: reaction.Sender.Department.Name
+            var dto = new PostDetailedDTO(
+                Id: post.Id,
+                Title: post.Title,
+                Subtitle: post.Subtitle,
+                Content: post.Content,
+                CreatedAt: post.CreatedAt,
+                ModifiedAt: post.ModifiedAt,
+                IsImportant: post.IsImportant,
+                IsActual: post.IsActual,
+                Publisher: new UserShortDTO(
+                    Id: post.PublisherId,
+                    Username: post.Publisher.Username,
+                    Email: post.Publisher.Email,
+                    DepartmentName: post.Publisher.Department.Name
                 ),
-                CreatedAt: reaction.CreatedAt,
-                Type: nameof(reaction.Type)
-            )).ToList(),
-            Comments: post.Comments.Select(comment => new PostCommentShortDTO(
-                Id: comment.Id,
-                Content: comment.Content,
-                IsDeleted: comment.IsDeleted,
-                CreatedAt: comment.CreatedAt,
-                Sender: new UserShortDTO(
-                    Id: comment.SenderId,
-                    Username: comment.Sender.Username,
-                    Email: comment.Sender.Email,
-                    DepartmentName: comment.Sender.Department.Name
-                )
-            )).ToList()
-        );
+                Department: post.DepartmentId.HasValue
+                    ? new DepartmentShortDTO(
+                        Id: post.DepartmentId.Value,
+                        Name: post.Department.Name
+                    )
+                    : null,
+                Reactions: post.Reactions.Select(reaction => new PostReactionShortDTO(
+                    Id: reaction.Id,
+                    Sender: new UserShortDTO(
+                        Id: reaction.SenderId,
+                        Username: reaction.Sender.Username,
+                        Email: reaction.Sender.Email,
+                        DepartmentName: reaction.Sender.Department.Name
+                    ),
+                    CreatedAt: reaction.CreatedAt,
+                    Type: nameof(reaction.Type)
+                )).ToList(),
+                Comments: post.Comments.Select(comment => new PostCommentShortDTO(
+                    Id: comment.Id,
+                    Content: comment.Content,
+                    IsDeleted: comment.IsDeleted,
+                    CreatedAt: comment.CreatedAt,
+                    Sender: new UserShortDTO(
+                        Id: comment.SenderId,
+                        Username: comment.Sender.Username,
+                        Email: comment.Sender.Email,
+                        DepartmentName: comment.Sender.Department.Name
+                    )
+                )).ToList()
+            );
 
-        return dtos;
+            return Result<PostDetailedDTO>.Success(dto);
+        }
+        catch (Exception e)
+        {
+            return Result<PostDetailedDTO>.Failure($"Error while retrieving post: {e.Message}");
+        }
     }
 
-    public async Task<PostShortDTO> GetByIdShort(Guid id)
+    public async Task<Result<PostShortDTO>> GetByIdShort(Guid id)
     {
-        var post = await _database.PostRepository.GetByIdAsync(id);
-        if (post == null) throw new KeyNotFoundException();
+        try
+        {
+            var post = await _database.PostRepository.GetByIdAsync(id);
+            if (post == null) return Result<PostShortDTO>.Failure("Post not found");
         
-        var dto = new PostShortDTO(
-            Id: post.Id,
-            Title: post.Title
-        );
+            var dto = new PostShortDTO(
+                Id: post.Id,
+                Title: post.Title
+            );
         
-        return dto;
+            return Result<PostShortDTO>.Success(dto);
+        }
+        catch (Exception e)
+        {
+            return Result<PostShortDTO>.Failure($"Error while retrieving post: {e.Message}");
+        }
     }
 
-    public async Task<bool> Block(Guid id)
+    public async Task<Result<Guid>> Block(Guid id)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
         try
         {
             var dbPost = await _database.PostRepository.GetByIdAsync(id);
-            if (dbPost == null) throw new KeyNotFoundException();
+            if (dbPost == null) return Result<Guid>.Failure("Post not found");
             
             dbPost.ModifiedAt = DateTime.UtcNow;
             dbPost.IsActual = false;
@@ -244,13 +278,14 @@ public class PostService : IPostService
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
             
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbPost.Id) 
+                : Result<Guid>.Failure("Failed to block post");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            Console.WriteLine(e);
-            throw;
+            return Result<Guid>.Failure($"Error while blocking post: {e.Message}");
         }
     }
 }

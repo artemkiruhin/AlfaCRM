@@ -5,12 +5,12 @@ namespace AlfaCRM.Domain.Interfaces.Services.Entity;
 
 public interface IDepartmentService
 {
-    Task<bool> Create(DepartmentCreateRequest request);
-    Task<bool> Update(DepartmentUpdateRequest request);
-    Task<bool> Delete(Guid id);
+    Task<Result<Guid>> Create(DepartmentCreateRequest request);
+    Task<Result<Guid>> Update(DepartmentUpdateRequest request);
+    Task<Result<Guid>> Delete(Guid id);
     
-    Task<List<DepartmentShortDTO>> GetAllShort();
-    Task<List<DepartmentDetailedDTO>> GetAll();
-    Task<DepartmentDetailedDTO> GetById(Guid id);
-    Task<DepartmentShortDTO> GetByIdShort(Guid id);
+    Task<Result<List<DepartmentShortDTO>>> GetAllShort();
+    Task<Result<List<DepartmentDetailedDTO>>> GetAll();
+    Task<Result<DepartmentDetailedDTO>> GetById(Guid id);
+    Task<Result<DepartmentShortDTO>> GetByIdShort(Guid id);
 }

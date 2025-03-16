@@ -3,7 +3,6 @@ using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
 using AlfaCRM.Domain.Models.DTOs;
 using AlfaCRM.Domain.Models.Entities;
-using Microsoft.Extensions.Logging;
 
 namespace AlfaCRM.Services.Entity;
 
@@ -16,75 +15,82 @@ public class DepartmentService : IDepartmentService
         _database = database;
     }
 
-    public async Task<bool> Create(DepartmentCreateRequest request)
+    public async Task<Result<Guid>> Create(DepartmentCreateRequest request)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
         try
         {
             var dbDepartment = await _database.DepartmentRepository.GetDepartmentByName(request.Name);
-            if (dbDepartment != null) throw new InvalidOperationException();
+            if (dbDepartment != null) return Result<Guid>.Failure($"Department {request.Name} already exists");
             
             var newDepartment = DepartmentEntity.Create(request.Name);
             await _database.DepartmentRepository.CreateAsync(newDepartment);
-            var result = await _database.SaveChangesAsync(CancellationToken.None);
+            await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 
-            return result > 0;
+            var department = await _database.DepartmentRepository.GetByIdAsync(newDepartment.Id);
+            if (department == null) return Result<Guid>.Failure("Department not found");
+            
+            return Result<Guid>.Success(department.Id);
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            throw;
+            return Result<Guid>.Failure($"Error while creating department: {ex.Message}");
         }
     }
 
-    public async Task<bool> Update(DepartmentUpdateRequest request)
+    public async Task<Result<Guid>> Update(DepartmentUpdateRequest request)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
         try
         {
             var dbDepartment = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId);
-            if (dbDepartment == null) throw new KeyNotFoundException();
+            if (dbDepartment == null) return Result<Guid>.Failure("Department not found");
             
             dbDepartment.Name = request.Name;
             _database.DepartmentRepository.Update(dbDepartment);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbDepartment.Id) 
+                : Result<Guid>.Failure("Failed to update department");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            throw;
+            return Result<Guid>.Failure($"Error while updating department: {ex.Message}");
         }
     }
 
-    public async Task<bool> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
         try
         {
             var dbDepartment = await _database.DepartmentRepository.GetByIdAsync(id);
-            if (dbDepartment == null) throw new KeyNotFoundException();
+            if (dbDepartment == null) return Result<Guid>.Failure("Department not found");
             
             _database.DepartmentRepository.Delete(dbDepartment);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbDepartment.Id) 
+                : Result<Guid>.Failure("Failed to delete department");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            throw;
+            return Result<Guid>.Failure($"Error while deleting department: {ex.Message}");
         }
     }
 
-    public async Task<List<DepartmentShortDTO>> GetAllShort()
+    public async Task<Result<List<DepartmentShortDTO>>> GetAllShort()
     {
         try
         {
@@ -94,15 +100,15 @@ public class DepartmentService : IDepartmentService
                 Name: department.Name
             )).ToList();
 
-            return dtos;
+            return Result<List<DepartmentShortDTO>>.Success(dtos);
         }
         catch (Exception ex)
         {
-            throw;
+            return Result<List<DepartmentShortDTO>>.Failure($"Error while retrieving departments: {ex.Message}");
         }
     }
 
-    public async Task<List<DepartmentDetailedDTO>> GetAll()
+    public async Task<Result<List<DepartmentDetailedDTO>>> GetAll()
     {
         try
         {
@@ -123,20 +129,20 @@ public class DepartmentService : IDepartmentService
                 );
             }).ToList();
 
-            return dtos;
+            return Result<List<DepartmentDetailedDTO>>.Success(dtos);
         }
         catch (Exception ex)
         {
-            throw;
+            return Result<List<DepartmentDetailedDTO>>.Failure($"Error while retrieving departments: {ex.Message}");
         }
     }
 
-    public async Task<DepartmentDetailedDTO> GetById(Guid id)
+    public async Task<Result<DepartmentDetailedDTO>> GetById(Guid id)
     {
         try
         {
             var entity = await _database.DepartmentRepository.GetByIdAsync(id);
-            if (entity == null) throw new KeyNotFoundException();
+            if (entity == null) return Result<DepartmentDetailedDTO>.Failure("Department not found");
             
             var departmentUsers = entity.Users.Select(user => new UserShortDTO(
                 Id: user.Id,
@@ -145,33 +151,37 @@ public class DepartmentService : IDepartmentService
                 DepartmentName: entity.Name
             )).ToList();
 
-            return new DepartmentDetailedDTO(
+            var dto = new DepartmentDetailedDTO(
                 Id: entity.Id,
                 Name: entity.Name,
                 Users: departmentUsers
             );
+
+            return Result<DepartmentDetailedDTO>.Success(dto);
         }
         catch (Exception ex)
         {
-            throw;
+            return Result<DepartmentDetailedDTO>.Failure($"Error while retrieving department: {ex.Message}");
         }
     }
 
-    public async Task<DepartmentShortDTO> GetByIdShort(Guid id)
+    public async Task<Result<DepartmentShortDTO>> GetByIdShort(Guid id)
     {
         try
         {
             var entity = await _database.DepartmentRepository.GetByIdAsync(id);
-            if (entity == null) throw new KeyNotFoundException();
+            if (entity == null) return Result<DepartmentShortDTO>.Failure("Department not found");
             
-            return new DepartmentShortDTO(
+            var dto = new DepartmentShortDTO(
                 Id: entity.Id,
                 Name: entity.Name
             );
+
+            return Result<DepartmentShortDTO>.Success(dto);
         }
         catch (Exception ex)
         {
-            throw;
+            return Result<DepartmentShortDTO>.Failure($"Error while retrieving department: {ex.Message}");
         }
     }
 }

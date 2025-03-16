@@ -15,7 +15,7 @@ public class PostCommentService : IPostCommentService
         _database = database;
     }
 
-    public async Task<bool> Create(PostCommentCreateRequest request)
+    public async Task<Result<Guid>> Create(PostCommentCreateRequest request)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
         try
@@ -26,81 +26,95 @@ public class PostCommentService : IPostCommentService
                 senderId: request.SenderId
             );
             
-            
             await _database.PostCommentRepository.CreateAsync(newComment);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
             
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(newComment.Id) 
+                : Result<Guid>.Failure("Failed to create comment");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            Console.WriteLine(ex.Message);
-            throw;
+            return Result<Guid>.Failure($"Error while creating comment: {ex.Message}");
         }
     }
 
-    public async Task<bool> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
         try
         {
             var dbComment = await _database.PostCommentRepository.GetByIdAsync(id);
-            if (dbComment == null) throw new KeyNotFoundException();
+            if (dbComment == null) return Result<Guid>.Failure("Comment not found");
 
-            
             _database.PostCommentRepository.Delete(dbComment);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
             
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbComment.Id) 
+                : Result<Guid>.Failure("Failed to delete comment");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            Console.WriteLine(ex.Message);
-            return false;
+            return Result<Guid>.Failure($"Error while deleting comment: {ex.Message}");
         }
     }
 
-    public async Task<List<PostCommentShortDTO>> GetAll(Guid postId)
+    public async Task<Result<List<PostCommentShortDTO>>> GetAll(Guid postId)
     {
-        var comments = await _database.PostCommentRepository.FindRangeAsync(comment => comment.PostId == postId);
-        var dtos = comments.Select(comment => new PostCommentShortDTO(
-            Id: comment.Id,
-            Content: comment.Content,
-            IsDeleted: comment.IsDeleted,
-            CreatedAt: comment.CreatedAt,
-            Sender: new UserShortDTO(
-                Id: comment.SenderId,
-                Username: comment.Sender.Username,
-                Email: comment.Sender.Email,
-                DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
-            )
-        )).ToList();
-        
-        return dtos;
+        try
+        {
+            var comments = await _database.PostCommentRepository.FindRangeAsync(comment => comment.PostId == postId);
+            var dtos = comments.Select(comment => new PostCommentShortDTO(
+                Id: comment.Id,
+                Content: comment.Content,
+                IsDeleted: comment.IsDeleted,
+                CreatedAt: comment.CreatedAt,
+                Sender: new UserShortDTO(
+                    Id: comment.SenderId,
+                    Username: comment.Sender.Username,
+                    Email: comment.Sender.Email,
+                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
+                )
+            )).ToList();
+            
+            return Result<List<PostCommentShortDTO>>.Success(dtos);
+        }
+        catch (Exception ex)
+        {
+            return Result<List<PostCommentShortDTO>>.Failure($"Error while retrieving comments: {ex.Message}");
+        }
     }
 
-    public async Task<PostCommentShortDTO> GetById(Guid id)
+    public async Task<Result<PostCommentShortDTO>> GetById(Guid id)
     {
-        var comment = await _database.PostCommentRepository.GetByIdAsync(id);
-        if (comment == null) throw new KeyNotFoundException();
+        try
+        {
+            var comment = await _database.PostCommentRepository.GetByIdAsync(id);
+            if (comment == null) return Result<PostCommentShortDTO>.Failure("Comment not found");
 
-        var dto = new PostCommentShortDTO(
-            Id: comment.Id,
-            Content: comment.Content,
-            IsDeleted: comment.IsDeleted,
-            CreatedAt: comment.CreatedAt,
-            Sender: new UserShortDTO(
-                Id: comment.SenderId,
-                Username: comment.Sender.Username,
-                Email: comment.Sender.Email,
-                DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
-            )
-        );
-        
-        return dto;
+            var dto = new PostCommentShortDTO(
+                Id: comment.Id,
+                Content: comment.Content,
+                IsDeleted: comment.IsDeleted,
+                CreatedAt: comment.CreatedAt,
+                Sender: new UserShortDTO(
+                    Id: comment.SenderId,
+                    Username: comment.Sender.Username,
+                    Email: comment.Sender.Email,
+                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
+                )
+            );
+            
+            return Result<PostCommentShortDTO>.Success(dto);
+        }
+        catch (Exception ex)
+        {
+            return Result<PostCommentShortDTO>.Failure($"Error while retrieving comment: {ex.Message}");
+        }
     }
 }

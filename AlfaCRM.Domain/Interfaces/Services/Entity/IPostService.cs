@@ -5,14 +5,14 @@ namespace AlfaCRM.Domain.Interfaces.Services.Entity;
 
 public interface IPostService
 {
-    Task<bool> Create(PostCreateRequest request);
-    Task<bool> Update(PostUpdateRequest request);
-    Task<bool> Delete(Guid id);
+    Task<Result<Guid>> Create(PostCreateRequest request);
+    Task<Result<Guid>> Update(PostUpdateRequest request);
+    Task<Result<Guid>> Delete(Guid id);
     
-    Task<List<PostShortDTO>> GetAllShort(Guid? departmentId);
-    Task<List<PostDetailedDTO>> GetAll(Guid? departmentId);
-    Task<PostDetailedDTO> GetById(Guid id);
-    Task<PostShortDTO> GetByIdShort(Guid id);
+    Task<Result<List<PostShortDTO>>> GetAllShort(Guid? departmentId);
+    Task<Result<List<PostDetailedDTO>>> GetAll(Guid? departmentId);
+    Task<Result<PostDetailedDTO>> GetById(Guid id);
+    Task<Result<PostShortDTO>> GetByIdShort(Guid id);
     
-    Task<bool> Block(Guid id);
+    Task<Result<Guid>> Block(Guid id);
 }

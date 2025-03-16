@@ -1,6 +1,7 @@
 ﻿using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
+using AlfaCRM.Domain.Models.DTOs;
 using AlfaCRM.Domain.Models.Entities;
 
 namespace AlfaCRM.Services.Entity;
@@ -14,7 +15,7 @@ public class PostReactionService : IPostReactionService
         _database = database;
     }
     
-    public async Task<bool> Create(PostReactionCreateRequest request)
+    public async Task<Result<Guid>> Create(PostReactionCreateRequest request)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
@@ -46,17 +47,18 @@ public class PostReactionService : IPostReactionService
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(request.PostId) 
+                : Result<Guid>.Failure("Failed to create reaction");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            Console.WriteLine(ex.Message);
-            throw;
+            return Result<Guid>.Failure($"Error while creating reaction: {ex.Message}");
         }
     }
 
-    public async Task<bool> Delete(Guid id)
+    public async Task<Result<Guid>> Delete(Guid id)
     {
         await _database.BeginTransactionAsync(CancellationToken.None);
 
@@ -65,20 +67,21 @@ public class PostReactionService : IPostReactionService
             var dbReaction = await _database.PostReactionRepository.GetByIdAsync(id);
             if (dbReaction == null)
             {
-                throw new KeyNotFoundException();
+                return Result<Guid>.Failure("Reaction not found");
             }
 
             _database.PostReactionRepository.Delete(dbReaction);
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 
-            return result > 0;
+            return result > 0 
+                ? Result<Guid>.Success(dbReaction.Id) 
+                : Result<Guid>.Failure("Failed to delete reaction");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(CancellationToken.None);
-            Console.WriteLine(ex.Message);
-            throw;
+            return Result<Guid>.Failure($"Error while deleting reaction: {ex.Message}");
         }
     }
 }
