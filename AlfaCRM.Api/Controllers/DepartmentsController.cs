@@ -1,11 +1,13 @@
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlfaCRM.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class DepartmentsController : ControllerBase
     {
         private readonly IDepartmentService _departmentService;
