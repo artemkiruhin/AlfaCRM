@@ -1,4 +1,5 @@
-﻿using AlfaCRM.Domain.Interfaces.Services.Entity;
+﻿using AlfaCRM.Domain.Interfaces.Database;
+using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
 using AlfaCRM.Domain.Models.DTOs;
 using AlfaCRM.Domain.Models.Entities;
@@ -8,9 +9,9 @@ namespace AlfaCRM.Services.Entity;
 
 public class PostCommentService : IPostCommentService
 {
-    private readonly UnitOfWork _database;
+    private readonly IUnitOfWork _database;
 
-    public PostCommentService(UnitOfWork database)
+    public PostCommentService(IUnitOfWork database)
     {
         _database = database;
     }

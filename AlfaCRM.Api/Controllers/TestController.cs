@@ -24,8 +24,8 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                DbInitializer.Initialize(_context, _hasher);
-                return Ok();
+                var result = DbInitializer.Initialize(_context, _hasher);
+                return Ok(new {meg = result});
             }
             catch (Exception e)
             {

@@ -139,7 +139,7 @@ public class PostService : IPostService
                 subtitle: request.Subtitle,
                 content: request.Content,
                 isImportant: request.IsImportant,
-                departmentId: request.DepartmentId,
+                departmentId: request.DepartmentId.HasValue ? request.DepartmentId.Value : null,
                 publisherId: request.PublisherId
             );
 

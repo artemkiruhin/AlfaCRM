@@ -5,6 +5,6 @@ public record PostCreateRequest(
     string? Subtitle,
     string Content,
     bool IsImportant,
-    Guid DepartmentId,
+    Guid? DepartmentId,
     Guid PublisherId
 );

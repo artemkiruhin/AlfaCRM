@@ -19,7 +19,7 @@ public class PostEntity
     public virtual ICollection<PostReactionEntity> Reactions { get; set; } = [];
     public virtual ICollection<PostCommentEntity> Comments { get; set; } = [];
 
-    public static PostEntity Create(string title, string? subtitle, string content, bool isImportant, Guid departmentId, Guid publisherId)
+    public static PostEntity Create(string title, string? subtitle, string content, bool isImportant, Guid? departmentId, Guid publisherId)
     {
         return new()
         {
@@ -31,7 +31,7 @@ public class PostEntity
             ModifiedAt = null,
             IsImportant = isImportant,
             IsActual = true,
-            DepartmentId = departmentId,
+            DepartmentId = departmentId.HasValue ? departmentId.Value : null,
             PublisherId = publisherId
         };
     }

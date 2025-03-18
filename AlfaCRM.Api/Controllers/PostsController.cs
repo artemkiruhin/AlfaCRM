@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using AlfaCRM.Api.Contracts.Request;
 using AlfaCRM.Domain.Interfaces.Database.Repositories;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
@@ -75,8 +77,8 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpDelete("delete")]
-        public async Task<ActionResult> Delete([FromBody] Guid id, CancellationToken ct)
+        [HttpDelete("delete/{id:guid}")]
+        public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
         {
             try
             {
@@ -90,8 +92,8 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpPost("block")]
-        public async Task<ActionResult> Block([FromBody] Guid id, CancellationToken ct)
+        [HttpPost("block/{id:guid}")]
+        public async Task<ActionResult> Block(Guid id, CancellationToken ct)
         {
             try
             {
@@ -106,11 +108,23 @@ namespace AlfaCRM.Api.Controllers
         }
         
         [HttpPost("create")]
-        public async Task<ActionResult> Create([FromBody] PostCreateRequest request, CancellationToken ct)
+        public async Task<ActionResult> Create([FromBody] PostCreateApiRequest request, CancellationToken ct)
         {
             try
             {
-                var result = await _postService.Create(request, ct);
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                var userId = Guid.Parse(userIdClaim);
+
+                var req = new PostCreateRequest(
+                    request.Title,
+                    request.Subtitle,
+                    request.Content,
+                    request.IsImportant,
+                    request.DepartmentId,
+                    userId
+                );
+                
+                var result = await _postService.Create(req, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
                 return Ok(new {id = result.Data});
             }
@@ -121,11 +135,20 @@ namespace AlfaCRM.Api.Controllers
         }
         
         [HttpPost("react")]
-        public async Task<ActionResult> CreateReact([FromBody] PostReactionCreateRequest request, CancellationToken ct)
+        public async Task<ActionResult> CreateReact([FromBody] PostReactionCreateApiRequest request, CancellationToken ct)
         {
             try
             {
-                var result = await _postReactionService.Create(request, ct);
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                var userId = Guid.Parse(userIdClaim);
+
+                var req = new PostReactionCreateRequest(
+                    request.PostId,
+                    userId,
+                    request.Type
+                );
+                
+                var result = await _postReactionService.Create(req, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
                 return Ok(new {id = result.Data});
             }
@@ -135,8 +158,8 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpDelete("delete-react")]
-        public async Task<ActionResult> DeleteReact([FromBody] Guid id, CancellationToken ct)
+        [HttpDelete("delete-react/{id:guid}")]
+        public async Task<ActionResult> DeleteReact(Guid id, CancellationToken ct)
         {
             try
             {
@@ -150,12 +173,21 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpDelete("add-comment")]
-        public async Task<ActionResult> CreateComment([FromBody] PostCommentCreateRequest request, CancellationToken ct)
+        [HttpPost("add-comment")]
+        public async Task<ActionResult> CreateComment([FromBody] PostCommentCreateApiRequest request, CancellationToken ct)
         {
             try
             {
-                var result = await _postCommentService.Create(request, ct);
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                var userId = Guid.Parse(userIdClaim);
+
+                var req = new PostCommentCreateRequest(
+                    request.Content,
+                    request.PostId,
+                    userId
+                );
+                
+                var result = await _postCommentService.Create(req, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
                 return Ok(new {id = result.Data});
             }
@@ -165,8 +197,8 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpDelete("remove-comment")]
-        public async Task<ActionResult> DeleteComment([FromBody] Guid id, CancellationToken ct)
+        [HttpDelete("remove-comment/{id:guid}")]
+        public async Task<ActionResult> DeleteComment(Guid id, CancellationToken ct)
         {
             try
             {

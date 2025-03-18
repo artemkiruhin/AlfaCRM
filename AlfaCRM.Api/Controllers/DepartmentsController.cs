@@ -84,8 +84,8 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpDelete("delete")]
-        public async Task<ActionResult> Create([FromBody] Guid id, CancellationToken ct)
+        [HttpDelete("delete/{id:guid}")]
+        public async Task<ActionResult> Create(Guid id, CancellationToken ct)
         {
             try
             {

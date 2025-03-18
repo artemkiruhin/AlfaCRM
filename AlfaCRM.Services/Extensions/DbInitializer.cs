@@ -6,12 +6,12 @@ namespace AlfaCRM.Services.Extensions;
 
 public static class DbInitializer
 {
-    public static void Initialize(AppDbContext context, IHashService hasher)
+    public static int Initialize(AppDbContext context, IHashService hasher)
     {
-        if (context.Users.Any() || context.Departments.Any() || context.Posts.Any())
-        {
-            return;
-        }
+        // if (context.Users.Any() || context.Departments.Any() || context.Posts.Any())
+        // {
+        //     return -1;
+        // }
         
         var departments = new List<DepartmentEntity>
         {
@@ -32,7 +32,7 @@ public static class DbInitializer
                 username: "ivanov",
                 passwordHash: hasher.ComputeHash("1"),
                 hiredAt: DateTime.UtcNow,
-                birthday: new DateTime(1990, 1, 1),
+                birthday: new DateTime(1990, 1, 1).ToUniversalTime(),
                 isMale: true,
                 isAdmin: true,
                 hasPublishedRights: true,
@@ -43,7 +43,7 @@ public static class DbInitializer
                 username: "petrov",
                 passwordHash: hasher.ComputeHash("1"),
                 hiredAt: DateTime.UtcNow,
-                birthday: new DateTime(1985, 5, 15),
+                birthday: new DateTime(1985, 5, 15).ToUniversalTime(),
                 isMale: true,
                 isAdmin: false,
                 hasPublishedRights: true,
@@ -54,7 +54,7 @@ public static class DbInitializer
                 username: "sidorova",
                 passwordHash: hasher.ComputeHash("1"),
                 hiredAt: DateTime.UtcNow,
-                birthday: new DateTime(1992, 8, 20),
+                birthday: new DateTime(1992, 8, 20).ToUniversalTime(),
                 isMale: false,
                 isAdmin: false,
                 hasPublishedRights: false,
@@ -94,6 +94,6 @@ public static class DbInitializer
         };
 
         context.Posts.AddRange(posts);
-        context.SaveChanges();
+        return context.SaveChanges();
     }
 }
