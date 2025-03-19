@@ -30,17 +30,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                // if (isShort is true)
-                // {
-                    var result = await _postService.GetAllShort(departmentId, ct);
-                    if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
-                    return Ok(new {posts = result.Data});
-                //}
-                
-                // var delailedResult = await _postService.GetAll(departmentId, ct);
-                // if (!delailedResult.IsSuccess) return BadRequest(delailedResult.ErrorMessage); 
-                // return Ok(new {posts = delailedResult.Data});
-
+                var result = await _postService.GetAllShort(departmentId, ct);
+                if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+                return Ok(new { posts = result.Data });
             }
             catch (Exception ex)
             {
