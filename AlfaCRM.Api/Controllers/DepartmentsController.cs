@@ -1,3 +1,4 @@
+using AlfaCRM.Api.Extensions;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ namespace AlfaCRM.Api.Controllers
     public class DepartmentsController : ControllerBase
     {
         private readonly IDepartmentService _departmentService;
+        private readonly IUserValidator _userValidator;
 
-        public DepartmentsController(IDepartmentService departmentService)
+        public DepartmentsController(IDepartmentService departmentService, IUserValidator userValidator)
         {
             _departmentService = departmentService;
+            _userValidator = userValidator;
         }
 
         [HttpGet("")]
@@ -59,6 +62,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var result = await _departmentService.Create(request, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 return Ok(new {id = result.Data});
@@ -74,6 +80,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var result = await _departmentService.Update(request, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 return Ok(new {id = result.Data});
@@ -89,6 +98,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var result = await _departmentService.Delete(id, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 return Ok(new {id = result.Data});

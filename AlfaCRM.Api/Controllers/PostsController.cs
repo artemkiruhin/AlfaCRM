@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AlfaCRM.Api.Contracts.Request;
+using AlfaCRM.Api.Extensions;
 using AlfaCRM.Domain.Interfaces.Database.Repositories;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
@@ -17,12 +18,16 @@ namespace AlfaCRM.Api.Controllers
         private readonly IPostService _postService;
         private readonly IPostReactionService _postReactionService;
         private readonly IPostCommentService _postCommentService;
+        private readonly IUserService _userService;
+        private readonly IUserValidator _userValidator;
 
-        public PostsController(IPostService postService, IPostReactionService postReactionService, IPostCommentService postCommentService)
+        public PostsController(IPostService postService, IPostReactionService postReactionService, IPostCommentService postCommentService, IUserService userService, IUserValidator userValidator)
         {
             _postService = postService;
             _postReactionService = postReactionService;
             _postCommentService = postCommentService;
+            _userService = userService;
+            _userValidator = userValidator;
         }
 
         [HttpGet("")]
@@ -60,6 +65,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 if (string.IsNullOrEmpty(request.Title)
                     && string.IsNullOrEmpty(request.Subtitle)
                     && string.IsNullOrEmpty(request.Content)
@@ -82,6 +90,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var result = await _postService.Delete(id, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
                 return Ok(new {id = result.Data});
@@ -97,6 +108,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var result = await _postService.Block(id, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
                 return Ok(new {id = result.Data});
@@ -112,6 +126,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
                 var userId = Guid.Parse(userIdClaim);
 

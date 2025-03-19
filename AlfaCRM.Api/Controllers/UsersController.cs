@@ -1,4 +1,5 @@
 using AlfaCRM.Api.Contracts.Request;
+using AlfaCRM.Api.Extensions;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
 using Microsoft.AspNetCore.Mvc;
@@ -10,10 +11,12 @@ namespace AlfaCRM.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IUserValidator _userValidator;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IUserValidator userValidator)
         {
             _userService = userService;
+            _userValidator = userValidator;
         }
 
         [HttpPost("create")]
@@ -21,6 +24,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 if (string.IsNullOrEmpty(request.Username) || string.IsNullOrWhiteSpace(request.Username))
                     return BadRequest("Username is required");
                 if (string.IsNullOrEmpty(request.Email) || string.IsNullOrWhiteSpace(request.Username))
@@ -44,6 +50,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 var result = await _userService.Block(id, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 return Ok(new {id = result.Data});
@@ -61,6 +70,11 @@ namespace AlfaCRM.Api.Controllers
             {
                 if (request.MustValidate)
                 {
+                    var userIdResult = await _userValidator.GetUserId(User, ct);
+                    if (!userIdResult.IsSuccess) return Unauthorized();
+                    var userId = userIdResult.Data;
+                    if (userId != request.UserId) return Unauthorized();
+                    
                     if (string.IsNullOrEmpty(request.OldPassword) || string.IsNullOrWhiteSpace(request.OldPassword)) 
                         return BadRequest("Old password is required");
                     
@@ -68,6 +82,9 @@ namespace AlfaCRM.Api.Controllers
                     if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                     return Ok(new {id = result.Data});
                 }
+                
+                var isUserAdmin = await _userValidator.IsAdmin(User, ct);
+                if (!isUserAdmin.IsSuccess) return Unauthorized();
                 
                 var adminResult = await _userService.ResetPasswordAsAdmin(request.UserId, request.NewPassword, ct);
                 if (!adminResult.IsSuccess) return BadRequest(adminResult.ErrorMessage);
@@ -84,6 +101,14 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var userIdResult = await _userValidator.GetUserId(User, ct);
+                if (!userIdResult.IsSuccess) return Unauthorized();
+                var userId = userIdResult.Data;
+                var isUserAdmin = await _userValidator.IsAdmin(User, ct);
+                if (!isUserAdmin.IsSuccess || userId != request.Id) return Unauthorized();
+                
+                if (request.IsAdmin.HasValue && request.IsAdmin.Value && !isUserAdmin.IsSuccess) return Unauthorized();
+                
                 if (string.IsNullOrEmpty(request.Email)
                     && !request.IsAdmin.HasValue
                     && !request.HasPublishedRights.HasValue
@@ -105,6 +130,13 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var userIdResult = await _userValidator.GetUserId(User, ct);
+                if (!userIdResult.IsSuccess) return Unauthorized();
+                var userId = userIdResult.Data;
+                var isUserAdmin = await _userValidator.IsAdmin(User, ct);
+                if (!isUserAdmin.IsSuccess) return Unauthorized();
+                if (userId == id) return BadRequest("User cannot be deleted by himself");
+                
                 var result = await _userService.Delete(id, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 return Ok(new {id = result.Data});
@@ -120,6 +152,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 if (isShort is true)
                 {
                     var shortResult = await _userService.GetAllShort(ct);
@@ -142,6 +177,9 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
+                var isUserValid = await _userValidator.IsAdmin(User, ct);
+                if (!isUserValid.IsSuccess) return Unauthorized();
+                
                 if (isShort is true)
                 {
                     var shortResult = await _userService.GetByIdShort(id, ct);
