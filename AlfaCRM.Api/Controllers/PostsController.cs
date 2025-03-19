@@ -26,13 +26,21 @@ namespace AlfaCRM.Api.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult> GetPosts(Guid? departmentId, CancellationToken ct)
+        public async Task<ActionResult> GetPosts([FromQuery] Guid? departmentId, CancellationToken ct)
         {
             try
             {
-                var result = await _postService.GetAllShort(departmentId, ct);
-                if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
-                return Ok(new {posts = result.Data});
+                // if (isShort is true)
+                // {
+                    var result = await _postService.GetAllShort(departmentId, ct);
+                    if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
+                    return Ok(new {posts = result.Data});
+                //}
+                
+                // var delailedResult = await _postService.GetAll(departmentId, ct);
+                // if (!delailedResult.IsSuccess) return BadRequest(delailedResult.ErrorMessage); 
+                // return Ok(new {posts = delailedResult.Data});
+
             }
             catch (Exception ex)
             {

@@ -217,7 +217,7 @@ public class PostService : IPostService
         try
         {
             var posts = departmentId.HasValue
-                ? await _database.PostRepository.FindRangeAsync(department => department.Id == departmentId.Value || !department.DepartmentId.HasValue, ct)
+                ? await _database.PostRepository.FindRangeAsync(post => post.DepartmentId == departmentId.Value || !post.DepartmentId.HasValue, ct)
                 : await _database.PostRepository.GetAllAsync(ct);
 
             var dtos = MapToShortDTORange(posts);
@@ -234,7 +234,7 @@ public class PostService : IPostService
         try
         {
             var posts = departmentId.HasValue
-                ? await _database.PostRepository.FindRangeAsync(department => department.Id == departmentId.Value || !department.DepartmentId.HasValue, ct)
+                ? await _database.PostRepository.FindRangeAsync(post => post.DepartmentId == departmentId.Value || !post.DepartmentId.HasValue, ct)
                 : await _database.PostRepository.GetAllAsync(ct);
 
             var dtos = MapToDetailedDTORange(posts);
