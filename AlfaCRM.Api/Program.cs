@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using AlfaCRM.Api.Extensions;
 using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Database.Repositories;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
@@ -117,6 +118,7 @@ builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettin
     SecurityKey: configuration["JWT:SecurityKey"] ?? throw new ApplicationException("Missing JWT:SecurityKey"),
     ExpireHours: int.Parse(configuration["JWT:ExpireHours"] ?? throw new ApplicationException("Missing JWT:ExpireHours"))
 )));
+builder.Services.AddScoped<IUserValidator, UserValidator>();
 
 #endregion
 
