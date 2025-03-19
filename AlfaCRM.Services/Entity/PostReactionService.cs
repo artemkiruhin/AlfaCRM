@@ -23,32 +23,24 @@ public class PostReactionService : IPostReactionService
         {
             var existingReactions = await _database.PostReactionRepository
                 .FindRangeAsync(reaction => reaction.PostId == request.PostId, ct);
-            
-            var reactionsToDelete = existingReactions
-                .Where(reaction => reaction.Type != request.Type)
-                .ToList();
 
-            foreach (var reaction in reactionsToDelete)
-            {
-                _database.PostReactionRepository.Delete(reaction, ct);
-            }
+            foreach (var reaction in existingReactions) _database.PostReactionRepository.Delete(reaction, ct);
             
-            if (!existingReactions.Any())
-            {
-                var newReaction = PostReactionEntity.Create(
-                    postId: request.PostId,
-                    senderId: request.SenderId,
-                    type: request.Type
-                );
+            await _database.SaveChangesAsync(ct);
+            
+            var newReaction = PostReactionEntity.Create(
+                postId: request.PostId,
+                senderId: request.SenderId,
+                type: request.Type
+            );
 
-                await _database.PostReactionRepository.CreateAsync(newReaction, ct);
-            }
+            await _database.PostReactionRepository.CreateAsync(newReaction, ct);
             
             var result = await _database.SaveChangesAsync(CancellationToken.None);
             await _database.CommitTransactionAsync(CancellationToken.None);
 
-            return result > 0 
-                ? Result<Guid>.Success(request.PostId) 
+            return result > 0
+                ? Result<Guid>.Success(request.PostId)
                 : Result<Guid>.Failure("Failed to create reaction");
         }
         catch (Exception ex)

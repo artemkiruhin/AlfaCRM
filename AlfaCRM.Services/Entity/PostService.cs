@@ -14,6 +14,16 @@ public class PostService : IPostService
     {
         _database = database;
     }
+
+    private string ReactionTypeToString(ReactionType reactionType)
+    {
+        return reactionType switch
+        {
+            ReactionType.Like => "Like",
+            ReactionType.Dislike => "Dislike",
+            _ => "Unknown"
+        };
+    }
     
     private PostShortDTO MapToShortDTO(PostEntity entity)
     {
@@ -63,7 +73,7 @@ public class PostService : IPostService
                     DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела"
                 ),
                 CreatedAt: reaction.CreatedAt,
-                Type: nameof(reaction.Type)
+                Type: ReactionTypeToString(reaction.Type)
             )).ToList(),
             Comments: entity.Comments.Select(comment => new PostCommentShortDTO(
                 Id: comment.Id,
@@ -112,7 +122,7 @@ public class PostService : IPostService
                     DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела"
                 ),
                 CreatedAt: reaction.CreatedAt,
-                Type: nameof(reaction.Type)
+                Type: ReactionTypeToString(reaction.Type)
             )).ToList(),
             Comments: entity.Comments.Select(comment => new PostCommentShortDTO(
                 Id: comment.Id,
