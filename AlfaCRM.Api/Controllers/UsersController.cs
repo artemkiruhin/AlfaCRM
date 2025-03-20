@@ -159,12 +159,12 @@ namespace AlfaCRM.Api.Controllers
                 {
                     var shortResult = await _userService.GetAllShort(ct);
                     if (!shortResult.IsSuccess) return BadRequest(shortResult.ErrorMessage);
-                    return Ok(new {id = shortResult.Data});
+                    return Ok(new {users = shortResult.Data});
                 }
                 
                 var detailedResult = await _userService.GetAll(ct);
                 if (!detailedResult.IsSuccess) return BadRequest(detailedResult.ErrorMessage);
-                return Ok(new {id = detailedResult.Data});
+                return Ok(new {users = detailedResult.Data});
             }
             catch (Exception ex)
             {
@@ -184,12 +184,12 @@ namespace AlfaCRM.Api.Controllers
                 {
                     var shortResult = await _userService.GetByIdShort(id, ct);
                     if (!shortResult.IsSuccess) return BadRequest(shortResult.ErrorMessage);
-                    return Ok(new {id = shortResult.Data});
+                    return Ok(new {user = shortResult.Data});
                 }
                 
                 var detailedResult = await _userService.GetById(id, ct);
                 if (!detailedResult.IsSuccess) return BadRequest(detailedResult.ErrorMessage);
-                return Ok(new {id = detailedResult.Data});
+                return Ok(new {user = detailedResult.Data});
             }
             catch (Exception ex)
             {
