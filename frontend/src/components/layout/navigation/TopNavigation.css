@@ -1,0 +1,139 @@
+:root {
+    --bg-white: #ffffff;
+    --primary-color: #2563eb;
+    --text-medium: #4b5563;
+    --border-color: #e5e7eb;
+    --primary-light: #dbeafe;
+}
+
+.top-nav {
+    width: 100%;
+    background-color: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+}
+
+.nav-logo {
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--primary-color);
+    letter-spacing: -0.5px;
+}
+
+.nav-center {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    color: var(--text-medium);
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.nav-item:hover {
+    background-color: rgba(37, 99, 235, 0.05);
+    color: var(--primary-color);
+}
+
+.nav-item.active {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.nav-icon {
+    margin-right: 8px;
+    stroke-width: 1.5;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.mobile-menu-icon {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--text-medium);
+    transition: color 0.2s ease;
+}
+
+.mobile-menu-icon:hover {
+    color: var(--primary-color);
+}
+
+@media (max-width: 1100px) {
+    .top-nav {
+        padding: 0 16px;
+        height: 60px;
+    }
+
+    .nav-logo {
+        font-size: 20px;
+    }
+
+    .nav-center {
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        background-color: var(--bg-white);
+        border-bottom: 1px solid var(--border-color);
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .nav-center.open {
+        display: flex;
+    }
+
+    .nav-list {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .nav-item {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .nav-right {
+        display: none;
+    }
+
+    .mobile-menu-icon {
+        display: block;
+    }
+}
