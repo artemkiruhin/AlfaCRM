@@ -3,6 +3,7 @@ import { Bell, Menu, X, Home, Users, Calendar, FileText, Settings, ChevronRight,
 import './NewsPage.css';
 import NewsList from "../../components/news/NewsList";
 import { formatDate } from "../../extensions/utils";
+import NewsSearchPanel from "../../components/news/NewsSearchPanel";
 
 const NewsPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -100,41 +101,7 @@ const NewsPage = () => {
                         <h2 className="section-title">Последние новости</h2>
                         <div className="section-info">Всего: {filteredNews.length}</div>
                     </div>
-                    <div className="filters-container">
-                        <div className="search-bar">
-                            <Search size={18} className="search-icon"/>
-                            <input
-                                type="text"
-                                placeholder="Поиск по новостям..."
-                                value={searchQuery}
-                                onChange={handleSearchChange}
-                            />
-                        </div>
-
-                        <div className="filters">
-                            <select
-                                name="department"
-                                value={filters.department}
-                                onChange={handleFilterChange}
-                            >
-                                <option value="">Все отделы</option>
-                                <option value="IT отдел">IT отдел</option>
-                                <option value="HR отдел">HR отдел</option>
-                                <option value="Общая новость">Общая новость</option>
-                            </select>
-
-                            <label className="checkbox-filter">
-                                <input
-                                    type="checkbox"
-                                    name="isImportant"
-                                    checked={filters.isImportant}
-                                    onChange={handleFilterChange}
-                                />
-                                Только важные
-                            </label>
-                        </div>
-                    </div>
-
+                    <NewsSearchPanel searchQuery={searchQuery} handleSearchChange={handleSearchChange} filters={filters} handleFilterChange={handleFilterChange} />
                     <NewsList newsItems={filteredNews} handleNewsClick={handleNewsClick}/>
                 </main>
             </div>
