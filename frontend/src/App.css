@@ -1,24 +1,67 @@
-/* Импорт шрифтов */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Переменные CSS */
 :root {
-    --primary-color: #4f46e5;
-    --primary-light: #eef2ff;
-    --text-dark: #1f2937;
-    --text-medium: #4b5563;
-    --text-light: #6b7280;
-    --bg-light: #f9fafb;
-    --bg-white: #ffffff;
-    --border-color: #e5e7eb;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --red: #ef4444;
-    --red-light: #fee2e2;
-    --red-dark: #b91c1c;
+    :root {
+        /* Primary */
+        --primary-color: #4f46e5;
+        --primary-light: #eef2ff;
+        --primary-dark: #3730a3;
+
+        /* Text */
+        --text-dark: #1f2937;
+        --text-medium: #4b5563;
+        --text-light: #6b7280;
+
+        /* Background */
+        --bg-light: #f9fafb;
+        --bg-white: #ffffff;
+
+        /* Borders */
+        --border-color: #e5e7eb;
+        --border-dark: #d1d5db;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+        /* Result */
+        --success-color: #10b981; /* Green */
+        --success-light: #d1fae5;
+        --success-dark: #059669;
+
+        --warning-color: #f59e0b; /* Orange */
+        --warning-light: #fef3c7;
+        --warning-dark: #d97706;
+
+        --error-color: #ef4444; /* Red */
+        --error-light: #fee2e2;
+        --error-dark: #b91c1c;
+
+        --info-color: #3b82f6; /* Blue */
+        --info-light: #dbeafe;
+        --info-dark: #2563eb;
+
+        /* Secondary */
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+
+        /* Accent */
+        --accent-purple: #8b5cf6;
+        --accent-pink: #ec4899;
+        --accent-yellow: #fbbf24;
+        --accent-teal: #14b8a6;
+    }
 }
 
-/* Базовые стили */
 * {
     margin: 0;
     padding: 0;
@@ -37,14 +80,12 @@ body {
     min-height: 100vh;
 }
 
-/* Основной контент */
 .content-wrapper {
     flex: 1;
     margin-left: 0 !important;
     transition: margin-left 0.3s ease;
 }
 
-/* Адаптивный дизайн для общего контейнера */
 @media (max-width: 1024px) {
     .content-wrapper {
         margin-left: 0;
