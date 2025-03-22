@@ -1,0 +1,194 @@
+.news-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.news-post-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.news-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0;
+}
+
+.news-subtitle {
+    font-size: 20px;
+    color: var(--text-medium);
+    margin-bottom: 16px;
+}
+
+.news-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--text-medium);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.important-badge {
+    background-color: var(--red-light);
+    color: var(--red-dark);
+}
+
+.news-content {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-dark);
+    margin-bottom: 24px;
+}
+
+.reaction-buttons {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.like-button, .dislike-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.like-button:hover, .dislike-button:hover {
+    background-color: var(--bg-light);
+}
+
+.comments-section {
+    margin-bottom: 24px;
+}
+
+.comments-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+}
+
+.comment {
+    margin-bottom: 16px;
+    padding: 16px;
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-medium);
+}
+
+.comment-author {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.comment-date {
+    color: var(--text-light);
+}
+
+.comment-text {
+    font-size: 14px;
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+.comment-form {
+    margin-top: 16px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    resize: vertical;
+}
+
+.comment-form button {
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.comment-form button:hover {
+    background-color: var(--primary-dark);
+}
+
+.edit-news-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.edit-news-button:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.edit-news-button:active {
+    transform: translateY(0);
+}
