@@ -1,0 +1,52 @@
+/* Импорт шрифтов */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Переменные CSS */
+:root {
+    --primary-color: #4f46e5;
+    --primary-light: #eef2ff;
+    --text-dark: #1f2937;
+    --text-medium: #4b5563;
+    --text-light: #6b7280;
+    --bg-light: #f9fafb;
+    --bg-white: #ffffff;
+    --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --red-dark: #b91c1c;
+}
+
+/* Базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-dark);
+    background-color: var(--bg-light);
+    line-height: 1.5;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Основной контент */
+.content-wrapper {
+    flex: 1;
+    margin-left: 0 !important;
+    transition: margin-left 0.3s ease;
+}
+
+/* Адаптивный дизайн для общего контейнера */
+@media (max-width: 1024px) {
+    .content-wrapper {
+        margin-left: 0;
+    }
+}
