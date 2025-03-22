@@ -4,6 +4,7 @@ import './NewsPage.css';
 import NewsList from "../../components/news/NewsList";
 import { formatDate } from "../../extensions/utils";
 import NewsSearchPanel from "../../components/news/NewsSearchPanel";
+import Header from "../../components/layout/header/Header";
 
 const NewsPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -97,10 +98,7 @@ const NewsPage = () => {
         <div className="app-container">
             <div className="content-wrapper">
                 <main className="main-content">
-                    <div className="section-header">
-                        <h2 className="section-title">Последние новости</h2>
-                        <div className="section-info">Всего: {filteredNews.length}</div>
-                    </div>
+                    <Header title={"Последние новости"} info={`Всего: ${filteredNews.length}`} />
                     <NewsSearchPanel searchQuery={searchQuery} handleSearchChange={handleSearchChange} filters={filters} handleFilterChange={handleFilterChange} />
                     <NewsList newsItems={filteredNews} handleNewsClick={handleNewsClick}/>
                 </main>
