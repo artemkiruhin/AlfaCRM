@@ -1,0 +1,136 @@
+.chat-list-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.chat-list-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 24px;
+}
+
+.chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.chat-item:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.chat-item:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.chat-avatar {
+    flex-shrink: 0;
+}
+
+.gradient-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+    transition: border-color 0.2s ease;
+}
+
+.chat-item:hover .gradient-circle {
+    border-color: var(--primary-color);
+}
+
+.chat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    transition: color 0.2s ease;
+}
+
+.chat-item:hover .chat-name {
+    color: var(--primary-dark);
+}
+
+.chat-last-message {
+    font-size: 14px;
+    color: var(--text-medium);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-item:hover .chat-last-message {
+    color: var(--text-dark);
+}
+
+.chat-time {
+    font-size: 12px;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+
+.chat-item:hover .chat-time {
+    color: var(--text-medium);
+}
+
+.chat-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--text-light);
+    margin-left: auto;
+    transition: background-color 0.2s ease;
+}
+
+.chat-status.online {
+    background-color: var(--success-color);
+}
+
+.chat-item:hover .chat-status {
+    background-color: var(--success-dark);
+}
+
+.chat-notification {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--bg-white);
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: auto;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.chat-item:hover .chat-notification {
+    background-color: var(--primary-dark);
+    transform: scale(1.1);
+}
