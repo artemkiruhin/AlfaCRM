@@ -132,16 +132,10 @@ const MySuggestionsPage = () => {
                             {suggestion.status === 'На рассмотрении' && isAdmin && (
                                 <>
                                     <button
-                                        className="suggestion-action-button approve"
-                                        onClick={() => setSelectedSuggestion({...suggestion, actionType: 'approve'})}
-                                    >
-                                        Одобрить
-                                    </button>
-                                    <button
                                         className="suggestion-action-button reject"
                                         onClick={() => setSelectedSuggestion({...suggestion, actionType: 'reject'})}
                                     >
-                                        Отклонить
+                                        Удалить
                                     </button>
                                 </>
                             )}
@@ -184,53 +178,6 @@ const MySuggestionsPage = () => {
             <div className="suggestions-list-container">
                 {renderSuggestionsList()}
             </div>
-
-            {selectedSuggestion && (
-                <div className="modal-overlay">
-                    <div className="modal">
-                        <h3>
-                            {selectedSuggestion.actionType === 'approve' ? 'Одобрение предложения' : 'Отклонение предложения'}: {selectedSuggestion.title}
-                        </h3>
-                        <div className="suggestion-details">
-                            <p><strong>ID предложения:</strong> {selectedSuggestion.id}</p>
-                            <p><strong>ID сотрудника:</strong> {selectedSuggestion.employeeId}</p>
-                            <p><strong>Описание:</strong> {selectedSuggestion.text}</p>
-                        </div>
-                        <textarea
-                            placeholder="Введите комментарий..."
-                            value={feedback}
-                            onChange={(e) => setFeedback(e.target.value)}
-                            className="feedback-textarea"
-                        />
-                        <div className="modal-actions">
-                            {selectedSuggestion.actionType === 'approve' ? (
-                                <button
-                                    className="modal-button approve"
-                                    onClick={() => handleApproveSuggestion(selectedSuggestion.id)}
-                                >
-                                    Одобрить предложение
-                                </button>
-                            ) : (
-                                <button
-                                    className="modal-button reject"
-                                    onClick={() => handleRejectSuggestion(selectedSuggestion.id)}
-                                >
-                                    Отклонить предложение
-                                </button>
-                            )}
-                            <button
-                                className="modal-button cancel"
-                                onClick={() => {
-                                    setSelectedSuggestion(null);
-                                    setFeedback('');
-                                }}
-                            >
-                                Отмена
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
