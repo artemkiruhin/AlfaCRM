@@ -1,0 +1,232 @@
+.news-edit-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+    overflow: visible;
+}
+
+.news-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.preview-button, .save-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.preview-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.preview-button:hover {
+    background-color: #0056b3;
+}
+
+.save-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.edit-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.edit-label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+.edit-title-input, .edit-subtitle-input, .edit-content-textarea, .edit-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    color: #333;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-title-input:focus, .edit-subtitle-input:focus, .edit-content-textarea:focus, .edit-select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.edit-content-textarea {
+    min-height: 300px;
+    resize: vertical;
+}
+
+.edit-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+.checkbox-label {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.edit-checkbox {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.preview-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.news-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.news-subtitle {
+    font-size: 18px;
+    color: #666;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.news-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.important-badge {
+    background-color: #dc3545;
+    color: white;
+}
+
+.news-content {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.edit-helper-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.markdown-helper {
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.markdown-helper code {
+    background-color: #e9e9e9;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.preview-mode {
+    animation: fadeIn 0.3s ease;
+}
+
+.edit-mode {
+    animation: fadeIn 0.3s ease;
+}
+
+.preview-button:active, .save-button:active {
+    transform: translateY(1px);
+}
