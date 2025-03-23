@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Menu, X, Home, Users, Calendar, FileText, Settings, ChevronRight, Search } from 'lucide-react';
+import { Bell, Menu, X, Home, Users, Calendar, FileText, Settings, ChevronRight, Search , Plus} from 'lucide-react';
 import './NewsPage.css';
 import NewsList from "../../components/news/NewsList";
 import { formatDate } from "../../extensions/utils";
@@ -66,6 +66,8 @@ const NewsPage = () => {
         }
     ];
 
+    const isAdminOrPublisher = true;
+
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
     };
@@ -76,6 +78,10 @@ const NewsPage = () => {
             ...filters,
             [name]: type === 'checkbox' ? checked : value,
         });
+    };
+
+    const handleAddNews = () => {
+        //navigate('/news/add');
     };
 
     const filteredNews = newsItems.filter((news) => {
@@ -98,8 +104,16 @@ const NewsPage = () => {
         <div className="app-container">
             <div className="content-wrapper">
                 <main className="main-content">
-                    <Header title={"Последние новости"} info={`Всего: ${filteredNews.length}`} />
-                    <NewsSearchPanel searchQuery={searchQuery} handleSearchChange={handleSearchChange} filters={filters} handleFilterChange={handleFilterChange} />
+                    <Header title={"Последние новости"} info={`Всего: ${filteredNews.length}`}/>
+                    <div className="news-controls">
+                        <NewsSearchPanel searchQuery={searchQuery} handleSearchChange={handleSearchChange}
+                                         filters={filters} handleFilterChange={handleFilterChange}/>
+                        {isAdminOrPublisher && (
+                            <button className="add-news-button" onClick={handleAddNews}>
+                                <Plus size={18}/> Добавить новость
+                            </button>
+                        )}
+                    </div>
                     <NewsList newsItems={filteredNews} handleNewsClick={handleNewsClick}/>
                 </main>
             </div>
