@@ -1,0 +1,123 @@
+.ticket-details-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-details-container {
+    padding: 24px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.ticket-details-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.ticket-details-text {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.ticket-details-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 16px;
+}
+
+.edit-field {
+    margin-bottom: 16px;
+}
+
+.edit-field label {
+    display: block;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.edit-field input, .edit-field textarea, .edit-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #333;
+    background-color: #f9f9f9;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.edit-field input:focus, .edit-field textarea:focus, .edit-select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.edit-field textarea {
+    min-height: 120px;
+}
+
+.edit-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+.ticket-details-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.ticket-save-button, .ticket-delete-button, .ticket-back-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+}
+
+.ticket-save-button {
+    background-color: #28a745;
+}
+
+.ticket-save-button:hover {
+    background-color: #218838;
+}
+
+.ticket-delete-button {
+    background-color: #dc3545;
+}
+
+.ticket-delete-button:hover {
+    background-color: #c82333;
+}
+
+.ticket-back-button {
+    background-color: #6c757d;
+    cursor: pointer;
+}
+
+.ticket-back-button:hover {
+    background-color: #5a6268;
+}
