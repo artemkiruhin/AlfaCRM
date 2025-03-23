@@ -1,0 +1,145 @@
+/* MyTicketsPage.css */
+
+.my-tickets-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.create-ticket-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    transition: background-color 0.2s ease;
+}
+
+.create-ticket-button:hover {
+    background-color: var(--primary-dark);
+}
+
+.ticket-list-container {
+    margin-top: 16px;
+}
+
+.ticket-list-controls {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.ticket-search-input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.ticket-filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.ticket-item {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background-color: var(--bg-white);
+    transition: box-shadow 0.2s ease;
+}
+
+.ticket-item:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ticket-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.ticket-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+}
+
+.ticket-text {
+    font-size: 14px;
+    color: var(--text-medium);
+    margin-bottom: 8px;
+}
+
+.ticket-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+}
+
+.ticket-feedback {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.ticket-feedback p {
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.ticket-assignee {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.ticket-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.ticket-details-button, .ticket-delete-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.ticket-details-button {
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+}
+
+.ticket-details-button:hover {
+    background-color: var(--primary-dark);
+}
+
+.ticket-delete-button {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.ticket-delete-button:hover {
+    background-color: var(--error-dark);
+}
