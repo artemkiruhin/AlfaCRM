@@ -1,0 +1,49 @@
+/* ConfirmationModal.css */
+.confirmation-modal-content {
+    padding: 20px;
+}
+
+.confirmation-message {
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-dark, #333);
+}
+
+.confirmation-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.confirmation-cancel-button {
+    padding: 10px 16px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 6px;
+    background-color: var(--bg-white, #fff);
+    color: var(--text-dark, #333);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirmation-cancel-button:hover {
+    background-color: var(--gray-50, #f9fafb);
+}
+
+.confirmation-confirm-button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--error-color, #ef4444) !important;
+    color: var(--bg-white, #fff) !important;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confirmation-confirm-button:hover {
+    background-color: var(--error-dark, #dc2626) !important;
+}
