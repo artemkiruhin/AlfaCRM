@@ -1,0 +1,213 @@
+.department-list-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.add-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: var(--bg-white);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-button:hover {
+    background-color: var(--primary-dark);
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-medium);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    background-color: var(--bg-white);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.departments-table-container {
+    background-color: var(--bg-white);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.departments-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.departments-table th {
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-medium);
+    background-color: var(--gray-50);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.departments-table td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-dark);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.departments-table tr:last-child td {
+    border-bottom: none;
+}
+
+.departments-table tr:hover td {
+    background-color: var(--primary-light);
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-button, .delete-button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+.edit-button {
+    color: var(--info-dark);
+}
+
+.edit-button:hover {
+    background-color: var(--info-light);
+}
+
+.delete-button {
+    color: var(--error-dark);
+}
+
+.delete-button:hover {
+    background-color: var(--error-light);
+}
+
+.department-form {
+    padding: 16px;
+}
+
+.department-form .form-group {
+    margin-bottom: 20px;
+}
+
+.department-form label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-medium);
+}
+
+.department-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--text-dark);
+    background-color: var(--bg-white);
+    transition: all 0.2s ease;
+}
+
+.department-form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.department-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.department-form .cancel-button {
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-white);
+    color: var(--text-dark);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.department-form .cancel-button:hover {
+    background-color: var(--gray-50);
+}
+
+.department-form .submit-button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--primary-color);
+    color: var(--bg-white);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.department-form .submit-button:hover {
+    background-color: var(--primary-dark);
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .add-button {
+        width: 100%;
+    }
+
+    .departments-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
