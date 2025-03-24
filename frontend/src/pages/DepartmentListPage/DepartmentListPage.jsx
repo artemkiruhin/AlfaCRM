@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DepartmentListPage.css';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import Modal from '../../components/layout/modal/Modal';
+import { Plus, Pencil, Trash2, Trash } from 'lucide-react';
+import Modal from '../../components/layout/modal/base/Modal';
 import Header from "../../components/layout/header/Header";
+import ConfirmationModal from '../../components/layout/modal/confirmation/ConfirmationModal';
 
 const DepartmentListPage = () => {
-    //const navigate = useNavigate();
     const [departments, setDepartments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentDepartment, setCurrentDepartment] = useState(null);
     const [departmentName, setDepartmentName] = useState('');
 
@@ -45,16 +46,22 @@ const DepartmentListPage = () => {
         setIsEditModalOpen(true);
     };
 
-    const handleDeleteDepartment = async (id) => {
-        if (window.confirm('Вы уверены, что хотите удалить этот отдел?')) {
-            try {
-                console.log('Удаление отдела с ID:', id);
-                setDepartments(departments.filter(dept => dept.id !== id));
-                alert('Отдел успешно удален');
-            } catch (error) {
-                console.error('Ошибка при удалении отдела:', error);
-                alert('Произошла ошибка при удалении отдела');
-            }
+    const handleDeleteClick = (department) => {
+        setCurrentDepartment(department);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteDepartment = async () => {
+        if (!currentDepartment) return;
+
+        try {
+            console.log('Удаление отдела с ID:', currentDepartment.id);
+            setDepartments(departments.filter(dept => dept.id !== currentDepartment.id));
+            setIsDeleteModalOpen(false);
+            alert('Отдел успешно удален');
+        } catch (error) {
+            console.error('Ошибка при удалении отдела:', error);
+            alert('Произошла ошибка при удалении отдела');
         }
     };
 
@@ -101,7 +108,7 @@ const DepartmentListPage = () => {
 
     return (
         <div className="department-list-page">
-                <Header title={"Управление отделами"}/>
+            <Header title={"Управление отделами"}/>
             <div className="page-header">
                 <button
                     className="add-button"
@@ -143,11 +150,11 @@ const DepartmentListPage = () => {
                                             <Pencil size={16} />
                                         </button>
                                         <button
-                                            className="delete-button"
-                                            onClick={() => handleDeleteDepartment(department.id)}
+                                            className="edit-button"
+                                            onClick={() => handleDeleteClick(department)}
                                             title="Удалить"
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 size={16}/>
                                         </button>
                                     </div>
                                 </td>
@@ -223,6 +230,16 @@ const DepartmentListPage = () => {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteDepartment}
+                title="Подтверждение удаления"
+                message={`Вы уверены, что хотите удалить отдел "${currentDepartment?.name}"?`}
+                confirmText="Удалить"
+                cancelText="Отмена"
+            />
         </div>
     );
 };
