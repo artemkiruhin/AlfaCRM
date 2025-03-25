@@ -15,7 +15,13 @@ const AuthLayout = ({ children }) => {
         }
 
         validateUser();
-    }, [isAuthenticated, isLoading]);
+    }, []);
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            navigate("/login");
+        }
+    }, [isLoading, isAuthenticated, navigate]);
 
     if (isLoading) {
         return <div>Загрузка...</div>
@@ -26,7 +32,9 @@ const AuthLayout = ({ children }) => {
     }
 
     return (
-        children
+        <>
+            {children}
+        </>
     )
 }
 
