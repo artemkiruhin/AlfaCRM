@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './AuthPage.css';
 import {login} from "../../api-handlers/authHandler";
+import {useNavigate} from "react-router-dom";
 
 export const AuthPage = () => {
+    const navigate = useNavigate();
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
@@ -21,6 +24,7 @@ export const AuthPage = () => {
                 console.log(result);
                 localStorage.setItem('uid', result.id);
                 showSuccess('Успешная авторизация!');
+                navigate("/news")
             } else {
                 showError('Неверное имя пользователя или пароль');
             }
