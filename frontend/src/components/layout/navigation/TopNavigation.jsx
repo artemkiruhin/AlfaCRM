@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { Home, Users, Calendar, FileText, User, Menu } from 'lucide-react';
 import "./TopNavigation.css";
+import {useNavigate} from "react-router-dom";
 
 const TopNavigation = ({ menuItems }) => {
+    const navigate = useNavigate();
     const [active, setActive] = useState(-1);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleItemClick = (index) => {
         setIsMobileMenuOpen(false);
+        const path = menuItems[index].link;
+        navigate(path)
     };
 
     const toggleMobileMenu = () => {
