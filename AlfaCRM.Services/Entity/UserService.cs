@@ -63,7 +63,11 @@ public class UserService : IUserService
                 : null,
             Posts: entity.Posts.Select(post => new PostShortDTO(
                 Id: post.Id,
-                Title: post.Title
+                Title: post.Title,
+                CreatedAt: post.CreatedAt,
+                IsImportant: post.IsImportant,
+                Department: post.Department?.Name ?? "Общая новость",
+                DepartmentId: entity.DepartmentId
             )).ToList()
         );
     }
@@ -91,7 +95,11 @@ public class UserService : IUserService
                 : null,
             Posts: entity.Posts.Select(post => new PostShortDTO(
                 Id: post.Id,
-                Title: post.Title
+                Title: post.Title,
+                CreatedAt: post.CreatedAt,
+                IsImportant: post.IsImportant,
+                Department: post.Department?.Name ?? "Общая новость",
+                DepartmentId: entity.DepartmentId
             )).ToList()
         )).ToList();
     }

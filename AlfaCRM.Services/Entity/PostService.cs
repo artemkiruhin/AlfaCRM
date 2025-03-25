@@ -29,7 +29,11 @@ public class PostService : IPostService
     {
         return new PostShortDTO(
             Id: entity.Id,
-            Title: entity.Title
+            Title: entity.Title,
+            CreatedAt: entity.CreatedAt,
+            IsImportant: entity.IsImportant,
+            Department: entity.Department?.Name ?? "Общая новость",
+            DepartmentId: entity.DepartmentId
         );
     }
     
@@ -37,7 +41,11 @@ public class PostService : IPostService
     {
         return entities.Select(entity => new PostShortDTO(
             Id: entity.Id,
-            Title: entity.Title
+            Title: entity.Title,
+            CreatedAt: entity.CreatedAt,
+            IsImportant: entity.IsImportant,
+            Department: entity.Department?.Name ?? "Общая новость",
+            DepartmentId: entity.DepartmentId
         )).ToList();
     }
     

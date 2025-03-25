@@ -2,5 +2,9 @@
 
 public record PostShortDTO(
     Guid Id,
-    string Title
+    string Title,
+    DateTime CreatedAt,
+    bool IsImportant,
+    string Department,
+    Guid? DepartmentId
 );
