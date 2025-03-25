@@ -3,17 +3,16 @@ import TopNavigation from "./navigation/TopNavigation";
 import { Home, Users, Calendar, FileText, Settings } from 'lucide-react';
 
 const RootLayout = ({page}) => {
-    const menuItems = [
-        { icon: <Home size={20} className="nav-icon" />, label: 'Главная' },
-        { icon: <FileText size={20} className="nav-icon" />, label: 'Новости' },
-        { icon: <Users size={20} className="nav-icon" />, label: 'Сотрудники' },
-        { icon: <Calendar size={20} className="nav-icon" />, label: 'Календарь' },
-        { icon: <Settings size={20} className="nav-icon" />, label: 'Настройки' },
+    const emplMenuItems = [
+        { icon: <FileText size={20} className="nav-icon" />, label: 'Новости', link: "/news" },
+        { icon: <Users size={20} className="nav-icon" />, label: 'Чат', link: "/chat" },
+        { icon: <Calendar size={20} className="nav-icon" />, label: 'Заявки', link: "/tickets/my" },
+        { icon: <Settings size={20} className="nav-icon" />, label: 'Предложения', link: "/suggestions/my" },
     ];
 
     return (
         <>
-            <TopNavigation menuItems={menuItems} />
+            <TopNavigation menuItems={emplMenuItems} />
             {page}
         </>
     )
