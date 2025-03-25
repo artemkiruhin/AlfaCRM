@@ -19,7 +19,7 @@ const NewsPost = ({post, handleNewsClick}) => {
                     )}
                 </div>
                 <div className="news-date">
-                    {formatDate(post.createdAt)}
+                    {post.createdAt}
                 </div>
                 <div className="news-department">
                     {post.department}
