@@ -52,7 +52,7 @@ const logout = async () => {
 const validate = async () => {
     try {
         const response = await fetch(`${API_URL}/auth/validate`, {
-            method: 'POST',
+            method: 'GET',
             credentials: 'include'
         })
 
