@@ -6,8 +6,11 @@ import NewsSearchPanel from "../../components/news/NewsSearchPanel";
 import Header from "../../components/layout/header/Header";
 import {getAllPosts} from "../../api-handlers/postsHandler";
 import {getAllDepartments} from "../../api-handlers/departmentsHandler";
+import {useNavigate} from "react-router-dom";
 
 const NewsPage = () => {
+    const navigate = useNavigate();
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeNews, setActiveNews] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -76,6 +79,7 @@ const NewsPage = () => {
 
     const handleNewsClick = (news) => {
         setActiveNews(news);
+        navigate(`/news/${news.id}`)
     };
 
     const closeNewsDetail = () => {
