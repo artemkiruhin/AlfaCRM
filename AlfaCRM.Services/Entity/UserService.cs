@@ -104,7 +104,7 @@ public class UserService : IUserService
         )).ToList();
     }
 
-    public async Task<Result<(Guid id, string token)>> Login(LoginRequest request, CancellationToken ct)
+    public async Task<Result<(Guid id, string username, string token)>> Login(LoginRequest request, CancellationToken ct)
     {
         try
         {
@@ -113,14 +113,14 @@ public class UserService : IUserService
                 _hasher.ComputeHash(request.PasswordHash),
                 ct
             );
-            if (user == null) return Result<(Guid id, string token)>.Failure("User not found");
+            if (user == null) return Result<(Guid id, string username, string token)>.Failure("User not found");
 
             var token = _jwtService.GenerateToken(user.Id);
-            return Result<(Guid id, string token)>.Success((user.Id, token));
+            return Result<(Guid id, string username, string token)>.Success((user.Id, user.Username, token));
         }
         catch (Exception e)
         {
-            return Result<(Guid id, string token)>.Failure($"Error while logging in: {e.Message}");
+            return Result<(Guid id, string username, string token)>.Failure($"Error while logging in: {e.Message}");
         }
     }
 
