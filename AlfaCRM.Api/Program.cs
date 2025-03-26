@@ -97,7 +97,7 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
 {
     optionsBuilder.UseNpgsql(configuration.GetConnectionString("Database"))
         .UseLazyLoadingProxies();
-});
+}, ServiceLifetime.Scoped);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
