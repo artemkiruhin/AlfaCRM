@@ -32,6 +32,9 @@ const getPostById = async (id) => {
         }
 
         const data = await response.json()
+
+        console.log(data.post)
+
         return data.post
 
     } catch (e) {
@@ -198,6 +201,24 @@ const deleteReact = async (id) => {
         console.error('Deleting react error: ', e);
     }
 }
+const deleteAllReactsByPost = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/posts/delete-post-all-reacts/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+
+        if (!response.ok) {
+            console.error(`Deleting react error: ${response.statusText} | ${response.status}`)
+        }
+
+        const data = await response.json()
+        return data.id
+
+    } catch (e) {
+        console.error('Deleting react error: ', e);
+    }
+}
 const createComment = async (content, postId) => {
     try {
         const response = await fetch(`${API_URL}/posts/add-comment`, {
@@ -252,5 +273,6 @@ export {
     reactPost,
     deleteReact,
     createComment,
-    deleteComment
+    deleteComment,
+    deleteAllReactsByPost
 }
