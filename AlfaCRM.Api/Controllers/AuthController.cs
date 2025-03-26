@@ -1,3 +1,4 @@
+using AlfaCRM.Api.Extensions;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Interfaces.Services.Security;
 using AlfaCRM.Domain.Models.Contracts;
@@ -12,11 +13,13 @@ namespace AlfaCRM.Api.Controllers
     {
         private readonly IUserService _userService;
         private readonly IHashService _hasher;
+        private readonly IUserValidator _userValidator;
 
-        public AuthController(IUserService userService, IHashService hasher)
+        public AuthController(IUserService userService, IHashService hasher, IUserValidator userValidator)
         {
             _userService = userService;
             _hasher = hasher;
+            _userValidator = userValidator;
         }
         
         [HttpPost("login")]
@@ -38,7 +41,7 @@ namespace AlfaCRM.Api.Controllers
                     Expires = DateTimeOffset.UtcNow.AddHours(48),
                 });
                 
-                return Ok(new { Id = result.Data.id, Token = result.Data.token });
+                return Ok(new { Id = result.Data.id, Username = result.Data.username, Token = result.Data.token });
             }
             catch (Exception ex)
             {
@@ -65,6 +68,14 @@ namespace AlfaCRM.Api.Controllers
         [Authorize]
         public ActionResult Validate(CancellationToken ct)
         {
+            return Ok();
+        }
+        
+        [HttpGet("validate-admin-or-author")]
+        [Authorize]
+        public ActionResult ValidateAdminOrAuthor(CancellationToken ct)
+        {
+            var isAdminOrAuthor = _userValidator.IsAdminOrPublisher(User, ct);
             return Ok();
         }
     }
