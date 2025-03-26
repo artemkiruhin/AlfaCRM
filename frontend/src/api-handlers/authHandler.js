@@ -22,7 +22,8 @@ const login = async (username, password) => {
 
         return {
             id: data.id,
-            token: data.token
+            token: data.token,
+            username: data.username
         }
 
     } catch (e) {
@@ -68,8 +69,29 @@ const validate = async () => {
     }
 }
 
+const validateAdminOrPublisher = async () => {
+    try {
+        const response = await fetch(`${API_URL}/auth/validate-admin-or-author`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+
+        if (!response.ok) {
+            console.error(`Validation error: ${response.statusText} | ${response.status}`)
+            return false
+        }
+
+        return true
+    } catch (e) {
+        console.error('Validation error: ', e);
+        return false
+    }
+}
+
+
 export {
     login,
     logout,
     validate,
+    validateAdminOrPublisher,
 }

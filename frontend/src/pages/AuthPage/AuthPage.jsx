@@ -23,6 +23,7 @@ export const AuthPage = () => {
             if (result) {
                 console.log(result);
                 localStorage.setItem('uid', result.id);
+                localStorage.setItem('username', result.username);
                 showSuccess('Успешная авторизация!');
                 navigate("/news")
             } else {
