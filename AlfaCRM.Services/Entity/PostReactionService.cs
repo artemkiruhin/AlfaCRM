@@ -76,4 +76,30 @@ public class PostReactionService : IPostReactionService
             return Result<Guid>.Failure($"Error while deleting reaction: {ex.Message}");
         }
     }
+    
+    public async Task<Result<bool>> DeleteAll(Guid postId, Guid userId, CancellationToken ct){
+        await _database.BeginTransactionAsync(CancellationToken.None);
+
+        try
+        {
+            var post = await _database.PostRepository.GetByIdAsync(postId, ct);
+            if (post == null)
+            {
+                return Result<bool>.Failure("Post not found");
+            }
+
+            post.Reactions.Where(reaction => reaction.SenderId == userId).ToList().ForEach(reaction => _database.PostReactionRepository.Delete(reaction, ct));
+            var result = await _database.SaveChangesAsync(CancellationToken.None);
+            await _database.CommitTransactionAsync(CancellationToken.None);
+
+            return result > 0 
+                ? Result<bool>.Success(true) 
+                : Result<bool>.Failure("Failed to delete reaction");
+        }
+        catch (Exception ex)
+        {
+            await _database.RollbackTransactionAsync(CancellationToken.None);
+            return Result<bool>.Failure($"Error while deleting reaction: {ex.Message}");
+        }
+    }
 }

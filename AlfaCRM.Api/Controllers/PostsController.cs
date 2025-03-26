@@ -126,8 +126,8 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
-                if (!isUserValid.IsSuccess) return Unauthorized();
+                // var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
+                // if (!isUserValid.IsSuccess) return Unauthorized();
                 
                 var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
                 var userId = Guid.Parse(userIdClaim);
@@ -181,6 +181,24 @@ namespace AlfaCRM.Api.Controllers
             try
             {
                 var result = await _postReactionService.Delete(id, ct);
+                if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
+                return Ok(new {id = result.Data});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        [HttpDelete("delete-post-all-reacts/{id:guid}")]
+        public async Task<ActionResult> DeleteAllPostReacts(Guid id, CancellationToken ct)
+        {
+            try
+            {
+                var userId = await _userValidator.GetUserId(User, ct);
+                if (!userId.IsSuccess) return BadRequest(userId.ErrorMessage);
+                
+                var result = await _postReactionService.DeleteAll(id, userId.Data, ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage); 
                 return Ok(new {id = result.Data});
             }
