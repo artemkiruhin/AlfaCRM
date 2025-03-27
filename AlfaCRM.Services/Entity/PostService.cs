@@ -188,7 +188,7 @@ public class PostService : IPostService
             if (!string.IsNullOrEmpty(request.Subtitle)) dbPost.Subtitle = request.Subtitle;
             if (!string.IsNullOrEmpty(request.Content)) dbPost.Content = request.Content;
             if (request.IsImportant.HasValue) dbPost.IsImportant = request.IsImportant.Value;
-            if (request.DepartmentId.HasValue) dbPost.DepartmentId = request.DepartmentId.Value;
+            if (request.DepartmentId.HasValue || request.EditDepartment) dbPost.DepartmentId = request.DepartmentId;
 
             dbPost.ModifiedAt = DateTime.UtcNow;
 

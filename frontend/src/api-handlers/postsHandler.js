@@ -41,50 +41,43 @@ const getPostById = async (id) => {
         console.error('Getting post by id  error: ', e);
     }
 }
-const editPost = async (postId, title, subtitle, content, isImportant, departmentId) => {
+const editPost = async (postId, title, subtitle, content, isImportant, departmentId, editDepartment) => {
     try {
+        const body = {
+            PostId: postId,
+            Title: title,
+            Subtitle: subtitle,
+            Content: content,
+            IsImportant: isImportant,
+            DepartmentId: departmentId,
+            EditDepartment: editDepartment
+        };
 
-        let body = {
-            postId: postId
-        }
-
-        if (title) {
-            body.title = title
-        }
-        if (subtitle) {
-            body.subtitle = subtitle
-        }
-        if (content) {
-            body.content = content
-        }
-        if (isImportant) {
-            body.isImportant = isImportant
-        }
-        if (departmentId) {
-            body.departmentId = departmentId
-        }
-
+        const cleanedBody = Object.fromEntries(
+            Object.entries(body).filter(([_, value]) => value !== undefined)
+        );
 
         const response = await fetch(`${API_URL}/posts/edit`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(cleanedBody),
             credentials: 'include'
-        })
+        });
 
         if (!response.ok) {
-            console.error(`Editing post error: ${response.statusText} | ${response.status}`)
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json()
-        return data.id
+        return await response.json();
 
     } catch (e) {
-        console.error('Editing post error: ', e);
+        console.error('Editing post error:', e);
+        throw e;
     }
-}
+};
 const deletePost = async (id) => {
     try {
         const response = await fetch(`${API_URL}/posts/delete/${id}`, {
