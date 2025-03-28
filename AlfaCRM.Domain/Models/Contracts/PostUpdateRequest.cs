@@ -6,5 +6,6 @@ public record PostUpdateRequest(
     string? Subtitle,
     string? Content,
     bool? IsImportant,
-    Guid? DepartmentId
+    Guid? DepartmentId,
+    bool EditDepartment
 );
