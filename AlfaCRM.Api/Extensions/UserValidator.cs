@@ -24,7 +24,7 @@ public class UserValidator : IUserValidator
             if (!userModelResult.IsSuccess) return Result<bool>.Failure($"Can't find user with id: {id} | {userModelResult.ErrorMessage}");
             
             var userData = userModelResult.Data;
-            if (!userData.IsAdmin || !userData.HasPublishedRights) return Result<bool>.Failure("User does not have published rights");
+            if (!userData.IsAdmin && !userData.HasPublishedRights) return Result<bool>.Failure("User does not have published rights");
             
             return Result<bool>.Success(true);
         }
