@@ -28,6 +28,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/news" element={<AuthLayout><RootLayout page={<NewsPage />}/></AuthLayout>} />
+                <Route path="*" element={<AuthLayout><RootLayout page={<NewsPage />}/></AuthLayout>} />
                 <Route path="/news/:id" element={<AuthLayout><RootLayout page={<NewsPostPage />}/></AuthLayout>} />
                 <Route path="/news/edit/:id" element={<AuthLayout><RootLayout page={<NewsEditPage />}/></AuthLayout>} />
                 <Route path="/news/create" element={<AuthLayout><RootLayout page={<NewsPostCreatePage />}/></AuthLayout>} />
