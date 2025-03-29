@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import './AuthPage.css';
-import {login} from "../../api-handlers/authHandler";
-import {useNavigate} from "react-router-dom";
+import React, { useState } from 'react';
+import './AuthPage.css'; // Обычный CSS файл
+import { login } from "../../api-handlers/authHandler";
+import { useNavigate } from "react-router-dom";
 
 export const AuthPage = () => {
     const navigate = useNavigate();
@@ -21,11 +21,10 @@ export const AuthPage = () => {
         setTimeout(async () => {
             const result = await login(username, password);
             if (result) {
-                console.log(result);
                 localStorage.setItem('uid', result.id);
                 localStorage.setItem('username', result.username);
                 showSuccess('Успешная авторизация!');
-                navigate("/news")
+                navigate("/news");
             } else {
                 showError('Неверное имя пользователя или пароль');
             }
@@ -36,10 +35,7 @@ export const AuthPage = () => {
         setMessage(message);
         setMessageType('error-msg');
         setShake(true);
-
-        setTimeout(() => {
-            setShake(false);
-        }, 500);
+        setTimeout(() => setShake(false), 500);
     };
 
     const showSuccess = (message) => {
@@ -48,45 +44,45 @@ export const AuthPage = () => {
     };
 
     const handleKeyPress = (event) => {
-        if (event.key === 'Enter') {
-            handleLogin();
-        }
+        if (event.key === 'Enter') handleLogin();
     };
 
     return (
-        <div className={`login-container ${shake ? 'shake' : ''}`}>
-            <div className="login-header">
-                <h1>Авторизация</h1>
-            </div>
-            <div className="form-group">
-                <label htmlFor="username">Имя пользователя</label>
-                <input
-                    type="text"
-                    id="username"
-                    placeholder="Введите имя пользователя"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-            </div>
-            <div className="form-group">
-                <label htmlFor="password">Пароль</label>
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Введите пароль"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                />
-            </div>
-            <button
-                className="login-btn"
-                onClick={handleLogin}
-            >
-                Войти
-            </button>
-            <div className={`login-msg ${messageType}`}>
-                {message}
+        <div className="auth-page">
+            <div className={`auth-page__container ${shake ? 'auth-page__shake' : ''}`}>
+                <div className="auth-page__header">
+                    <h1>Авторизация</h1>
+                </div>
+                <div className="auth-page__form-group">
+                    <label htmlFor="username">Имя пользователя</label>
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="Введите имя пользователя"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                </div>
+                <div className="auth-page__form-group">
+                    <label htmlFor="password">Пароль</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Введите пароль"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                    />
+                </div>
+                <button
+                    className="auth-page__btn"
+                    onClick={handleLogin}
+                >
+                    Войти
+                </button>
+                <div className={`auth-page__message ${messageType}`}>
+                    {message}
+                </div>
             </div>
         </div>
     );

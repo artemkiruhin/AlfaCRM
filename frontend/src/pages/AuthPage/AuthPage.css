@@ -1,11 +1,4 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
+.auth-page {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -13,7 +6,7 @@ body {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.login-container {
+.auth-page__container {
     width: 360px;
     background-color: white;
     border-radius: 12px;
@@ -22,34 +15,34 @@ body {
     transition: transform 0.3s ease;
 }
 
-.login-container:hover {
+.auth-page__container:hover {
     transform: translateY(-5px);
 }
 
-.login-header {
+.auth-page__header {
     text-align: center;
     margin-bottom: 30px;
 }
 
-.login-header h1 {
+.auth-page__header h1 {
     color: #333;
     font-size: 24px;
     font-weight: 600;
 }
 
-.form-group {
+.auth-page__form-group {
     margin-bottom: 20px;
     position: relative;
 }
 
-.form-group label {
+.auth-page__form-group label {
     display: block;
     color: #666;
     margin-bottom: 8px;
     font-size: 14px;
 }
 
-.form-group input {
+.auth-page__form-group input {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid #ddd;
@@ -58,13 +51,13 @@ body {
     transition: all 0.3s ease;
 }
 
-.form-group input:focus {
+.auth-page__form-group input:focus {
     border-color: #6c63ff;
     outline: none;
     box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
 }
 
-.login-btn {
+.auth-page__btn {
     width: 100%;
     background-color: #6c63ff;
     color: white;
@@ -77,15 +70,15 @@ body {
     transition: background-color 0.3s ease;
 }
 
-.login-btn:hover {
+.auth-page__btn:hover {
     background-color: #5a52d5;
 }
 
-.login-btn:active {
+.auth-page__btn:active {
     transform: scale(0.98);
 }
 
-.login-msg {
+.auth-page__message {
     text-align: center;
     margin-top: 15px;
     font-size: 14px;
@@ -93,20 +86,20 @@ body {
     min-height: 20px;
 }
 
-.success-msg {
+.auth-page .success-msg {
     color: #4CAF50;
 }
 
-.error-msg {
+.auth-page .error-msg {
     color: #F44336;
 }
 
-@keyframes shake {
+@keyframes auth-page-shake {
     0%, 100% {transform: translateX(0);}
     10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
     20%, 40%, 60%, 80% {transform: translateX(5px);}
 }
 
-.shake {
-    animation: shake 0.5s;
+.auth-page__shake {
+    animation: auth-page-shake 0.5s;
 }
