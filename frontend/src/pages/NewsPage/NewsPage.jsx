@@ -66,7 +66,7 @@ const NewsPage = () => {
     };
 
     const handleAddNews = () => {
-        //navigate('/news/add');
+        navigate('/news/add');
     };
 
     const filteredNews = newsItems.filter((news) => {
