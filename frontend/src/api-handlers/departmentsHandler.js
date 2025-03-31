@@ -1,10 +1,31 @@
 import {API_URL} from "./baseHandler";
 
-const getAllDepartments = async (isShort) => {
+const getAllDepartments = async () => {
     try {
 
-        let url = isShort === true ? `${API_URL}/departments?isShort=true` : `${API_URL}/departments`
+        let url = `${API_URL}/departments`
 
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include'
+        })
+
+        if (!response.ok) {
+            console.error(`Getting all deps error: ${response.statusText} | ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        return data.departments
+
+    } catch (e) {
+        console.error('Getting all deps error: ', e);
+    }
+}
+const getAllDepartmentsShort = async () => {
+    try {
+
+        let url = `${API_URL}/departments/short`
         const response = await fetch(url, {
             method: 'GET',
             credentials: 'include'
@@ -114,6 +135,7 @@ const deleteDepartment = async (id) => {
 
 export {
     getAllDepartments,
+    getAllDepartmentsShort,
     getDepartmentById,
     createDepartment,
     editDepartment,

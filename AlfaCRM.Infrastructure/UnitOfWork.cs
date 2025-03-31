@@ -1,11 +1,14 @@
 ﻿using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Database.Repositories;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AlfaCRM.Infrastructure;
 
 public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
 {
     private readonly AppDbContext _context;
+    private IDbContextTransaction _currentTransaction;
+    private bool _disposed = false;
 
     public UnitOfWork(
         AppDbContext context, 
@@ -29,21 +32,105 @@ public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
     public IPostCommentRepository PostCommentRepository { get; }
     public IPostReactionRepository PostReactionRepository { get; }
 
+    public async Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        return await _context.SaveChangesAsync(ct);
+    }
 
-    public async Task<int> SaveChangesAsync(CancellationToken ct) => 
-        await _context.SaveChangesAsync(ct);
+    public async Task BeginTransactionAsync(CancellationToken ct = default)
+    {
+        if (_currentTransaction != null)
+        {
+            throw new InvalidOperationException("A transaction is already in progress");
+        }
 
-    public async Task BeginTransactionAsync(CancellationToken ct) => 
-        await _context.Database.BeginTransactionAsync(ct);
+        _currentTransaction = await _context.Database.BeginTransactionAsync(ct);
+    }
 
-    public async Task CommitTransactionAsync(CancellationToken ct) =>
-        await _context.Database.CommitTransactionAsync(ct);
+    public async Task CommitTransactionAsync(CancellationToken ct = default)
+    {
+        if (_currentTransaction == null)
+        {
+            throw new InvalidOperationException("No transaction to commit");
+        }
 
-    public async Task RollbackTransactionAsync(CancellationToken ct) =>
-        await _context.Database.RollbackTransactionAsync(ct);
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+            await _currentTransaction.CommitAsync(ct);
+        }
+        catch
+        {
+            await RollbackTransactionAsync(ct);
+            throw;
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
+        }
+    }
 
-    public void Dispose() => _context.Dispose();
+    public async Task RollbackTransactionAsync(CancellationToken ct = default)
+    {
+        if (_currentTransaction == null)
+        {
+            throw new InvalidOperationException("No transaction to rollback");
+        }
 
-    public async ValueTask DisposeAsync() => await _context.DisposeAsync();
-    
+        try
+        {
+            await _currentTransaction.RollbackAsync(ct);
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
+        }
+    }
+
+    private async Task DisposeTransactionAsync()
+    {
+        if (_currentTransaction != null)
+        {
+            await _currentTransaction.DisposeAsync();
+            _currentTransaction = null;
+        }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                // Не утилизируем _context, так как его жизненным циклом управляет DI
+                _currentTransaction?.Dispose();
+                _currentTransaction = null;
+            }
+
+            _disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!_disposed)
+        {
+            // Не утилизируем _context, так как его жизненным циклом управляет DI
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+
+            _disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 }

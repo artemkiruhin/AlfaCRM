@@ -21,20 +21,40 @@ namespace AlfaCRM.Api.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult> GetAll(bool? isShort, CancellationToken ct)
+        public async Task<ActionResult> GetAll(CancellationToken ct)
         {
             try
             {
-                if (isShort is true)
-                {
-                    var shortResult = await _departmentService.GetAllShort(ct);
-                    if (!shortResult.IsSuccess) return BadRequest(shortResult.ErrorMessage);
-                    return Ok(new {departments = shortResult.Data});
-                }
-                
                 var detailedResult = await _departmentService.GetAll(ct);
-                if (!detailedResult.IsSuccess) return BadRequest(detailedResult.ErrorMessage);
-                return Ok(new {departments = detailedResult.Data});
+                return detailedResult.IsSuccess 
+                    ? Ok(new {departments = detailedResult.Data})
+                    : BadRequest(detailedResult.ErrorMessage);
+            }
+            catch (OperationCanceledException)
+            {
+                // Specifically handle cancellation
+                return StatusCode(499); // Client Closed Request
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        
+        [HttpGet("short")]
+        public async Task<ActionResult> GetAllShort(CancellationToken ct)
+        {
+            try
+            {
+                var shortResult = await _departmentService.GetAllShort(ct);
+                return shortResult.IsSuccess
+                    ? Ok(new { departments = shortResult.Data })
+                    : BadRequest(shortResult.ErrorMessage);
+            }
+            catch (OperationCanceledException)
+            {
+                // Specifically handle cancellation
+                return StatusCode(499); // Client Closed Request
             }
             catch (Exception e)
             {
