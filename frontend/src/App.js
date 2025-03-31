@@ -31,7 +31,7 @@ function App() {
                 <Route path="*" element={<AuthLayout><RootLayout page={<NewsPage />}/></AuthLayout>} />
                 <Route path="/news/:id" element={<AuthLayout><RootLayout page={<NewsPostPage />}/></AuthLayout>} />
                 <Route path="/news/edit/:id" element={<AuthLayout><RootLayout page={<NewsEditPage />}/></AuthLayout>} />
-                <Route path="/news/create" element={<AuthLayout><RootLayout page={<NewsPostCreatePage />}/></AuthLayout>} />
+                <Route path="/news/add" element={<AuthLayout><RootLayout page={<NewsPostCreatePage />}/></AuthLayout>} />
 
                 <Route path="/chat" element={<AuthLayout><RootLayout page={<ChatListPage />}/></AuthLayout>} />
                 <Route path="/chat/:id" element={<AuthLayout><RootLayout page={<ChatConversationPage />}/></AuthLayout>} />

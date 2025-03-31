@@ -5,42 +5,58 @@ import ReactMarkdown from 'react-markdown';
 import './NewsPostCreatePage.css';
 import Header from "../../components/layout/header/Header";
 import { createPost } from '../../api-handlers/postsHandler';
-import { getAllDepartments } from '../../api-handlers/departmentsHandler';
+import { getAllDepartmentsShort } from '../../api-handlers/departmentsHandler';
+import { validateAdminOrPublisher } from "../../api-handlers/authHandler";
 
 const NewsPostCreatePage = () => {
     const navigate = useNavigate();
+    const [username, setUsername] = useState('');
 
     const [isPreview, setIsPreview] = useState(false);
-    const [newTitle, setNewTitle] = useState("");
-    const [newSubtitle, setNewSubtitle] = useState("");
-    const [newContent, setNewContent] = useState("");
-    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [title, setTitle] = useState("");
+    const [subtitle, setSubtitle] = useState("");
+    const [content, setContent] = useState("");
+    const [selectedDepartment, setSelectedDepartment] = useState("all");
     const [isImportant, setIsImportant] = useState(false);
     const [departments, setDepartments] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isAdminOrPublisher, setIsAdminOrPublisher] = useState(false);
 
     useEffect(() => {
-        const fetchDepartments = async () => {
+        const fetchData = async () => {
             try {
-                const deps = await getAllDepartments(true);
+                const [authCheck, deps] = await Promise.all([
+                    validateAdminOrPublisher(),
+                    getAllDepartmentsShort()
+                ]);
+
+                setIsAdminOrPublisher(authCheck);
                 setDepartments(deps || []);
+
+                const storedUsername = localStorage.getItem('username');
+                if (storedUsername) {
+                    setUsername(storedUsername);
+                } else {
+                    setError('Не удалось определить пользователя');
+                    navigate('/login');
+                }
             } catch (err) {
-                console.error("Failed to fetch departments:", err);
-                setError("Не удалось загрузить отделы");
+                console.error("Failed to fetch data:", err);
+                setError("Не удалось загрузить необходимые данные");
             }
         };
 
-        fetchDepartments();
-    }, []);
+        fetchData();
+    }, [navigate]);
 
     const handleCreate = async () => {
-        if (!newTitle.trim()) {
+        if (!title.trim()) {
             setError("Заголовок обязателен");
             return;
         }
 
-        if (!newContent.trim()) {
+        if (!content.trim()) {
             setError("Содержание обязательно");
             return;
         }
@@ -49,12 +65,14 @@ const NewsPostCreatePage = () => {
         setError(null);
 
         try {
+            const departmentId = selectedDepartment === "all" ? null : selectedDepartment;
+
             const postId = await createPost(
-                newTitle.trim(),
-                newSubtitle.trim(),
-                newContent.trim(),
+                title.trim(),
+                subtitle.trim(),
+                content.trim(),
                 isImportant,
-                selectedDepartment === "all" ? null : selectedDepartment
+                departmentId
             );
 
             if (postId) {
@@ -64,20 +82,46 @@ const NewsPostCreatePage = () => {
             }
         } catch (err) {
             console.error("Post creation failed:", err);
-            setError("Ошибка при создании поста");
+            setError(err.message || "Ошибка при создании поста");
         } finally {
             setIsLoading(false);
         }
     };
 
     const togglePreview = () => {
-        if (!newTitle.trim()) {
+        if (!title.trim()) {
             setError("Заголовок обязателен для предпросмотра");
             return;
         }
-        setIsPreview((prev) => !prev);
+        setIsPreview(prev => !prev);
         setError(null);
     };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "";
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Date(dateString).toLocaleDateString('ru-RU', options);
+    };
+
+    if (!isAdminOrPublisher) {
+        return (
+            <div className="news-edit-page">
+                <Header />
+                <div className="error-message">
+                    У вас нет прав для создания новостей
+                </div>
+                <button onClick={() => navigate(-1)} className="back-button">
+                    <ArrowLeft size={20} /> Назад
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="news-edit-page">
@@ -94,7 +138,7 @@ const NewsPostCreatePage = () => {
                     <button
                         className="save-button"
                         onClick={handleCreate}
-                        disabled={isLoading}
+                        disabled={isLoading || !username}
                     >
                         {isLoading ? "Создание..." : (
                             <>
@@ -113,25 +157,28 @@ const NewsPostCreatePage = () => {
 
             {isPreview ? (
                 <div className="preview-mode">
-                    <h1 className="news-title">{newTitle}</h1>
-                    {newSubtitle && <h2 className="news-subtitle">{newSubtitle}</h2>}
+                    <h1 className="news-title">{title}</h1>
+                    {subtitle && <h2 className="news-subtitle">{subtitle}</h2>}
 
                     <div className="news-meta">
                         <span className="meta-item">
-                            Создано: {new Date().toLocaleString()}
+                            Автор: {username}
+                        </span>
+                        <span className="meta-item">
+                            Дата создания: {formatDate(new Date().toISOString())}
                         </span>
                         {isImportant && (
                             <span className="badge important-badge">Важно</span>
                         )}
                         <span className="meta-item">
-                            Отдел: {selectedDepartment === "all" || !selectedDepartment
+                            Отдел: {selectedDepartment === "all"
                             ? "Все"
                             : departments.find(d => d.id === selectedDepartment)?.name || "Неизвестно"}
                         </span>
                     </div>
 
                     <div className="news-content">
-                        <ReactMarkdown>{newContent}</ReactMarkdown>
+                        <ReactMarkdown>{content}</ReactMarkdown>
                     </div>
                 </div>
             ) : (
@@ -140,8 +187,8 @@ const NewsPostCreatePage = () => {
                         Заголовок*
                         <input
                             type="text"
-                            value={newTitle}
-                            onChange={(e) => setNewTitle(e.target.value)}
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
                             placeholder="Введите заголовок новости"
                             className="edit-title-input"
                             required
@@ -152,8 +199,8 @@ const NewsPostCreatePage = () => {
                         Подзаголовок
                         <input
                             type="text"
-                            value={newSubtitle}
-                            onChange={(e) => setNewSubtitle(e.target.value)}
+                            value={subtitle}
+                            onChange={(e) => setSubtitle(e.target.value)}
                             placeholder="Введите подзаголовок новости (необязательно)"
                             className="edit-subtitle-input"
                         />
@@ -162,8 +209,8 @@ const NewsPostCreatePage = () => {
                     <label className="edit-label">
                         Содержание*
                         <textarea
-                            value={newContent}
-                            onChange={(e) => setNewContent(e.target.value)}
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
                             placeholder="Введите содержимое новости (поддерживается Markdown)"
                             className="edit-content-textarea"
                             rows={10}
@@ -171,31 +218,33 @@ const NewsPostCreatePage = () => {
                         />
                     </label>
 
-                    <label className="edit-label">
-                        Отдел
-                        <select
-                            value={selectedDepartment || "all"}
-                            onChange={(e) => setSelectedDepartment(e.target.value === "all" ? null : e.target.value)}
-                            className="edit-select"
-                        >
-                            <option value="all">Все отделы</option>
-                            {departments.map((dep) => (
-                                <option key={dep.id} value={dep.id}>
-                                    {dep.name}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                    <div className="department-importance-container">
+                        <label className="edit-label">
+                            Отдел
+                            <select
+                                value={selectedDepartment}
+                                onChange={(e) => setSelectedDepartment(e.target.value)}
+                                className="edit-select"
+                            >
+                                <option value="all">Все отделы</option>
+                                {departments.map((dep) => (
+                                    <option key={dep.id} value={dep.id}>
+                                        {dep.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
 
-                    <label className="edit-label checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={isImportant}
-                            onChange={(e) => setIsImportant(e.target.checked)}
-                            className="edit-checkbox"
-                        />
-                        Важная новость
-                    </label>
+                        <label className="edit-label checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={isImportant}
+                                onChange={(e) => setIsImportant(e.target.checked)}
+                                className="edit-checkbox"
+                            />
+                            Важная новость
+                        </label>
+                    </div>
 
                     <div className="markdown-hint">
                         <p>Вы можете использовать Markdown для форматирования:</p>
@@ -206,6 +255,10 @@ const NewsPostCreatePage = () => {
                             <li>## Заголовок 2</li>
                             <li>[Ссылка](https://example.com)</li>
                             <li>- Список</li>
+                            <li>1. Нумерованный список</li>
+                            <li>![Альт текст](url-изображения)</li>
+                            <li>&gt; Цитата</li>
+                            <li>``` Код ```</li>
                         </ul>
                     </div>
                 </div>
