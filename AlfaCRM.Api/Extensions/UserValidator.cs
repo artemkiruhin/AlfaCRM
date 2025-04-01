@@ -72,4 +72,28 @@ public class UserValidator : IUserValidator
             return Result<Guid>.Failure(ex.Message);
         }
     }
+
+    public async Task<Result<bool>> HasRightsToWorkWithTickets(ClaimsPrincipal user, Guid? ticketAssigneeId, Guid? ticketCreatorId, CancellationToken ct)
+    {
+        try
+        {
+            var idClaimString = user.FindFirst(ClaimTypes.NameIdentifier).Value 
+                                ?? throw new NullReferenceException("Claim id not found");
+            var id = Guid.Parse(idClaimString);
+            
+            var userModelResult = await _userService.GetById(id, ct);
+            if (!userModelResult.IsSuccess) return Result<bool>.Failure($"Can't find user with id: {id} | {userModelResult.ErrorMessage}");
+            
+            var userData = userModelResult.Data;
+
+            var result = userData.IsAdmin ||
+                         (ticketAssigneeId.HasValue && ticketAssigneeId.Value == userData.Id) ||
+                         (ticketCreatorId.HasValue && ticketCreatorId.Value == userData.Id);
+            return Result<bool>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.Failure(ex.Message);
+        }
+    }
 }
