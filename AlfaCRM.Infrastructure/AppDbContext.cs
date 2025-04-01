@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<PostReactionEntity> PostReactions { get; set; }
     public DbSet<PostCommentEntity> PostComments { get; set; }
     public DbSet<DepartmentEntity> Departments { get; set; }
+    public DbSet<TicketEntity> Tickets { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -23,5 +24,6 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new PostConfiguration());
         modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new TicketConfiguration());
     }
 }
