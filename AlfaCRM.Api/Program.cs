@@ -104,6 +104,7 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostReactionRepository, PostReactionRepository>();
 builder.Services.AddScoped<IPostCommentRepository, PostCommentRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IUserService, UserService>();
@@ -111,6 +112,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IPostReactionService, PostReactionService>();
 builder.Services.AddScoped<IPostCommentService, PostCommentService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IHashService, SHA256Hasher>();
 builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettings(
     Audience: configuration["JWT:Audience"] ?? throw new ApplicationException("Missing JWT:Audience"),
