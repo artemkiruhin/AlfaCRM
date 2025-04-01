@@ -7,7 +7,7 @@ public class DepartmentEntity
 
     public virtual ICollection<UserEntity> Users { get; set; } = [];
     public virtual ICollection<PostEntity> Posts { get; set; } = [];
-
+    public virtual ICollection<TicketEntity> Tickets { get; set; } = [];
     public static DepartmentEntity Create(string name)
     {
         return new()
