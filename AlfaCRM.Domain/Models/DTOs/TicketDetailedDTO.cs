@@ -9,7 +9,7 @@ public record TicketDetailedDTO
     DepartmentShortDTO Department,
     DateTime CreatedAt,
     string Status,
-    UserShortDTO Assignee,
+    UserShortDTO? Assignee,
     UserShortDTO Creator,
     DateTime? ClosedAt
 );
