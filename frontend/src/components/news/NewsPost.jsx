@@ -3,6 +3,18 @@ import {ChevronRight} from "lucide-react";
 import React from "react";
 
 const NewsPost = ({post, handleNewsClick}) => {
+
+    const formatDate = (dateString) => {
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Date(dateString).toLocaleDateString('ru-RU', options);
+    };
+
     return (
         <div
             key={post.id}
@@ -19,7 +31,7 @@ const NewsPost = ({post, handleNewsClick}) => {
                     )}
                 </div>
                 <div className="news-date">
-                    {post.createdAt}
+                    {formatDate(post.createdAt)}
                 </div>
                 <div className="news-department">
                     {post.department}
