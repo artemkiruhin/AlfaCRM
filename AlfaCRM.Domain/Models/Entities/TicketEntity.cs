@@ -6,16 +6,18 @@ public class TicketEntity
     public required string Title { get; set; }
     public required string Text { get; set; }
     public string? Feedback { get; set; }
+    public Guid CreatorId { get; set; }
     public Guid DepartmentId { get; set; }
     public DateTime CreatedAt { get; set; }
     public TicketStatus Status { get; set; }
     public Guid AssigneeId { get; set; }
     public DateTime? ClosedAt { get; set; }
 
+    public virtual UserEntity Creator { get; set; } = null!;
     public virtual DepartmentEntity Department { get; set; } = null!;
     public virtual UserEntity Assignee { get; set; } = null!;
 
-    public static TicketEntity Create(string title, string text, Guid departmentId, TicketStatus status, string? feedback, Guid assigneeId)
+    public static TicketEntity Create(string title, string text, Guid departmentId, TicketStatus status, string? feedback, Guid assigneeId, Guid creatorId)
     {
         return new()
         {
@@ -33,7 +35,8 @@ public class TicketEntity
                 TicketStatus.Completed => feedback ?? throw new NullReferenceException("Feedback cannot be null."),
                 TicketStatus.Rejected => feedback ?? throw new NullReferenceException("Feedback cannot be null."),
                 _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
-            }
+            },
+            CreatorId = creatorId
         };
     }
 }
