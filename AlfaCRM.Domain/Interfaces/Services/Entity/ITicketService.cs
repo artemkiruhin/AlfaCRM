@@ -14,7 +14,7 @@ public interface ITicketService
     Task<Result<TicketDetailedDTO>> GetById(Guid id, CancellationToken ct);
     Task<Result<TicketShortDTO>> GetByIdShort(Guid id, CancellationToken ct);
     
-    Task<Result<Guid>> TakeToWork (Guid id, CancellationToken ct);
-    Task<Result<Guid>> Complete (Guid id, string feedback, CancellationToken ct);
-    Task<Result<Guid>> Reject (Guid id, string feedback, CancellationToken ct);
+    Task<Result<Guid>> TakeToWork (Guid id, Guid assigneeId, CancellationToken ct);
+    Task<Result<Guid>> Complete (Guid id, Guid assigneeId, string feedback, CancellationToken ct);
+    Task<Result<Guid>> Reject (Guid id, Guid assigneeId, string feedback, CancellationToken ct);
 }
