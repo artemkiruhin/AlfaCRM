@@ -9,6 +9,7 @@ public interface IUnitOfWork
     public IUserRepository UserRepository { get; }
     public IPostCommentRepository PostCommentRepository { get; }
     public IPostReactionRepository PostReactionRepository { get; }
+    public ITicketRepository TicketRepository { get; }
     
     Task<int> SaveChangesAsync(CancellationToken ct);
     Task BeginTransactionAsync(CancellationToken ct);
