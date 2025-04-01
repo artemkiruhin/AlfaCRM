@@ -5,6 +5,6 @@ namespace AlfaCRM.Domain.Interfaces.Database.Repositories;
 
 public interface ITicketRepository : ICrudRepository<TicketEntity>
 {
-    Task<IEnumerable<TicketEntity>> GetByDepartmentIdAsync(Guid departmentId);
-    Task<IEnumerable<TicketEntity>> GetByCreatorIdAsync(Guid creatorId);
+    Task<IEnumerable<TicketEntity>> GetByDepartmentIdAsync(Guid departmentId, CancellationToken ct);
+    Task<IEnumerable<TicketEntity>> GetByCreatorIdAsync(Guid creatorId, CancellationToken ct);
 }
