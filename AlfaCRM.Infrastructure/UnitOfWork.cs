@@ -16,7 +16,8 @@ public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
         IPostRepository postRepository,
         IUserRepository userRepository,
         IPostCommentRepository postCommentRepository,
-        IPostReactionRepository postReactionRepository)
+        IPostReactionRepository postReactionRepository,
+        ITicketRepository ticketRepository)
     {
         _context = context;
         DepartmentRepository = departmentRepository;
@@ -24,6 +25,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
         UserRepository = userRepository;
         PostCommentRepository = postCommentRepository;
         PostReactionRepository = postReactionRepository;
+        TicketRepository = ticketRepository;
     }
 
     public IDepartmentRepository DepartmentRepository { get; }
@@ -31,6 +33,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
     public IUserRepository UserRepository { get; }
     public IPostCommentRepository PostCommentRepository { get; }
     public IPostReactionRepository PostReactionRepository { get; }
+    public ITicketRepository TicketRepository { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
