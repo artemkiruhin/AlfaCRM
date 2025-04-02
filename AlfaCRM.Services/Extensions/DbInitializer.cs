@@ -15,11 +15,11 @@ public static class DbInitializer
         
         var departments = new List<DepartmentEntity>
         {
-            DepartmentEntity.Create("Отдел разработки"),
-            DepartmentEntity.Create("Отдел тестирования"),
-            DepartmentEntity.Create("Отдел маркетинга"),
-            DepartmentEntity.Create("Отдел продаж"),
-            DepartmentEntity.Create("Отдел поддержки")
+            DepartmentEntity.Create("Отдел разработки", true),
+            DepartmentEntity.Create("Отдел тестирования", true),
+            DepartmentEntity.Create("Отдел маркетинга", false),
+            DepartmentEntity.Create("Отдел продаж", false),
+            DepartmentEntity.Create("Отдел поддержки", false)
         };
 
         context.Departments.AddRange(departments);

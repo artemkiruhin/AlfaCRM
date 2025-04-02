@@ -19,7 +19,8 @@ public class DepartmentService : IDepartmentService
     {
         return new DepartmentShortDTO(
             Id: entity.Id,
-            Name: entity.Name
+            Name: entity.Name,
+            IsSpecific: entity.IsSpecific
         );
     }
 
@@ -27,7 +28,8 @@ public class DepartmentService : IDepartmentService
     {
         return entities.Select(entitiy => new DepartmentShortDTO(
             Id: entitiy.Id,
-            Name: entitiy.Name
+            Name: entitiy.Name,
+            IsSpecific: entitiy.IsSpecific
         )).ToList();
     }
     
@@ -36,6 +38,7 @@ public class DepartmentService : IDepartmentService
         return new DepartmentDetailedDTO(
             Id: entity.Id,
             Name: entity.Name,
+            IsSpecific: entity.IsSpecific,
             Users: entity.Users.Select(user => new UserShortDTO(
                 Id: user.Id,
                 Username: user.Username,
@@ -50,6 +53,7 @@ public class DepartmentService : IDepartmentService
         return entities.Select(department => new DepartmentDetailedDTO(
             Id: department.Id,
             Name: department.Name,
+            IsSpecific: department.IsSpecific,
             Users: department.Users.Select(user => new UserShortDTO(
                 Id: user.Id,
                 Username: user.Username,
@@ -69,7 +73,7 @@ public class DepartmentService : IDepartmentService
             var dbDepartment = await _database.DepartmentRepository.GetDepartmentByName(request.Name, ct);
             if (dbDepartment != null) return Result<Guid>.Failure($"Department {request.Name} already exists");
             
-            var newDepartment = DepartmentEntity.Create(request.Name);
+            var newDepartment = DepartmentEntity.Create(request.Name, request.IsSpecific);
             await _database.DepartmentRepository.CreateAsync(newDepartment, ct);
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -96,6 +100,8 @@ public class DepartmentService : IDepartmentService
             if (dbDepartment == null) return Result<Guid>.Failure("Department not found");
             
             dbDepartment.Name = request.Name;
+            if (request.IsSpecific.HasValue) dbDepartment.IsSpecific = request.IsSpecific.Value;
+            
             _database.DepartmentRepository.Update(dbDepartment, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);

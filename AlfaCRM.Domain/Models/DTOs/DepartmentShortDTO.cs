@@ -2,5 +2,6 @@
 
 public record DepartmentShortDTO(
     Guid Id,
-    string Name
+    string Name,
+    bool IsSpecific
 );
