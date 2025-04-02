@@ -85,17 +85,32 @@ public class TicketService : ITicketService
         }
     }
 
-    public async Task<Result<Guid>> Delete(Guid id, CancellationToken ct)
+    public async Task<Result<Guid>> Delete(Guid id, Guid userId, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
         try
         {
             var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
-            if (ticket == null) return Result<Guid>.Failure($"Ticket not found: {id}");
+            if (ticket == null) 
+                return Result<Guid>.Failure($"Ticket not found: {id}");
+        
+            var user = await _database.UserRepository.GetByIdAsync(userId, ct);
+            if (user == null) 
+                return Result<Guid>.Failure($"User not found: {userId}");
+        
+            if (!user.IsAdmin)
+            {
+                if (ticket.CreatorId != userId)
+                    return Result<Guid>.Failure("Only admin or ticket creator can delete ticket");
             
+                if (ticket.Status != TicketStatus.Created)
+                    return Result<Guid>.Failure("Creator can only delete tickets in 'Created' status");
+            }
+        
             _database.TicketRepository.Delete(ticket, ct);
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
+        
             return Result<Guid>.Success(ticket.Id);
         }
         catch (Exception e)
@@ -160,7 +175,8 @@ public class TicketService : ITicketService
                 Feedback: ticket.Feedback,
                 Department: new DepartmentShortDTO(
                     Id: ticket.DepartmentId,
-                    Name: ticket.Department.Name
+                    Name: ticket.Department.Name,
+                    IsSpecific: ticket.Department.IsSpecific
                     ),
                 CreatedAt: ticket.CreatedAt,
                 Status: ticket.Status switch
@@ -208,7 +224,8 @@ public class TicketService : ITicketService
                 Feedback: ticket.Feedback,
                 Department: new DepartmentShortDTO(
                     Id: ticket.DepartmentId,
-                    Name: ticket.Department.Name
+                    Name: ticket.Department.Name,
+                    IsSpecific: ticket.Department.IsSpecific
                 ),
                 CreatedAt: ticket.CreatedAt,
                 Status: ticket.Status switch
@@ -325,7 +342,7 @@ public class TicketService : ITicketService
             
             if (ticket.Status == TicketStatus.Completed) return Result<Guid>.Failure("Ticket is already in work");
             ticket.Status = TicketStatus.Completed;
-           
+            ticket.ClosedAt = DateTime.UtcNow;
             ticket.Feedback = feedback;
             
             _database.TicketRepository.Update(ticket, ct);
@@ -355,7 +372,7 @@ public class TicketService : ITicketService
             
             if (ticket.Status == TicketStatus.Rejected) return Result<Guid>.Failure("Ticket is already in work");
             ticket.Status = TicketStatus.Rejected;
-           
+            ticket.ClosedAt = DateTime.UtcNow;
             ticket.Feedback = feedback;
             
             _database.TicketRepository.Update(ticket, ct);
