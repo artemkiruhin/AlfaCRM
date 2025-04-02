@@ -69,7 +69,8 @@ public class PostService : IPostService
             Department: entity.DepartmentId.HasValue
                 ? new DepartmentShortDTO(
                     Id: entity.DepartmentId.Value,
-                    Name: entity.Department.Name
+                    Name: entity.Department.Name,
+                    IsSpecific: entity.Department.IsSpecific
                 )
                 : null,
             Reactions: entity.Reactions.Select(reaction => new PostReactionShortDTO(
@@ -118,7 +119,8 @@ public class PostService : IPostService
             Department: entity.DepartmentId.HasValue
                 ? new DepartmentShortDTO(
                     Id: entity.DepartmentId.Value,
-                    Name: entity.Department.Name
+                    Name: entity.Department.Name,
+                    IsSpecific: entity.Department.IsSpecific
                 )
                 : null,
             Reactions: entity.Reactions.Select(reaction => new PostReactionShortDTO(

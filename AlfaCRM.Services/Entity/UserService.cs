@@ -58,7 +58,8 @@ public class UserService : IUserService
             Department: entity.DepartmentId.HasValue
                 ? new DepartmentShortDTO(
                     Id: entity.DepartmentId.Value,
-                    Name: entity.Department.Name
+                    Name: entity.Department.Name,
+                    IsSpecific: entity.Department.IsSpecific
                 )
                 : null,
             Posts: entity.Posts.Select(post => new PostShortDTO(
@@ -90,7 +91,8 @@ public class UserService : IUserService
             Department: entity.DepartmentId.HasValue
                 ? new DepartmentShortDTO(
                     Id: entity.DepartmentId.Value,
-                    Name: entity.Department.Name
+                    Name: entity.Department.Name,
+                    IsSpecific: entity.Department.IsSpecific
                 )
                 : null,
             Posts: entity.Posts.Select(post => new PostShortDTO(
