@@ -17,7 +17,7 @@ const getAllTickets = async (departmentId, isShort) => {
 
         if (!response.ok) {
             console.error(`Getting all tickets error: ${response.statusText} | ${response.status}`);
-            throw new Error(`HTTP error! status: ${response.status}`);
+            console.error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -40,7 +40,7 @@ const getUserTickets = async (userId, isShort) => {
 
         if (!response.ok) {
             console.error(`Getting user tickets error: ${response.statusText} | ${response.status}`);
-            throw new Error(`HTTP error! status: ${response.status}`);
+            console.error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -69,7 +69,7 @@ const createTicket = async (title, text, departmentId) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            console.error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -106,7 +106,7 @@ const editTicket = async (id, title, text, departmentId, feedback) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            console.error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -141,7 +141,7 @@ const changeTicketStatus = async (id, status, feedback) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            console.error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -162,7 +162,7 @@ const deleteTicket = async (id) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            console.error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
