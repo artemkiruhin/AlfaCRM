@@ -27,17 +27,19 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                var isAdminOrSpecialUser = await _userValidator.IsAdminOrSpecDepartment(User, ct);
-                if (!isAdminOrSpecialUser.IsSuccess) return new UnauthorizedResult();
+                // var isAdminOrSpecialUser = await _userValidator.IsAdminOrSpecDepartment(User, ct);
+                // if (!isAdminOrSpecialUser.IsSuccess) return new UnauthorizedResult();
+                
+                var departmentIdCheckedForGuidEmpty = departmentId == Guid.Empty ? null : departmentId;
                 
                 if (isShort)
                 {
-                    var shortResult = await _ticketService.GetAllShort(departmentId, null, ct);
+                    var shortResult = await _ticketService.GetAllShort(departmentIdCheckedForGuidEmpty, null, ct);
                     return Ok(new {data = shortResult});
                 }
                 
-                var detailedResult = await _ticketService.GetAll(departmentId, null, ct);
-                return Ok(new {data = detailedResult});
+                var detailedResult = await _ticketService.GetAll(departmentIdCheckedForGuidEmpty, null, ct);
+                return Ok(new {data = detailedResult.Data});
             }
             catch (Exception ex)
             {
@@ -64,7 +66,21 @@ namespace AlfaCRM.Api.Controllers
                 }
                 
                 var detailedResult = await _ticketService.GetAll(null, userId.Data, ct);
-                return Ok(new {data = detailedResult});
+                return Ok(new {data = detailedResult.Data});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        [HttpGet("id/{id:guid}")]
+        public async Task<IActionResult> GetAllByUserId([FromRoute] Guid id, CancellationToken ct)
+        {
+            try
+            {
+                var detailedResult = await _ticketService.GetById(id, ct);
+                return Ok(new {data = detailedResult.Data});
             }
             catch (Exception ex)
             {
