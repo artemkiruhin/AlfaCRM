@@ -41,7 +41,7 @@ namespace AlfaCRM.Api.Controllers
                     Expires = DateTimeOffset.UtcNow.AddHours(48),
                 });
                 
-                return Ok(new { Id = result.Data.id, Username = result.Data.username, Token = result.Data.token });
+                return Ok(new { Id = result.Data.id, Username = result.Data.username, Department = result.Data.departmentId, Token = result.Data.token });
             }
             catch (Exception ex)
             {
