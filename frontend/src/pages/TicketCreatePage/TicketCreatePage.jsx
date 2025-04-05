@@ -1,82 +1,185 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import "./TicketCreatePage.css";
+import './TicketCreatePage.css';
 import Header from "../../components/layout/header/Header";
-import { ArrowLeft } from "lucide-react";
+import { createTicket } from '../../api-handlers/ticketsHandler';
+import { getAllDepartmentsShort } from '../../api-handlers/departmentsHandler';
+
 
 const TicketCreatePage = () => {
-    //const navigate = useNavigate();
-    const [editedTitle, setEditedTitle] = useState('');
-    const [editedText, setEditedText] = useState('');
-    const [editedDepartment, setEditedDepartment] = useState('it');
-    const [isEditable, setIsEditable] = useState(true);
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        title: '',
+        text: '',
+        departmentId: ''
+    });
+    const [departments, setDepartments] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const handleSave = () => {
-        const newTicket = {
-            id: Date.now(), // Генерация уникального ID
-            title: editedTitle,
-            text: editedText,
-            department: editedDepartment,
+    useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const deps = await getAllDepartmentsShort();
+                setDepartments(deps || []);
+                setInitialLoading(false);
+            } catch (err) {
+                console.error('Failed to fetch departments:', err);
+                setError('Не удалось загрузить список отделов');
+                setInitialLoading(false);
+            }
         };
 
-        console.log('Новая заявка:', newTicket);
-        alert('Заявка успешно создана');
-        //navigate('/tickets');
+        fetchDepartments();
+    }, []);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!formData.title.trim()) {
+            setError('Пожалуйста, укажите заголовок заявки');
+            return;
+        }
+
+        if (!formData.text.trim()) {
+            setError('Пожалуйста, опишите вашу заявку');
+            return;
+        }
+
+        if (!formData.departmentId) {
+            setError('Пожалуйста, выберите отдел');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError(null);
+
+            await createTicket(
+                formData.title,
+                formData.text,
+                formData.departmentId
+            );
+
+            navigate('/tickets/my', { state: { ticketCreated: true } });
+        } catch (err) {
+            console.error('Ticket creation failed:', err);
+            setError(err.message || 'Не удалось создать заявку. Пожалуйста, попробуйте позже.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCancel = () => {
-        //navigate('/tickets');
+        navigate('/tickets/my');
     };
 
+    // if (initialLoading) {
+    //     return <LoadingSpinner />;
+    // }
+
+    if (error && !departments.length) {
+        return (
+            <div className="ticket-create-page">
+                <Header title={"Создание новой заявки"} />
+                {/*<ErrorMessage message={error} />*/}
+                <button className="back-button" onClick={handleCancel}>
+                    <ArrowLeft size={20} /> Назад
+                </button>
+            </div>
+        );
+    }
+
     return (
-        <div className="ticket-details-page">
+
+        <div className="ticket-create-page">
             <Header title={"Создание новой заявки"} />
             <button className="back-button" onClick={handleCancel}>
                 <ArrowLeft size={20} /> Назад
             </button>
-            <div className="ticket-details-container">
-                <div className="edit-field">
-                    <label>Заголовок:</label>
+
+            <form onSubmit={handleSubmit} className="ticket-create-form">
+                {/*{error && <ErrorMessage message={error} />}*/}
+
+                <div className="form-field">
+                    <label htmlFor="title">Заголовок*:</label>
                     <input
+                        id="title"
+                        name="title"
                         type="text"
-                        value={editedTitle}
-                        onChange={(e) => setEditedTitle(e.target.value)}
+                        value={formData.title}
+                        onChange={handleChange}
+                        maxLength={100}
+                        placeholder="Кратко опишите проблему"
+                        required
                     />
                 </div>
 
-                <div className="edit-field">
-                    <label>Текст заявки:</label>
+                <div className="form-field">
+                    <label htmlFor="text">Описание проблемы*:</label>
                     <textarea
-                        value={editedText}
-                        onChange={(e) => setEditedText(e.target.value)}
+                        id="text"
+                        name="text"
+                        value={formData.text}
+                        onChange={handleChange}
+                        rows={6}
+                        placeholder="Подробно опишите вашу заявку (что случилось, когда, важные детали)"
+                        required
                     />
                 </div>
 
-                <div className="edit-field">
-                    <label className="edit-label">
-                        Отдел:
-                        <select
-                            value={editedDepartment}
-                            onChange={(e) => setEditedDepartment(e.target.value)}
-                            className="edit-select"
-                        >
-                            <option value="hr">HR</option>
-                            <option value="it">IT</option>
-                            <option value="finance">Финансы</option>
-                            <option value="marketing">Маркетинг</option>
-                        </select>
-                    </label>
+                <div className="form-field">
+                    <label htmlFor="departmentId">Отдел*:</label>
+                    <select
+                        id="departmentId"
+                        name="departmentId"
+                        value={formData.departmentId}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="">Выберите отдел</option>
+                        {departments.map(dept => (
+                            <option key={dept.id} value={dept.id}>
+                                {dept.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
-                <div className="ticket-details-actions">
-                    <button className="ticket-save-button" onClick={handleSave}>
-                        Создать заявку
+                <div className="form-actions">
+                    <button
+                        type="submit"
+                        className="submit-button"
+                        disabled={loading}
+                    >
+                        {/*{loading ? (*/}
+                        {/*    <LoadingSpinner small />*/}
+                        {/*) : (*/}
+                            <>
+                                <Save size={18} /> Создать заявку
+                            </>
+                        {/*)}*/}
                     </button>
-                    <button className="ticket-back-button" onClick={handleCancel}>
+                    <button
+                        type="button"
+                        className="cancel-button"
+                        onClick={handleCancel}
+                        disabled={loading}
+                    >
                         Отмена
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     );
 };
