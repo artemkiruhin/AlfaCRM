@@ -1,170 +1,272 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import "./TicketDetailsPage.css";
 import Header from "../../components/layout/header/Header";
-import {ArrowLeft} from "lucide-react";
+import { getTicketById, editTicket, deleteTicket } from '../../api-handlers/ticketsHandler';
+import { getAllDepartmentsShort } from '../../api-handlers/departmentsHandler';
 
 const TicketDetailsPage = () => {
-    //const { id } = useParams();
-    const id = 1
-    //const navigate = useNavigate();
-    const [ticket, setTicket] = useState(null);
-    const [editedTitle, setEditedTitle] = useState('');
-    const [editedText, setEditedText] = useState('');
-    const [editedDepartment, setEditedDepartment] = useState('');
-    const [editedFeedback, setEditedFeedback] = useState('');
-    const [isEditable, setIsEditable] = useState(false);
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-    const mockTickets = [
-        {
-            id: 1,
-            title: 'Проблема с принтером',
-            text: 'Принтер не печатает документы.',
-            department: 'it',
-            date: '2023-10-01 14:30',
-            status: 'Создано',
-            assignee: 'ivanov',
-            feedback: '',
-        },
-        {
-            id: 2,
-            title: 'Замена картриджа',
-            text: 'Необходимо заменить картридж в принтере.',
-            department: 'finance',
-            date: '2023-10-02 10:15',
-            status: 'Выполнено',
-            feedback: 'Картридж заменен.',
-            assignee: 'petrov',
-        },
-    ];
+    const [ticket, setTicket] = useState(null);
+    const [formData, setFormData] = useState({
+        title: '',
+        text: '',
+        departmentId: '',
+        feedback: ''
+    });
+    const [departments, setDepartments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const foundTicket = mockTickets.find((ticket) => ticket.id === parseInt(id));
-        if (foundTicket) {
-            setTicket(foundTicket);
-            setEditedTitle(foundTicket.title);
-            setEditedText(foundTicket.text);
-            setEditedDepartment(foundTicket.department);
-            setEditedFeedback(foundTicket.feedback);
-            // Проверяем, можно ли редактировать заявку (например, если статус "Создано")
-            setIsEditable(foundTicket.status === 'Создано');
-        } else {
-            //navigate('/tickets');
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const ticketData = await getTicketById(id);
+                const deps = await getAllDepartmentsShort();
+
+                if (!ticketData) {
+                    throw new Error('Заявка не найдена');
+                }
+
+                setTicket(ticketData);
+                setDepartments(deps || []);
+
+                setFormData({
+                    title: ticketData.title,
+                    text: ticketData.text,
+                    departmentId: ticketData.department.id,
+                    feedback: ticketData.feedback || ''
+                });
+
+            } catch (err) {
+                console.error('Failed to fetch ticket:', err);
+                setError(err.message || 'Ошибка при загрузке заявки');
+                navigate('/tickets/my', { replace: true });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [id, navigate]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSave = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Если заявка уже завершена, не обновляем feedback
+            const feedback = isCompletedOrRejected() ? ticket.feedback : formData.feedback;
+
+            const updatedTicket = await editTicket(
+                id,
+                formData.title,
+                formData.text,
+                formData.departmentId,
+                feedback
+            );
+
+            setTicket(updatedTicket);
+        } catch (err) {
+            console.error('Failed to update ticket:', err);
+            setError(err.message || 'Ошибка при сохранении изменений');
+        } finally {
+            setLoading(false);
         }
-    }, [id]);
-
-    const handleDelete = () => {
-        alert(`Заявка ${id} удалена`);
-        //navigate('/tickets');
     };
 
-    const handleSave = () => {
-        //
-        // const updatedTicket = {
-        //     ...ticket,
-        //     title: editedTitle,
-        //     text: editedText,
-        //     department: editedDepartment,
-        //     feedback: editedFeedback,
-        // };
-        // setTicket(updatedTicket);
-        // alert('Изменения сохранены');
-        // setIsEditable(false);
-        alert('Изменения сохранены');
+    const handleDelete = async () => {
+        if (!window.confirm('Вы уверены, что хотите удалить эту заявку?')) {
+            return;
+        }
 
+        try {
+            setLoading(true);
+            setError(null);
+
+            await deleteTicket(id);
+            navigate('/tickets/my', { state: { ticketDeleted: true } });
+        } catch (err) {
+            console.error('Failed to delete ticket:', err);
+            setError(err.message || 'Ошибка при удалении заявки');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    if (!ticket) {
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const options = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Date(dateString).toLocaleString('ru-RU', options);
+    };
+
+    const getStatusColor = (status) => {
+        switch(status) {
+            case 'Создано': return 'var(--info-color)';
+            case 'В работе': return 'var(--warning-color)';
+            case 'Выполнено': return 'var(--success-color)';
+            case 'Отменено': return 'var(--error-color)';
+            default: return 'var(--text-light)';
+        }
+    };
+
+    const isCompletedOrRejected = () => {
+        return ticket?.status === 'Выполнено' || ticket?.status === 'Отменено';
+    };
+
+    const isEditable = () => {
+        return !isCompletedOrRejected();
+    };
+
+    if (loading || !ticket) {
         return <div>Загрузка...</div>;
     }
 
     return (
         <div className="ticket-details-page">
-            <Header title={"Детали заявки"}/>
-            <button className="back-button">
-                <ArrowLeft size={20}/> Назад
+            <Header title={`Заявка #${id}`} />
+
+            <button className="back-button" onClick={() => navigate('/tickets/my')}>
+                <ArrowLeft size={20} /> Назад
             </button>
+
             <div className="ticket-details-container">
-                <div className="edit-field">
-                    <label>Заголовок:</label>
-                    {isEditable ? (
-                        <input
-                            type="text"
-                            value={editedTitle}
-                            onChange={(e) => setEditedTitle(e.target.value)}
-                        />
-                    ) : (
-                        <h2 className="ticket-details-title">{ticket.title}</h2>
-                    )}
+                <div className="ticket-header">
+                    <input
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        className="edit-title-input"
+                        required
+                        disabled={!isEditable()}
+                    />
+
+                    <span
+                        className="ticket-status"
+                        style={{ backgroundColor: getStatusColor(ticket.status) }}
+                    >
+                        {ticket.status}
+                    </span>
                 </div>
 
-                <div className="edit-field">
-                    <label>Текст заявки:</label>
-                    {isEditable ? (
-                        <textarea
-                            value={editedText}
-                            onChange={(e) => setEditedText(e.target.value)}
-                        />
-                    ) : (
-                        <p className="ticket-details-text">{ticket.text}</p>
-                    )}
+                <div className="ticket-section">
+                    <label>Описание:</label>
+                    <textarea
+                        name="text"
+                        value={formData.text}
+                        onChange={handleChange}
+                        className="edit-textarea"
+                        required
+                        disabled={!isEditable()}
+                    />
                 </div>
 
-                <div className="edit-field">
-                    <label className="edit-label">
-                        Отдел:
-                        {isEditable ? (
-                            <select
-                                value={editedDepartment}
-                                onChange={(e) => setEditedDepartment(e.target.value)}
-                                className="edit-select"
-                            >
-                                <option value="hr">HR</option>
-                                <option value="it">IT</option>
-                                <option value="finance">Финансы</option>
-                                <option value="marketing">Маркетинг</option>
-                            </select>
+                <div className="ticket-section">
+                    <label>Отдел:</label>
+                    <select
+                        name="departmentId"
+                        value={formData.departmentId}
+                        onChange={handleChange}
+                        className="edit-select"
+                        required
+                        disabled={!isEditable()}
+                    >
+                        {departments.map(dept => (
+                            <option key={dept.id} value={dept.id}>
+                                {dept.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {(isCompletedOrRejected() || formData.feedback) && (
+                    <div className="ticket-section">
+                        <label>Комментарий:</label>
+                        {isCompletedOrRejected() ? (
+                            <p className="feedback-text">{ticket.feedback || 'Нет комментария'}</p>
                         ) : (
-                            <span>{ticket.department}</span>
-                        )}
-                    </label>
-                </div>
-
-                {(ticket.status === 'Выполнено' || ticket.status === 'Закрыто') && (
-                    <div className="edit-field">
-                        <label>Ответ сотрудника:</label>
-                        {isEditable ? (
                             <textarea
-                                value={editedFeedback}
-                                onChange={(e) => setEditedFeedback(e.target.value)}
+                                name="feedback"
+                                value={formData.feedback}
+                                onChange={handleChange}
+                                className="edit-textarea"
+                                placeholder="Введите комментарий по заявке"
                             />
-                        ) : (
-                            <p>{ticket.feedback}</p>
                         )}
                     </div>
                 )}
 
-                <div className="ticket-details-meta">
-                    <span>Дата создания: {ticket.date}</span>
-                    <span>Статус: {ticket.status}</span>
-                    {ticket.assignee && <span>Сотрудник: {ticket.assignee}</span>}
+                <div className="ticket-meta">
+                    <div className="meta-group">
+                        <div className="meta-item">
+                            <span className="meta-label">Создано:</span>
+                            <span>{formatDate(ticket.createdAt)}</span>
+                        </div>
+                        <div className="meta-item">
+                            <span className="meta-label">Автор:</span>
+                            <span>{ticket.creator.username}</span>
+                        </div>
+                    </div>
+
+                    {ticket.assignee && (
+                        <div className="meta-group">
+                            <div className="meta-item">
+                                <span className="meta-label">Исполнитель:</span>
+                                <span>{ticket.assignee.username}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {isCompletedOrRejected() && ticket.closedAt && (
+                        <div className="meta-group">
+                            <div className="meta-item">
+                                <span className="meta-label">Завершено:</span>
+                                <span>{formatDate(ticket.closedAt)}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Кнопки действий */}
-                <div className="ticket-details-actions">
-                    {isEditable && (
-                        <button className="ticket-save-button" onClick={handleSave}>
-                            Сохранить
+                <div className="ticket-actions">
+                    {isEditable() && (
+                        <button
+                            onClick={handleSave}
+                            className="btn-save"
+                            disabled={loading}
+                        >
+                            <Save size={18} /> {loading ? 'Сохранение...' : 'Сохранить'}
                         </button>
                     )}
-                    <button className="ticket-delete-button" onClick={handleDelete}>
-                        Удалить
+                    <button
+                        onClick={handleDelete}
+                        className="btn-delete"
+                        disabled={loading}
+                    >
+                        <Trash2 size={18} /> {loading ? 'Удаление...' : 'Удалить'}
                     </button>
-                    {/*<div className="ticket-back-button" onClick={() => navigate('/tickets')}>*/}
-                    <div className="ticket-back-button">
-                        Назад к списку
-                    </div>
                 </div>
+
+                {error && <div className="error-message">{error}</div>}
             </div>
         </div>
     );
