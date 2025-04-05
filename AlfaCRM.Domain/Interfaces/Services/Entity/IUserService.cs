@@ -5,7 +5,7 @@ namespace AlfaCRM.Domain.Interfaces.Services.Entity;
 
 public interface IUserService
 {
-    Task<Result<(Guid id, string username, string token)>> Login(LoginRequest request, CancellationToken ct);
+    Task<Result<(Guid id, string username, Guid departmentId, string token)>> Login(LoginRequest request, CancellationToken ct);
     
     Task<Result<Guid>> Create(UserCreateRequest request, CancellationToken ct);
     Task<Result<Guid>> Update(UserUpdateRequest request, CancellationToken ct);
