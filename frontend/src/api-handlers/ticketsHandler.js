@@ -16,12 +16,19 @@ const getAllTickets = async (departmentId, isShort) => {
         });
 
         if (!response.ok) {
-            console.error(`Getting all tickets error: ${response.statusText} | ${response.status}`);
-            console.error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data.data;
+        const result = await response.json();
+
+        // Проверяем структуру ответа
+        if (result && result.data && Array.isArray(result.data)) {
+            return result.data;
+        } else if (Array.isArray(result)) {
+            return result;
+        } else {
+            throw new Error('Некорректный формат данных от сервера');
+        }
 
     } catch (e) {
         console.error('Getting all tickets error: ', e);
@@ -51,6 +58,30 @@ const getUserTickets = async (isShort) => {
         throw e;
     }
 };
+
+const getTicketById = async (id) => {
+    try {
+        const url = `${API_URL}/tickets/id/${id}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.data;
+
+    } catch (e) {
+        console.error('Getting ticket error: ', e);
+        throw e;
+    }
+};
+
 
 const createTicket = async (title, text, departmentId) => {
     try {
@@ -180,5 +211,6 @@ export {
     createTicket,
     editTicket,
     changeTicketStatus,
-    deleteTicket
+    deleteTicket,
+    getTicketById
 };
