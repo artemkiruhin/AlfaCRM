@@ -45,16 +45,17 @@ namespace AlfaCRM.Api.Controllers
             }
         }
         
-        [HttpGet("my/{id:guid}")]
-        public async Task<IActionResult> GetAllByUserId([FromRoute] Guid id, bool isShort, CancellationToken ct)
+        [HttpGet("my")]
+        public async Task<IActionResult> GetAllByUserId(bool isShort, CancellationToken ct)
         {
             try
             {
-                var validateResult = await _userValidator.HasRightsToWorkWithTickets(User, null, id, ct);
-                if (!validateResult.IsSuccess) return Unauthorized();
-                
                 var userId = await _userValidator.GetUserId(User, ct);
                 if (!userId.IsSuccess) return Unauthorized();
+                
+                var validateResult = await _userValidator.HasRightsToWorkWithTickets(User, null, userId.Data, ct);
+                if (!validateResult.IsSuccess) return Unauthorized();
+                
                 
                 if (isShort)
                 {
