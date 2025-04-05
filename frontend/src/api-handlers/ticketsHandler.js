@@ -29,9 +29,9 @@ const getAllTickets = async (departmentId, isShort) => {
     }
 };
 
-const getUserTickets = async (userId, isShort) => {
+const getUserTickets = async (isShort) => {
     try {
-        const url = `${API_URL}/tickets/my/${userId}?isShort=${isShort}`;
+        const url = `${API_URL}/tickets/my?isShort=${isShort}`;
 
         const response = await fetch(url, {
             method: 'GET',
