@@ -21,7 +21,8 @@ public class UserEntity
     public virtual ICollection<PostEntity> Posts { get; set; } = [];
     public virtual ICollection<PostCommentEntity> Comments { get; set; } = [];
     public virtual ICollection<PostReactionEntity> Reactions { get; set; } = [];
-    public virtual ICollection<TicketEntity> Tickets { get; set; } = [];
+    public virtual ICollection<TicketEntity> AssignedTickets { get; set; } = [];
+    public virtual ICollection<TicketEntity> CreatedTickets { get; set; } = [];
 
     public static UserEntity Create(
         string email,

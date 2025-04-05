@@ -20,16 +20,16 @@ public class TicketConfiguration : IEntityTypeConfiguration<TicketEntity>
         builder.Property(x => x.Status).IsRequired();
         
         builder.HasOne(x => x.Creator)
-            .WithMany(x => x.Tickets)
+            .WithMany(x => x.CreatedTickets)
             .HasForeignKey(x => x.CreatorId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.Department)
             .WithMany(x => x.Tickets)
             .HasForeignKey(x => x.DepartmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.Assignee)
-            .WithMany(x => x.Tickets)
+            .WithMany(x => x.AssignedTickets)
             .HasForeignKey(x => x.AssigneeId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
