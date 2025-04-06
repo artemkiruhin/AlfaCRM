@@ -47,6 +47,7 @@ namespace AlfaCRM.Api.Controllers
                     Username = result.Data.username, 
                     Department = result.Data.departmentId,
                     IsSpecDepartment = result.Data.isSpecDepartment, 
+                    IsAdmin = result.Data.isAdmin,
                     Token = result.Data.token
                 });
             }
