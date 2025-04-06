@@ -37,6 +37,7 @@ function App() {
                 <Route path="/chat/:id" element={<AuthLayout><RootLayout page={<ChatConversationPage />}/></AuthLayout>} />
 
                 <Route path="/tickets/my" element={<AuthLayout><RootLayout page={<MyTicketPage />}/></AuthLayout>} />
+                <Route path="/tickets/my/:id" element={<AuthLayout><RootLayout page={<TicketDetailsPage />}/></AuthLayout>} />
                 <Route path="/tickets/:id" element={<AuthLayout><RootLayout page={<TicketDetailsPage />}/></AuthLayout>} />
                 <Route path="/tickets/sent" element={<AuthLayout><RootLayout page={<SentTicketsPage />}/></AuthLayout>} />
                 <Route path="/tickets/create" element={<AuthLayout><RootLayout page={<TicketCreatePage />}/></AuthLayout>} />
