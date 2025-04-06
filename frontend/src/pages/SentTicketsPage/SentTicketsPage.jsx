@@ -19,7 +19,9 @@ const SentTicketsPage = () => {
         const fetchTickets = async () => {
             try {
                 setLoading(true);
-                const response = await getAllTickets(localStorage.getItem('did'));
+                const isAdm = localStorage.getItem('adm') === "true";
+                console.log(isAdm);
+                const response = await getAllTickets(isAdm ? null : localStorage.getItem('did'));
 
                 if (response && Array.isArray(response)) {
                     const formattedTickets = response.map(ticket => ({
@@ -42,7 +44,7 @@ const SentTicketsPage = () => {
                     throw new Error('Некорректный формат данных от сервера');
                 }
 
-                setIsAdmin(true);
+                setIsAdmin(isAdm)
             } catch (err) {
                 console.error('Failed to fetch tickets:', err);
                 setError('Не удалось загрузить заявки');

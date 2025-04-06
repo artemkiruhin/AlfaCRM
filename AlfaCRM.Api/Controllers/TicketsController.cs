@@ -27,10 +27,10 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                // var isAdminOrSpecialUser = await _userValidator.IsAdminOrSpecDepartment(User, ct);
-                // if (!isAdminOrSpecialUser.IsSuccess) return new UnauthorizedResult();
+                var isAdminOrSpecialUser = await _userValidator.IsAdminOrSpecDepartment(User, ct);
+                if (!isAdminOrSpecialUser.IsSuccess) return new UnauthorizedResult();
                 
-                var departmentIdCheckedForGuidEmpty = departmentId == Guid.Empty ? null : departmentId;
+                var departmentIdCheckedForGuidEmpty = departmentId != null && (departmentId.Value == Guid.Empty || !departmentId.HasValue) ? null : departmentId;
                 
                 if (isShort)
                 {
