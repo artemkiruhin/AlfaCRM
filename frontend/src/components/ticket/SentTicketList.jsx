@@ -5,7 +5,8 @@ const SentTicketList = ({
                         isAdmin = false,
                         onTakeToWork,
                         onClose,
-                        onComplete
+                        onComplete,
+                        onDelete
                     }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showClosed, setShowClosed] = useState(false);
@@ -64,6 +65,17 @@ const SentTicketList = ({
                 )}
                 {isAdmin && (
                     <div className="ticket-actions">
+                        <button
+                            className="ticket-action-button delete"
+                            onClick={() => {
+                                if (window.confirm('Вы уверены, что хотите удалить эту заявку?')) {
+                                    onDelete(ticket.id);
+                                }
+                            }}
+                        >
+                            Удалить
+                        </button>
+
                         {/* For "Created" status */}
                         {ticket.status === 'Создано' && (
                             <>

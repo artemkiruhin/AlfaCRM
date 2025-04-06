@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import "./SentTicketsPage.css";
 import Header from "../../components/layout/header/Header";
 import TicketList from '../../components/ticket/TicketList';
-import { getAllTickets, changeTicketStatus } from '../../api-handlers/ticketsHandler';
+import {getAllTickets, changeTicketStatus, deleteTicket} from '../../api-handlers/ticketsHandler';
 import SentTicketList from "../../components/ticket/SentTicketList";
 
 const SentTicketsPage = () => {
@@ -19,7 +19,7 @@ const SentTicketsPage = () => {
         const fetchTickets = async () => {
             try {
                 setLoading(true);
-                const response = await getAllTickets();
+                const response = await getAllTickets(localStorage.getItem('did'));
 
                 if (response && Array.isArray(response)) {
                     const formattedTickets = response.map(ticket => ({
@@ -42,7 +42,7 @@ const SentTicketsPage = () => {
                     throw new Error('Некорректный формат данных от сервера');
                 }
 
-                setIsAdmin(true); // In real app, check user permissions
+                setIsAdmin(true);
             } catch (err) {
                 console.error('Failed to fetch tickets:', err);
                 setError('Не удалось загрузить заявки');
@@ -127,6 +127,15 @@ const SentTicketsPage = () => {
         }
     };
 
+    const handleDelete = async (id) => {
+        try {
+            await deleteTicket(id);
+            setTickets(tickets.filter((ticket) => ticket.id !== id));
+        } catch (err) {
+            console.error('Failed to delete ticket:', err);
+        }
+    };
+
     return (
         <div className="sent-tickets-page">
             <Header title={"Отправленные заявки"} info={`Всего: ${filteredTickets.length}`} />
@@ -147,6 +156,7 @@ const SentTicketsPage = () => {
                 onTakeToWork={handleTakeToWork}
                 onClose={handleCloseTicket}
                 onComplete={handleCompleteTicket}
+                onDelete={handleDelete}
             />
         </div>
     );

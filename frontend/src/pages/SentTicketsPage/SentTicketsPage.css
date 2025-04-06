@@ -244,3 +244,17 @@
     color: #666;
     font-style: italic;
 }
+
+.ticket-action-button.delete {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.ticket-action-button.delete:hover {
+    background-color: #cc0000;
+}
