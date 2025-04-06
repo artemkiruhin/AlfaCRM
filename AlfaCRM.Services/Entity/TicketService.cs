@@ -344,6 +344,7 @@ public class TicketService : ITicketService
             ticket.Status = TicketStatus.Completed;
             ticket.ClosedAt = DateTime.UtcNow;
             ticket.Feedback = feedback;
+            ticket.AssigneeId ??= assigneeId;
             
             _database.TicketRepository.Update(ticket, ct);
             await _database.SaveChangesAsync(ct);
@@ -374,6 +375,7 @@ public class TicketService : ITicketService
             ticket.Status = TicketStatus.Rejected;
             ticket.ClosedAt = DateTime.UtcNow;
             ticket.Feedback = feedback;
+            ticket.AssigneeId ??= assigneeId;
             
             _database.TicketRepository.Update(ticket, ct);
             await _database.SaveChangesAsync(ct);
