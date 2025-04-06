@@ -40,8 +40,15 @@ namespace AlfaCRM.Api.Controllers
                     HttpOnly = true,
                     Expires = DateTimeOffset.UtcNow.AddHours(48),
                 });
-                
-                return Ok(new { Id = result.Data.id, Username = result.Data.username, Department = result.Data.departmentId, Token = result.Data.token });
+
+                return Ok(new
+                {
+                    Id = result.Data.id, 
+                    Username = result.Data.username, 
+                    Department = result.Data.departmentId,
+                    IsSpecDepartment = result.Data.isSpecDepartment, 
+                    Token = result.Data.token
+                });
             }
             catch (Exception ex)
             {
