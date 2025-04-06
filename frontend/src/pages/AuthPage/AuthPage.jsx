@@ -24,6 +24,7 @@ export const AuthPage = () => {
                 localStorage.setItem('uid', result.id);
                 localStorage.setItem('username', result.username);
                 localStorage.setItem('did', result.department);
+                localStorage.setItem('spec', result.isSpecDepartment);
                 showSuccess('Успешная авторизация!');
                 navigate("/news");
             } else {

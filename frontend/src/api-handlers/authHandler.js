@@ -24,7 +24,8 @@ const login = async (username, password) => {
             id: data.id,
             token: data.token,
             department: data.department,
-            username: data.username
+            username: data.username,
+            isSpecDepartment: data.isSpecDepartment
         }
 
     } catch (e) {
