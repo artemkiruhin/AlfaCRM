@@ -12,12 +12,13 @@ public class TicketEntity
     public TicketStatus Status { get; set; }
     public Guid? AssigneeId { get; set; }
     public DateTime? ClosedAt { get; set; }
+    public TicketType Type { get; set; }
 
     public virtual UserEntity Creator { get; set; } = null!;
     public virtual DepartmentEntity Department { get; set; } = null!;
     public virtual UserEntity? Assignee { get; set; } = null!;
 
-    public static TicketEntity Create(string title, string text, Guid departmentId, TicketStatus status, string? feedback, Guid? assigneeId, Guid creatorId)
+    public static TicketEntity Create(string title, string text, Guid departmentId, TicketStatus status, string? feedback, Guid? assigneeId, Guid creatorId, TicketType type)
     {
         return new()
         {
@@ -27,6 +28,7 @@ public class TicketEntity
             DepartmentId = departmentId,
             CreatedAt = DateTime.UtcNow,
             Status = status,
+            Type = type,
             AssigneeId = assigneeId,
             Feedback = status switch
             {

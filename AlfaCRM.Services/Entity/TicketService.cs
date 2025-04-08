@@ -20,7 +20,7 @@ public class TicketService : ITicketService
         await _database.BeginTransactionAsync(ct);
         try
         {
-            var ticket = TicketEntity.Create(request.Title, request.Text, request.DepartmentId, TicketStatus.Created, null, null, request.CreatorId);
+            var ticket = TicketEntity.Create(request.Title, request.Text, request.DepartmentId, TicketStatus.Created, null, null, request.CreatorId, request.Type);
             await _database.TicketRepository.CreateAsync(ticket, ct);
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -70,7 +70,7 @@ public class TicketService : ITicketService
                 if (!string.IsNullOrEmpty(request.Text)) ticket.Text = request.Text;
                 if (request.DepartmentId.HasValue) ticket.DepartmentId = request.DepartmentId.Value;
                 if (!string.IsNullOrEmpty(request.Feedback)) ticket.Feedback = request.Feedback;
-                
+                if (request.Type.HasValue) ticket.Type = request.Type.Value;
             }
 
             _database.TicketRepository.Update(ticket, ct);
@@ -120,7 +120,7 @@ public class TicketService : ITicketService
         }
     }
 
-    public async Task<Result<List<TicketShortDTO>>> GetAllShort(Guid? departmentId, Guid? senderId, CancellationToken ct)
+    public async Task<Result<List<TicketShortDTO>>> GetAllShort(Guid? departmentId, Guid? senderId, TicketType? type, CancellationToken ct)
     {
         try
         {
@@ -128,6 +128,7 @@ public class TicketService : ITicketService
             
             if (departmentId.HasValue) tickets = tickets.Where(ticket => ticket.DepartmentId == departmentId);
             if (senderId.HasValue) tickets = tickets.Where(ticket => ticket.CreatorId == senderId);
+            if (type.HasValue) tickets = tickets.Where(ticket => ticket.Type == type);
 
             var dtos = tickets.Select(ticket => new TicketShortDTO(
                 Id: ticket.Id,
@@ -148,7 +149,13 @@ public class TicketService : ITicketService
                 AssigneeUsername: ticket.Assignee.Username,
                 ClosedAt: ticket.ClosedAt,
                 CreatorId: ticket.CreatorId,
-                CreatorUsername: ticket.Creator.Username
+                CreatorUsername: ticket.Creator.Username,
+                Type: ticket.Type switch
+                {
+                    TicketType.ProblemCase => "Заявка",
+                    TicketType.Suggestion => "Предложение",
+                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Type))
+                }
             )).ToList();
 
             return Result<List<TicketShortDTO>>.Success(dtos);
@@ -159,7 +166,7 @@ public class TicketService : ITicketService
         }
     }
 
-    public async Task<Result<List<TicketDetailedDTO>>> GetAll(Guid? departmentId, Guid? senderId, CancellationToken ct)
+    public async Task<Result<List<TicketDetailedDTO>>> GetAll(Guid? departmentId, Guid? senderId, TicketType? type, CancellationToken ct)
     {
         try
         {
@@ -167,7 +174,8 @@ public class TicketService : ITicketService
             
             if (departmentId.HasValue) tickets = tickets.Where(ticket => ticket.DepartmentId == departmentId);
             if (senderId.HasValue) tickets = tickets.Where(ticket => ticket.CreatorId == senderId);
-
+            if (type.HasValue) tickets = tickets.Where(ticket => ticket.Type == type);
+            
             var dtos = tickets.Select(ticket => new TicketDetailedDTO(
                 Id: ticket.Id,
                 Title: ticket.Title,
@@ -199,7 +207,13 @@ public class TicketService : ITicketService
                     Email: ticket.Creator.Email,
                     DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела"
                 ),
-                ClosedAt: ticket.ClosedAt
+                ClosedAt: ticket.ClosedAt,
+                Type: ticket.Type switch
+                {
+                    TicketType.ProblemCase => "Заявка",
+                    TicketType.Suggestion => "Предложение",
+                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Type))
+                }
             )).ToList();
 
             return Result<List<TicketDetailedDTO>>.Success(dtos);
@@ -250,7 +264,13 @@ public class TicketService : ITicketService
                     Email: ticket.Creator.Email,
                     DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела"
                 ),
-                ClosedAt: ticket.ClosedAt
+                ClosedAt: ticket.ClosedAt,
+                Type: ticket.Type switch
+                {
+                    TicketType.ProblemCase => "Заявка",
+                    TicketType.Suggestion => "Предложение",
+                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Type))
+                }
             );
 
             return Result<TicketDetailedDTO>.Success(dto);
@@ -287,7 +307,13 @@ public class TicketService : ITicketService
                 AssigneeUsername: ticket.Assignee.Username,
                 ClosedAt: ticket.ClosedAt,
                 CreatorId: ticket.CreatorId,
-                CreatorUsername: ticket.Creator.Username
+                CreatorUsername: ticket.Creator.Username,
+                Type: ticket.Type switch
+                {
+                    TicketType.ProblemCase => "Заявка",
+                    TicketType.Suggestion => "Предложение",
+                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Type))
+                }
             );
             return Result<TicketShortDTO>.Success(dto);
         }

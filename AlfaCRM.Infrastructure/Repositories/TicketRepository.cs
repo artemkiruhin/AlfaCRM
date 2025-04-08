@@ -18,4 +18,10 @@ public class TicketRepository(AppDbContext context) : BaseRepository<TicketEntit
         var tickets = await DbSet.AsNoTracking().Where(ticket => ticket.CreatorId == creatorId).ToListAsync(ct);
         return tickets;
     }
+
+    public async Task<IEnumerable<TicketEntity>> GetByTypeAsync(TicketType type, CancellationToken ct)
+    {
+        var tickets = await DbSet.AsNoTracking().Where(ticket => ticket.Type == type).ToListAsync(ct);
+        return tickets;
+    }
 }

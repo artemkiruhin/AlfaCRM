@@ -11,5 +11,6 @@ public record TicketDetailedDTO
     string Status,
     UserShortDTO? Assignee,
     UserShortDTO Creator,
-    DateTime? ClosedAt
+    DateTime? ClosedAt,
+    string Type
 );

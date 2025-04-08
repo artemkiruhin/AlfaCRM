@@ -23,7 +23,7 @@ namespace AlfaCRM.Api.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> GetAll(Guid? departmentId, bool isShort, CancellationToken ct)
+        public async Task<IActionResult> GetAll(Guid? departmentId, bool isShort, TicketType type, CancellationToken ct)
         {
             try
             {
@@ -34,11 +34,11 @@ namespace AlfaCRM.Api.Controllers
                 
                 if (isShort)
                 {
-                    var shortResult = await _ticketService.GetAllShort(departmentIdCheckedForGuidEmpty, null, ct);
+                    var shortResult = await _ticketService.GetAllShort(departmentIdCheckedForGuidEmpty, null, type, ct);
                     return Ok(new {data = shortResult});
                 }
                 
-                var detailedResult = await _ticketService.GetAll(departmentIdCheckedForGuidEmpty, null, ct);
+                var detailedResult = await _ticketService.GetAll(departmentIdCheckedForGuidEmpty, null, type, ct);
                 return Ok(new {data = detailedResult.Data});
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace AlfaCRM.Api.Controllers
         }
         
         [HttpGet("my")]
-        public async Task<IActionResult> GetAllByUserId(bool isShort, CancellationToken ct)
+        public async Task<IActionResult> GetAllByUserId(bool isShort, TicketType type, CancellationToken ct)
         {
             try
             {
@@ -61,11 +61,11 @@ namespace AlfaCRM.Api.Controllers
                 
                 if (isShort)
                 {
-                    var shortResult = await _ticketService.GetAllShort(null, userId.Data, ct);
+                    var shortResult = await _ticketService.GetAllShort(null, userId.Data, type, ct);
                     return Ok(new {data = shortResult});
                 }
                 
-                var detailedResult = await _ticketService.GetAll(null, userId.Data, ct);
+                var detailedResult = await _ticketService.GetAll(null, userId.Data, type, ct);
                 return Ok(new {data = detailedResult.Data});
             }
             catch (Exception ex)
@@ -100,7 +100,8 @@ namespace AlfaCRM.Api.Controllers
                     Title: request.Title,
                     Text: request.Text,
                     DepartmentId: request.DepartmentId,
-                    userId.Data
+                    userId.Data,
+                    Type: request.Type
                 ), ct);
                 
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
@@ -127,7 +128,8 @@ namespace AlfaCRM.Api.Controllers
                     Title: request.Title,
                     Text: request.Text,
                     DepartmentId: request.DepartmentId,
-                    Feedback: request.Feedback
+                    Feedback: request.Feedback,
+                    Type: request.Type
                 ), ct);
                 if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
                 

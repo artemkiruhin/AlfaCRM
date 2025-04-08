@@ -13,5 +13,6 @@ public record TicketShortDTO
     string? AssigneeUsername,
     DateTime? ClosedAt,
     Guid CreatorId,
-    string CreatorUsername
+    string CreatorUsername,
+    string Type
 );

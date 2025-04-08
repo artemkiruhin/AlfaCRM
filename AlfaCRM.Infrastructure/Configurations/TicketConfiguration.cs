@@ -18,6 +18,7 @@ public class TicketConfiguration : IEntityTypeConfiguration<TicketEntity>
         builder.Property(x => x.DepartmentId).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.Status).IsRequired();
+        builder.Property(x => x.Type).IsRequired();
         
         builder.HasOne(x => x.Creator)
             .WithMany(x => x.CreatedTickets)
