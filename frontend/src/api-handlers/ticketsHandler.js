@@ -1,12 +1,13 @@
 import { API_URL } from "./baseHandler";
 
-const getAllTickets = async (departmentId, isShort) => {
+const getAllTickets = async (departmentId, isShort, type) => {
     try {
         let url = `${API_URL}/tickets`;
         const params = new URLSearchParams();
 
         if (departmentId) params.append('departmentId', departmentId);
         if (isShort) params.append('isShort', isShort);
+        if (type) params.append('type', type);
 
         if (params.toString()) url += `?${params.toString()}`;
 
@@ -21,7 +22,6 @@ const getAllTickets = async (departmentId, isShort) => {
 
         const result = await response.json();
 
-        // Проверяем структуру ответа
         if (result && result.data && Array.isArray(result.data)) {
             return result.data;
         } else if (Array.isArray(result)) {
@@ -36,9 +36,9 @@ const getAllTickets = async (departmentId, isShort) => {
     }
 };
 
-const getUserTickets = async (isShort) => {
+const getUserTickets = async (isShort, type) => {
     try {
-        const url = `${API_URL}/tickets/my?isShort=${isShort}`;
+        const url = `${API_URL}/tickets/my?isShort=${isShort}&type=${type}`;
 
         const response = await fetch(url, {
             method: 'GET',
@@ -83,7 +83,7 @@ const getTicketById = async (id) => {
 };
 
 
-const createTicket = async (title, text, departmentId) => {
+const createTicket = async (title, text, departmentId, type) => {
     try {
         const response = await fetch(`${API_URL}/tickets/create`, {
             method: 'POST',
@@ -93,7 +93,8 @@ const createTicket = async (title, text, departmentId) => {
             body: JSON.stringify({
                 Title: title,
                 Text: text,
-                DepartmentId: departmentId
+                DepartmentId: departmentId,
+                Type: type
             }),
             credentials: 'include'
         });
@@ -112,14 +113,15 @@ const createTicket = async (title, text, departmentId) => {
     }
 };
 
-const editTicket = async (id, title, text, departmentId, feedback) => {
+const editTicket = async (id, title, text, departmentId, feedback, type) => {
     try {
         const body = {
             Id: id,
             Title: title,
             Text: text,
             DepartmentId: departmentId,
-            Feedback: feedback
+            Feedback: feedback,
+            Type: type
         };
 
         const cleanedBody = Object.fromEntries(
