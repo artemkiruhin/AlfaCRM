@@ -68,7 +68,8 @@ const TicketCreatePage = () => {
             await createTicket(
                 formData.title,
                 formData.text,
-                formData.departmentId
+                formData.departmentId,
+                0
             );
 
             navigate('/tickets/my', { state: { ticketCreated: true } });

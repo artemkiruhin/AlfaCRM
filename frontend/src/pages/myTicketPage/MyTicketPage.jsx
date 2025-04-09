@@ -19,7 +19,7 @@ const MyTicketsPage = () => {
         const fetchTickets = async () => {
             try {
                 setLoading(true);
-                const data = await getUserTickets(false); // false means we want detailed tickets
+                const data = await getUserTickets(false, 0);
                 console.log(data);
                 setTickets(data.map(ticket => ({
                     id: ticket.id,

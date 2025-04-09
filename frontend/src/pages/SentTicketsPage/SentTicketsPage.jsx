@@ -21,7 +21,7 @@ const SentTicketsPage = () => {
                 setLoading(true);
                 const isAdm = localStorage.getItem('adm') === "true";
                 console.log(isAdm);
-                const response = await getAllTickets(isAdm ? null : localStorage.getItem('did'));
+                const response = await getAllTickets(isAdm ? null : localStorage.getItem('did'), null, 0);
 
                 if (response && Array.isArray(response)) {
                     const formattedTickets = response.map(ticket => ({
