@@ -213,3 +213,74 @@
 .dislike-button:hover {
     background-color: #c82333;
 }
+
+.danger-action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #ff4444;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.danger-action-button:hover {
+    background-color: #cc0000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.danger-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.danger-action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.danger-action-button:hover::before {
+    left: 100%;
+}
+
+.danger-action-button:disabled {
+    background-color: #ff9999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.danger-action-button:disabled::before {
+    display: none;
+}
+
+.danger-action-button svg {
+    transition: transform 0.3s ease;
+}
+
+.danger-action-button:hover svg {
+    transform: scale(1.1) rotate(5deg);
+    animation: shake-icon 0.5s ease-in-out;
+}
+
+@keyframes shake-icon {
+    0%, 100% { transform: scale(1.1) rotate(5deg); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    50% { transform: scale(1.1) rotate(5deg); }
+    75% { transform: scale(1.1) rotate(-5deg); }
+}

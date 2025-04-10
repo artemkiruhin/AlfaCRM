@@ -245,11 +245,11 @@ const NewsEditPage = () => {
                     </button>
                     {isAdminOrAuthor && (
                         <button
-                            className="delete-button"
-                            onClick={handleDelete}
+                            className="danger-action-button"
+                            onClick={() => handleDelete()}
                             disabled={isLoading}
                         >
-                            <Trash size={18} /> Удалить
+                            <Trash size={18}/> Удалить
                         </button>
                     )}
                 </div>
