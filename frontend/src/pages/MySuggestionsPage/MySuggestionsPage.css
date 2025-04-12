@@ -1,47 +1,38 @@
-.suggestions-page {
-    padding: 20px;
-    max-width: 1200px;
+/* MySuggestionsPage.css */
+
+.my-suggestions-page {
+    max-width: 800px;
     margin: 0 auto;
+    padding: 24px;
 }
 
-.suggestions-tabs {
-    margin-top: 20px;
-}
-
-.tabs-list {
-    display: flex;
-    background-color: #f5f5f5;
+.create-suggestion-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
     border-radius: 8px;
-    padding: 4px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    transition: background-color 0.2s ease;
 }
 
-.tabs-list [data-state="active"] {
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-.tab-content {
-    padding-top: 10px;
+.create-suggestion-button:hover {
+    background-color: var(--primary-dark);
 }
 
 .filter-container {
-    margin-bottom: 20px;
     display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
     align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    flex-wrap: wrap;
 }
 
 .filter-input {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
     flex: 1;
-    min-width: 250px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     font-size: 14px;
 }
 
@@ -50,127 +41,95 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: var(--text-medium);
-    white-space: nowrap;
 }
 
-.create-suggestion-button {
-    padding: 8px 16px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    white-space: nowrap;
-}
-
-.create-suggestion-button:hover {
-    background-color: var(--primary-dark);
-}
-
-.suggestions-list-container {
-    background-color: #f5f5f5;
-    border-radius: 8px;
-    padding: 20px;
-}
-
-.suggestions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.suggestion-list-container {
+    margin-top: 16px;
 }
 
 .suggestion-item {
-    background-color: #fff;
-    border-radius: 6px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background-color: var(--bg-white);
+    transition: box-shadow 0.2s ease;
+}
+
+.suggestion-item:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .suggestion-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 10px;
+    margin-bottom: 8px;
 }
 
 .suggestion-title {
-    margin: 0;
     font-size: 18px;
     font-weight: 600;
+    color: var(--text-dark);
 }
 
 .suggestion-status {
-    padding: 4px 10px;
-    border-radius: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 500;
-    text-transform: uppercase;
+    color: white;
 }
 
 .suggestion-status.на-рассмотрении {
-    background-color: var(--info-light);
-    color: var(--info-dark);
+    background-color: var(--info-color);
 }
 
 .suggestion-status.одобрено {
-    background-color: var(--success-light);
-    color: var(--success-dark);
+    background-color: var(--success-color);
 }
 
 .suggestion-status.отклонено {
-    background-color: var(--error-light);
-    color: var(--error-dark);
+    background-color: var(--error-color);
 }
 
 .suggestion-text {
-    margin: 10px 0;
     font-size: 14px;
-    line-height: 1.5;
     color: var(--text-medium);
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin-bottom: 8px;
 }
 
 .suggestion-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 15px;
+    justify-content: space-between;
     font-size: 12px;
     color: var(--text-light);
+    margin-bottom: 8px;
 }
 
 .suggestion-feedback {
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-left: 3px solid var(--info-color);
-    border-radius: 3px;
-    font-size: 14px;
-    color: var(--text-medium);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.suggestion-feedback strong {
+    color: var(--text-dark);
 }
 
 .suggestion-actions {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 10px;
+    gap: 8px;
+    margin-top: 8px;
 }
 
 .suggestion-action-button {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 4px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease;
 }
 
 .suggestion-action-button.approve {
@@ -191,6 +150,23 @@
     background-color: var(--error-dark);
 }
 
+.suggestion-action-button.delete {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.suggestion-action-button.delete:hover {
+    background-color: var(--error-dark);
+}
+
+.no-suggestions-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+/* Модальное окно */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -206,58 +182,48 @@
 
 .modal {
     background-color: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 8px;
     width: 500px;
     max-width: 90%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .modal h3 {
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 18px;
-    color: var(--text-dark);
+    margin-bottom: 16px;
 }
 
 .suggestion-details {
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
+    margin-bottom: 16px;
 }
 
 .suggestion-details p {
-    margin: 5px 0;
+    margin: 8px 0;
     font-size: 14px;
-    color: var(--text-medium);
 }
 
 .feedback-textarea {
     width: 100%;
-    height: 120px;
-    padding: 10px;
-    margin-bottom: 15px;
+    height: 100px;
+    padding: 8px;
+    margin-bottom: 16px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     resize: vertical;
-    font-family: inherit;
-    font-size: 14px;
 }
 
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
 }
 
 .modal-button {
     padding: 8px 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
 .modal-button.approve {
@@ -265,47 +231,23 @@
     color: white;
 }
 
-.modal-button.approve:hover {
-    background-color: var(--success-dark);
-}
-
 .modal-button.reject {
     background-color: var(--error-color);
     color: white;
 }
 
-.modal-button.reject:hover {
-    background-color: var(--error-dark);
-}
-
 .modal-button.cancel {
-    background-color: #f5f5f5;
+    background-color: var(--bg-gray);
     color: var(--text-dark);
-}
-
-.modal-button.cancel:hover {
-    background-color: #e8e8e8;
-}
-
-.no-suggestions-message {
-    text-align: center;
-    padding: 30px;
-    color: var(--text-light);
-    font-style: italic;
 }
 
 @media (max-width: 768px) {
     .filter-container {
         flex-direction: column;
-        align-items: stretch;
     }
 
-    .suggestion-header {
+    .suggestion-meta {
         flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .suggestion-actions {
-        justify-content: flex-start;
+        gap: 4px;
     }
 }

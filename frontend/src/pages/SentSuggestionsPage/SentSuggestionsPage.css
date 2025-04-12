@@ -1,88 +1,56 @@
-.suggestions-page {
+.sent-tickets-page {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    font-family: 'Inter', sans-serif;
-    background-color: #f9fafb;
 }
 
 .filter-container {
     margin-bottom: 20px;
     display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    justify-content: flex-end;
 }
 
 .filter-input {
     padding: 8px 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    width: 300px;
+    width: 250px;
     font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s ease;
 }
 
-.filter-input:focus {
-    border-color: #4f46e5;
-}
-
-.filter-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #4b5563;
-}
-
-.filter-checkbox input {
-    margin: 0;
-}
-
-.suggestions-list-container {
-    background-color: #ffffff;
+.ticket-list-container {
+    background-color: #f5f5f5;
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.suggestions-list {
+.ticket-list {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.suggestion-item {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+.ticket-item {
+    background-color: #fff;
+    border-radius: 6px;
     padding: 15px;
-    transition: box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.suggestion-item:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.suggestion-header {
+.ticket-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
 
-.suggestion-title {
+.ticket-title {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1f2937;
 }
 
-.suggestion-status {
+.ticket-status {
     padding: 4px 10px;
     border-radius: 16px;
     font-size: 12px;
@@ -90,85 +58,90 @@
     text-transform: uppercase;
 }
 
-.suggestion-status.на-рассмотрении {
-    background-color: #eef2ff;
-    color: #4f46e5;
+.ticket-status.создано {
+    background-color: #e6f7ff;
+    color: #1890ff;
 }
 
-.suggestion-status.одобрено {
-    background-color: #d1fae5;
-    color: #059669;
+.ticket-status.в.работе {
+    background-color: #fff7e6;
+    color: #fa8c16;
 }
 
-.suggestion-status.отклонено {
-    background-color: #fee2e2;
-    color: #dc2626;
+.ticket-status.выполнено {
+    background-color: #f6ffed;
+    color: #52c41a;
 }
 
-.suggestion-text {
+.ticket-status.закрыто {
+    background-color: #f5f5f5;
+    color: #8c8c8c;
+}
+
+.ticket-text {
     margin: 10px 0;
     font-size: 14px;
-    color: #4b5563;
     line-height: 1.5;
 }
 
-.suggestion-meta {
+.ticket-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-size: 12px;
-    color: #6b7280;
+    color: #666;
 }
 
-.suggestion-feedback {
-    margin-top: 10px;
+.ticket-feedback {
+    margin: 10px 0;
     padding: 10px;
-    background-color: #f9fafb;
-    border-left: 3px solid #4f46e5;
-    border-radius: 4px;
+    background-color: #f9f9f9;
+    border-left: 3px solid #1890ff;
+    border-radius: 3px;
     font-size: 14px;
-    color: #4b5563;
 }
 
-.suggestion-actions {
+.ticket-actions {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
 }
 
-.suggestion-action-button {
+.ticket-action-button {
     padding: 6px 12px;
     border: none;
     border-radius: 4px;
     font-size: 13px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s;
 }
 
-.suggestion-action-button.approve {
-    background-color: #10b981;
+.take-to-work {
+    background-color: #1890ff;
     color: white;
 }
 
-.suggestion-action-button.approve:hover {
-    background-color: #059669;
+.take-to-work:hover {
+    background-color: #096dd9;
 }
 
-.suggestion-action-button.reject {
-    background-color: #ef4444;
+.close-ticket {
+    background-color: #ff4d4f;
     color: white;
 }
 
-.suggestion-action-button.reject:hover {
-    background-color: #dc2626;
+.close-ticket:hover {
+    background-color: #cf1322;
 }
 
-.no-suggestions-message {
-    text-align: center;
-    padding: 30px;
-    color: #6b7280;
-    font-style: italic;
+.complete-ticket {
+    background-color: #52c41a;
+    color: white;
+}
+
+.complete-ticket:hover {
+    background-color: #389e0d;
 }
 
 .modal-overlay {
@@ -197,20 +170,18 @@
     margin-top: 0;
     margin-bottom: 15px;
     font-size: 18px;
-    color: #1f2937;
+    color: #333;
 }
 
-.suggestion-details {
+.ticket-details {
     margin-bottom: 15px;
     padding: 10px;
-    background-color: #f9fafb;
+    background-color: #f9f9f9;
     border-radius: 4px;
 }
 
-.suggestion-details p {
+.ticket-details p {
     margin: 5px 0;
-    font-size: 14px;
-    color: #4b5563;
 }
 
 .feedback-textarea {
@@ -218,17 +189,11 @@
     height: 120px;
     padding: 10px;
     margin-bottom: 15px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #d9d9d9;
     border-radius: 4px;
     resize: vertical;
     font-family: inherit;
     font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.feedback-textarea:focus {
-    border-color: #4f46e5;
 }
 
 .modal-actions {
@@ -243,32 +208,53 @@
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s;
 }
 
-.modal-button.approve {
-    background-color: #10b981;
+.modal-button.close {
+    background-color: #ff4d4f;
     color: white;
 }
 
-.modal-button.approve:hover {
-    background-color: #059669;
+.modal-button.close:hover {
+    background-color: #cf1322;
 }
 
-.modal-button.reject {
-    background-color: #ef4444;
+.modal-button.complete {
+    background-color: #52c41a;
     color: white;
 }
 
-.modal-button.reject:hover {
-    background-color: #dc2626;
+.modal-button.complete:hover {
+    background-color: #389e0d;
 }
 
 .modal-button.cancel {
-    background-color: #f3f4f6;
-    color: #1f2937;
+    background-color: #f5f5f5;
+    color: #333;
 }
 
 .modal-button.cancel:hover {
-    background-color: #e5e7eb;
+    background-color: #e8e8e8;
+}
+
+.no-tickets-message {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+    font-style: italic;
+}
+
+.ticket-action-button.delete {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.ticket-action-button.delete:hover {
+    background-color: #cc0000;
 }
