@@ -8,11 +8,8 @@ import ChatConversationPage from "./pages/chatConversationPage/ChatConversationP
 import MyTicketPage from "./pages/myTicketPage/MyTicketPage";
 import TicketDetailsPage from "./pages/TicketDetailsPage/TicketDetailsPage";
 import SentTicketsPage from "./pages/SentTicketsPage/SentTicketsPage";
-import MySuggestionsPage from "./pages/MySuggestionsPage/MySuggestionsPage";
 import NewsPostCreatePage from "./pages/NewsPostCreatePage/NewsPostCreatePage";
-import SentSuggestionsPage from "./pages/SentSuggestionsPage/SentSuggestionsPage";
 import TicketCreatePage from "./pages/TicketCreatePage/TicketCreatePage";
-import SuggestionCreatePage from "./pages/SuggestionCreatePage/SuggestionCreatePage";
 import UserListPage from "./pages/UserListPage/UserListPage";
 import UserCreatePage from "./pages/UserCreatePage/UserCreatePage";
 import UserEditPage from "./pages/UserEditPage/UserEditPage";
