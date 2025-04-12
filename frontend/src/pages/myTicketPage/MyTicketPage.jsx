@@ -4,23 +4,24 @@ import CreateTicketButton from '../../components/ticket/CreateTicketButton';
 import './MyTicketsPage.css';
 import Header from "../../components/layout/header/Header";
 import { getUserTickets, deleteTicket } from '../../api-handlers/ticketsHandler';
-import {useNavigate} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const MyTicketsPage = () => {
+const MyTicketsPage = ({ type }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const onCreatePageHandler = () => {
-        navigate("/tickets/create");
+        if (type === 0) navigate("/tickets/create");
+        else if (type === 1) navigate("/suggestions/create");
     }
 
     useEffect(() => {
         const fetchTickets = async () => {
             try {
                 setLoading(true);
-                const data = await getUserTickets(false, 0);
-                console.log(data);
+                const data = await getUserTickets(false, type);
                 setTickets(data.map(ticket => ({
                     id: ticket.id,
                     title: ticket.title,
@@ -41,8 +42,7 @@ const MyTicketsPage = () => {
         };
 
         fetchTickets();
-
-    }, []);
+    }, [type, location.key]);
 
     const handleDelete = async (id) => {
         try {
@@ -53,19 +53,11 @@ const MyTicketsPage = () => {
         }
     };
 
-    // if (loading) {
-    //     return <LoadingSpinner />;
-    // }
-
-    // if (error) {
-    //     return <ErrorMessage message={error} />;
-    // }
-
     return (
         <div className="my-tickets-page">
-            <Header title={"Мои заявки"} info={`Всего: ${tickets.length}`} />
-            <CreateTicketButton onCreatePageHandler={onCreatePageHandler} />
-            <TicketList tickets={tickets} onDelete={handleDelete} />
+            <Header title={type === 0 ? "Мои заявки" : "Мои предложения"} info={`Всего: ${tickets.length}`} />
+            <CreateTicketButton type={type} onCreatePageHandler={onCreatePageHandler} />
+            <TicketList type={type} tickets={tickets} onDelete={handleDelete} />
         </div>
     );
 };

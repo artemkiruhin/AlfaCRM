@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TicketItem from './TicketItem';
 
-const TicketList = ({ tickets, onDelete }) => {
+const TicketList = ({type, tickets, onDelete }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showClosed, setShowClosed] = useState(false);
 
@@ -17,7 +17,7 @@ const TicketList = ({ tickets, onDelete }) => {
             <div className="ticket-list-controls">
                 <input
                     type="text"
-                    placeholder="Поиск по заявкам..."
+                    placeholder={type === 0 ? "Поиск по заявкам..." : "Поиск по предложениям"}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="ticket-search-input"
@@ -28,7 +28,7 @@ const TicketList = ({ tickets, onDelete }) => {
                         checked={showClosed}
                         onChange={() => setShowClosed(!showClosed)}
                     />
-                    Отобразить закрытые заявки
+                    {type === 0 ? "Отобразить закрытые заявки" : "Отобразить закрытые предложения"}
                 </label>
             </div>
             <div className="ticket-list">

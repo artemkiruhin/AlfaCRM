@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import "./SentTicketsPage.css";
 import Header from "../../components/layout/header/Header";
 import TicketList from '../../components/ticket/TicketList';
 import {getAllTickets, changeTicketStatus, deleteTicket} from '../../api-handlers/ticketsHandler';
 import SentTicketList from "../../components/ticket/SentTicketList";
 
-const SentTicketsPage = () => {
+const SentTicketsPage = ({type}) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -20,8 +21,7 @@ const SentTicketsPage = () => {
             try {
                 setLoading(true);
                 const isAdm = localStorage.getItem('adm') === "true";
-                console.log(isAdm);
-                const response = await getAllTickets(isAdm ? null : localStorage.getItem('did'), null, 0);
+                const response = await getAllTickets(isAdm ? null : localStorage.getItem('did'), false, type);
 
                 if (response && Array.isArray(response)) {
                     const formattedTickets = response.map(ticket => ({
@@ -44,7 +44,7 @@ const SentTicketsPage = () => {
                     throw new Error('Некорректный формат данных от сервера');
                 }
 
-                setIsAdmin(isAdm)
+                setIsAdmin(isAdm);
             } catch (err) {
                 console.error('Failed to fetch tickets:', err);
                 setError('Не удалось загрузить заявки');
@@ -54,7 +54,7 @@ const SentTicketsPage = () => {
         };
 
         fetchTickets();
-    }, []);
+    }, [type, location.key]); // Добавляем location.key в зависимости
 
     useEffect(() => {
         if (filterEmployeeId) {
@@ -140,7 +140,7 @@ const SentTicketsPage = () => {
 
     return (
         <div className="sent-tickets-page">
-            <Header title={"Отправленные заявки"} info={`Всего: ${filteredTickets.length}`} />
+            <Header title={type === 0 ? "Отправленные заявки" : "Отправленные предложения"} info={`Всего: ${filteredTickets.length}`} />
 
             <div className="filter-container">
                 <input

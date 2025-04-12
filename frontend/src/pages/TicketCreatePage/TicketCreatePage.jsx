@@ -7,7 +7,7 @@ import { createTicket } from '../../api-handlers/ticketsHandler';
 import { getAllDepartmentsShort } from '../../api-handlers/departmentsHandler';
 
 
-const TicketCreatePage = () => {
+const TicketCreatePage = ({type}) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         title: '',
@@ -69,10 +69,11 @@ const TicketCreatePage = () => {
                 formData.title,
                 formData.text,
                 formData.departmentId,
-                0
+                type
             );
 
-            navigate('/tickets/my', { state: { ticketCreated: true } });
+            if (type === 0) navigate('/tickets/my');
+            else if (type === 1) navigate('/suggestions/my');
         } catch (err) {
             console.error('Ticket creation failed:', err);
             setError(err.message || 'Не удалось создать заявку. Пожалуйста, попробуйте позже.');
@@ -82,7 +83,8 @@ const TicketCreatePage = () => {
     };
 
     const handleCancel = () => {
-        navigate('/tickets/my');
+        if (type === 0) navigate('/tickets/my');
+        else if (type === 1) navigate('/suggestions/my');
     };
 
     // if (initialLoading) {
@@ -92,7 +94,7 @@ const TicketCreatePage = () => {
     if (error && !departments.length) {
         return (
             <div className="ticket-create-page">
-                <Header title={"Создание новой заявки"} />
+                <Header title={type === 0 ? "Создание новой заявки" : "Создание нового предложения"} />
                 {/*<ErrorMessage message={error} />*/}
                 <button className="back-button" onClick={handleCancel}>
                     <ArrowLeft size={20} /> Назад
@@ -104,7 +106,7 @@ const TicketCreatePage = () => {
     return (
 
         <div className="ticket-create-page">
-            <Header title={"Создание новой заявки"} />
+            <Header title={type === 0 ? "Создание новой заявки" : "Создание нового предложения"} />
             <button className="back-button" onClick={handleCancel}>
                 <ArrowLeft size={20} /> Назад
             </button>
@@ -121,7 +123,7 @@ const TicketCreatePage = () => {
                         value={formData.title}
                         onChange={handleChange}
                         maxLength={100}
-                        placeholder="Кратко опишите проблему"
+                        placeholder={type === 0 ? "Кратко опишите проблему" : "Кратко опишите предложение"}
                         required
                     />
                 </div>
@@ -134,7 +136,7 @@ const TicketCreatePage = () => {
                         value={formData.text}
                         onChange={handleChange}
                         rows={6}
-                        placeholder="Подробно опишите вашу заявку (что случилось, когда, важные детали)"
+                        placeholder={type === 0 ? "Подробно опишите вашу заявку (что случилось, когда, важные детали)" : "Подробно опишите ваше предложение"}
                         required
                     />
                 </div>
@@ -167,7 +169,7 @@ const TicketCreatePage = () => {
                         {/*    <LoadingSpinner small />*/}
                         {/*) : (*/}
                             <>
-                                <Save size={18} /> Создать заявку
+                                <Save size={18} />{type === 0 ? "Создать заявку" : "Создать предложение"}
                             </>
                         {/*)}*/}
                     </button>

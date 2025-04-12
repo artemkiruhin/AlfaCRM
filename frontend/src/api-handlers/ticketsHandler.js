@@ -11,6 +11,8 @@ const getAllTickets = async (departmentId, isShort, type) => {
 
         if (params.toString()) url += `?${params.toString()}`;
 
+        console.log(url);
+
         const response = await fetch(url, {
             method: 'GET',
             credentials: 'include'
@@ -40,6 +42,8 @@ const getUserTickets = async (isShort, type) => {
     try {
         const url = `${API_URL}/tickets/my?isShort=${isShort}&type=${type}`;
 
+        console.log(url);
+
         const response = await fetch(url, {
             method: 'GET',
             credentials: 'include'
@@ -51,6 +55,7 @@ const getUserTickets = async (isShort, type) => {
         }
 
         const data = await response.json();
+        console.log(data.data);
         return data.data;
 
     } catch (e) {

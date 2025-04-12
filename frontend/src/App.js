@@ -36,15 +36,15 @@ function App() {
                 <Route path="/chat" element={<AuthLayout><RootLayout page={<ChatListPage />}/></AuthLayout>} />
                 <Route path="/chat/:id" element={<AuthLayout><RootLayout page={<ChatConversationPage />}/></AuthLayout>} />
 
-                <Route path="/tickets/my" element={<AuthLayout><RootLayout page={<MyTicketPage />}/></AuthLayout>} />
-                <Route path="/tickets/my/:id" element={<AuthLayout><RootLayout page={<TicketDetailsPage />}/></AuthLayout>} />
-                <Route path="/tickets/:id" element={<AuthLayout><RootLayout page={<TicketDetailsPage />}/></AuthLayout>} />
-                <Route path="/tickets/sent" element={<AuthLayout><RootLayout page={<SentTicketsPage />}/></AuthLayout>} />
-                <Route path="/tickets/create" element={<AuthLayout><RootLayout page={<TicketCreatePage />}/></AuthLayout>} />
+                <Route path="/tickets/my" element={<AuthLayout><RootLayout page={<MyTicketPage type={0} />}/></AuthLayout>} />
+                <Route path="/tickets/my/:id" element={<AuthLayout><RootLayout page={<TicketDetailsPage type={0} />}/></AuthLayout>} />
+                <Route path="/tickets/sent" element={<AuthLayout><RootLayout page={<SentTicketsPage type={0} />}/></AuthLayout>} />
+                <Route path="/tickets/create" element={<AuthLayout><RootLayout page={<TicketCreatePage type={0} />}/></AuthLayout>} />
 
-                <Route path="/suggestions/my" element={<AuthLayout><RootLayout page={<MySuggestionsPage />}/></AuthLayout>} />
-                <Route path="/suggestions/sent" element={<AuthLayout><RootLayout page={<SentSuggestionsPage />}/></AuthLayout>} />
-                <Route path="/suggestions/create" element={<AuthLayout><RootLayout page={<SuggestionCreatePage />}/></AuthLayout>} />
+                <Route path="/suggestions/my" element={<AuthLayout><RootLayout page={<MyTicketPage type={1} />}/></AuthLayout>} />
+                <Route path="/suggestions/my/:id" element={<AuthLayout><RootLayout page={<TicketDetailsPage type={1} />}/></AuthLayout>} />
+                <Route path="/suggestions/sent" element={<AuthLayout><RootLayout page={<SentTicketsPage type={1} />}/></AuthLayout>} />
+                <Route path="/suggestions/create" element={<AuthLayout><RootLayout page={<TicketCreatePage type={1} />}/></AuthLayout>} />
 
                 <Route path="/users" element={<AuthLayout><RootLayout page={<UserListPage />}/></AuthLayout>} />
                 <Route path="/users/edit/:id" element={<AuthLayout><RootLayout page={<UserEditPage />}/></AuthLayout>} />

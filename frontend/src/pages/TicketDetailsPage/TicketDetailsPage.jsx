@@ -6,7 +6,7 @@ import Header from "../../components/layout/header/Header";
 import { getTicketById, editTicket, deleteTicket } from '../../api-handlers/ticketsHandler';
 import { getAllDepartmentsShort } from '../../api-handlers/departmentsHandler';
 
-const TicketDetailsPage = () => {
+const TicketDetailsPage = ({type}) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -47,7 +47,8 @@ const TicketDetailsPage = () => {
             } catch (err) {
                 console.error('Failed to fetch ticket:', err);
                 setError(err.message || 'Ошибка при загрузке заявки');
-                navigate('/tickets/my', { replace: true });
+                if (type === 0) navigate('/tickets/my');
+                else if (type === 1) navigate('/suggestions/my');
             } finally {
                 setLoading(false);
             }
@@ -69,7 +70,6 @@ const TicketDetailsPage = () => {
             setLoading(true);
             setError(null);
 
-            // Если заявка уже завершена, не обновляем feedback
             const feedback = isCompletedOrRejected() ? ticket.feedback : formData.feedback;
 
             const updatedTicket = await editTicket(
@@ -99,7 +99,8 @@ const TicketDetailsPage = () => {
             setError(null);
 
             await deleteTicket(id);
-            navigate('/tickets/my', { state: { ticketDeleted: true } });
+            if (type === 0) navigate('/tickets/my', { state: { ticketDeleted: true } });
+            else if (type === 1) navigate('/suggestions/sent');
         } catch (err) {
             console.error('Failed to delete ticket:', err);
             setError(err.message || 'Ошибка при удалении заявки');
@@ -144,9 +145,9 @@ const TicketDetailsPage = () => {
 
     return (
         <div className="ticket-details-page">
-            <Header title={`Заявка #${id}`} />
+            <Header title={type === 0 ? `Заявка #${id}` : `Предложение #${id}`} />
 
-            <button className="back-button" onClick={() => navigate('/tickets/my')}>
+            <button className="back-button" onClick={type === 0 ? () => navigate('/tickets/my') : () => navigate('/suggestions/my')}>
                 <ArrowLeft size={20} /> Назад
             </button>
 
