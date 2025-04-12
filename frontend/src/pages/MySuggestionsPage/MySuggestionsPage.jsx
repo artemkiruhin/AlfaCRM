@@ -76,7 +76,7 @@ const MySuggestionsPage = () => {
                 <CreateSuggestionButton onCreatePageHandler={onCreatePageHandler} />
             </div>
 
-            <SuggestionList suggestions={filteredSuggestions} />
+            <SuggestionList tickets={filteredSuggestions} />
         </div>
     );
 };
