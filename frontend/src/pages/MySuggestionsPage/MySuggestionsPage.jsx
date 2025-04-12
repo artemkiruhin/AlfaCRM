@@ -1,158 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "./MySuggestionsPage.css";
+import SuggestionList from '../../components/ticket/SuggestionList';
+import CreateSuggestionButton from '../../components/ticket/CreateSuggestionButton';
+import './MySuggestionsPage.css';
 import Header from "../../components/layout/header/Header";
+import { getUserTickets } from '../../api-handlers/ticketsHandler';
 
 const MySuggestionsPage = () => {
-    const [mySuggestions, setMySuggestions] = useState([]);
-    const [selectedSuggestion, setSelectedSuggestion] = useState(null);
-    const [feedback, setFeedback] = useState('');
-    const [isAdmin, setIsAdmin] = useState(false);
+    const navigate = useNavigate();
+    const [suggestions, setSuggestions] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredSuggestions, setFilteredSuggestions] = useState([]);
     const [showRejected, setShowRejected] = useState(false);
 
-    const mockMySuggestions = [
-        {
-            id: 1,
-            title: 'Организация зоны отдыха',
-            text: 'Предлагаю организовать комфортную зону отдыха на 3 этаже рядом с переговорными комнатами.',
-            department: 'Администрация',
-            date: '2023-11-10 09:45',
-            status: 'На рассмотрении',
-            assignee: null,
-            employeeId: '1001',
-            feedback: '',
-        },
-        {
-            id: 2,
-            title: 'Внедрение корпоративного мессенджера',
-            text: 'Для улучшения коммуникации между отделами предлагаю внедрить единый корпоративный мессенджер с функциями видео-звонков и обмена файлами.',
-            department: 'IT-отдел',
-            date: '2023-11-05 14:20',
-            status: 'Одобрено',
-            assignee: 'ivanov',
-            employeeId: '1001',
-            feedback: 'Отличное предложение! Начинаем реализацию со следующего месяца.',
-        },
-        {
-            id: 3,
-            title: 'Установка кофемашины',
-            text: 'Предлагаю установить профессиональную кофемашину в общей кухне для повышения комфорта сотрудников.',
-            department: 'Администрация',
-            date: '2023-10-25 11:30',
-            status: 'Отклонено',
-            assignee: 'petrov',
-            employeeId: '1001',
-            feedback: 'К сожалению, в текущем бюджете нет средств на данное приобретение.',
-        },
-    ];
+    const onCreatePageHandler = () => {
+        navigate("/suggestions/create");
+    };
 
     useEffect(() => {
-        setMySuggestions(mockMySuggestions);
-        setFilteredSuggestions(mockMySuggestions);
-        setIsAdmin(true); // Пример: пользователь — администратор
-    }, []);
-
-    useEffect(() => {
-        const filterSuggestions = (suggestions) => {
-            return suggestions.filter((suggestion) => {
-                const matchesSearch = suggestion.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    suggestion.text.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesStatus = showRejected ? true : suggestion.status !== 'Отклонено';
-                return matchesSearch && matchesStatus;
-            });
+        const fetchSuggestions = async () => {
+            try {
+                setLoading(true);
+                // Используем type=1 для получения предложений (вместо заявок)
+                const data = await getUserTickets(false, 1);
+                console.log(data);
+                setSuggestions(data.map(suggestion => ({
+                    id: suggestion.id,
+                    title: suggestion.title,
+                    text: suggestion.text,
+                    department: suggestion.department.name,
+                    date: new Date(suggestion.createdAt).toLocaleString(),
+                    status: suggestion.status,
+                    feedback: suggestion.feedback,
+                    assignee: suggestion.assignee ? suggestion.assignee.username : 'Не назначен',
+                    closedAt: suggestion.closedAt ? new Date(suggestion.closedAt).toLocaleString() : null,
+                    creator: suggestion.creator.username
+                })));
+            } catch (err) {
+                console.error('Failed to fetch suggestions:', err);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        setFilteredSuggestions(filterSuggestions(mySuggestions));
-    }, [searchQuery, showRejected, mySuggestions]);
+        fetchSuggestions();
+    }, []);
 
-    const handleApproveSuggestion = (suggestionId) => {
-        if (!feedback) {
-            alert('Необходимо добавить комментарий перед одобрением предложения');
-            return;
-        }
-
-        const updatedSuggestions = mySuggestions.map((suggestion) =>
-            suggestion.id === suggestionId
-                ? { ...suggestion, status: 'Одобрено', feedback, assignee: 'currentUser' }
-                : suggestion
-        );
-
-        setMySuggestions(updatedSuggestions);
-        setFilteredSuggestions(updatedSuggestions);
-        setSelectedSuggestion(null);
-        setFeedback('');
-        alert(`Предложение ${suggestionId} одобрено`);
-    };
-
-    const handleRejectSuggestion = (suggestionId) => {
-        if (!feedback) {
-            alert('Необходимо добавить комментарий перед отклонением предложения');
-            return;
-        }
-
-        const updatedSuggestions = mySuggestions.map((suggestion) =>
-            suggestion.id === suggestionId
-                ? { ...suggestion, status: 'Отклонено', feedback, assignee: 'currentUser' }
-                : suggestion
-        );
-
-        setMySuggestions(updatedSuggestions);
-        setFilteredSuggestions(updatedSuggestions);
-        setSelectedSuggestion(null);
-        setFeedback('');
-        alert(`Предложение ${suggestionId} отклонено`);
-    };
-
-    const renderSuggestionsList = () => (
-        <div className="suggestions-list">
-            {filteredSuggestions.length > 0 ? (
-                filteredSuggestions.map((suggestion) => (
-                    <div key={suggestion.id} className="suggestion-item">
-                        <div className="suggestion-header">
-                            <h3 className="suggestion-title">{suggestion.title}</h3>
-                            <span className={`suggestion-status ${suggestion.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                                {suggestion.status}
-                            </span>
-                        </div>
-                        <p className="suggestion-text">{suggestion.text}</p>
-                        <div className="suggestion-meta">
-                            <span>Отдел: {suggestion.department}</span>
-                            <span>Дата создания: {suggestion.date}</span>
-                            {suggestion.employeeId && <span>ID сотрудника: {suggestion.employeeId}</span>}
-                            {suggestion.assignee && <span>Обработал: {suggestion.assignee}</span>}
-                        </div>
-                        {suggestion.feedback && (
-                            <div className="suggestion-feedback">
-                                <strong>Комментарий:</strong> {suggestion.feedback}
-                            </div>
-                        )}
-                        <div className="suggestion-actions">
-                            {suggestion.status === 'На рассмотрении' && isAdmin && (
-                                <>
-                                    <button
-                                        className="suggestion-action-button reject"
-                                        onClick={() => setSelectedSuggestion({...suggestion, actionType: 'reject'})}
-                                    >
-                                        Удалить
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                ))
-            ) : (
-                <div className="no-suggestions-message">
-                    Нет предложений, соответствующих фильтру
-                </div>
-            )}
-        </div>
-    );
+    const filteredSuggestions = suggestions.filter(suggestion => {
+        const matchesSearch = suggestion.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            suggestion.text.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = showRejected ? true : suggestion.status !== 'Отклонено';
+        return matchesSearch && matchesStatus;
+    });
 
     return (
-        <div className="suggestions-page">
-            <Header title={"Мои предложения"} />
+        <div className="my-suggestions-page">
+            <Header title={"Мои предложения"} info={`Всего: ${filteredSuggestions.length}`} />
 
             <div className="filter-container">
                 <input
@@ -170,14 +73,10 @@ const MySuggestionsPage = () => {
                     />
                     Показать отклоненные
                 </label>
-                <button className="create-suggestion-button">
-                    Создать предложение
-                </button>
+                <CreateSuggestionButton onCreatePageHandler={onCreatePageHandler} />
             </div>
 
-            <div className="suggestions-list-container">
-                {renderSuggestionsList()}
-            </div>
+            <SuggestionList suggestions={filteredSuggestions} />
         </div>
     );
 };
