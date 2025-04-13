@@ -15,6 +15,7 @@ public class MessageEntity
     public virtual UserEntity Sender { get; set; } = null!;
     public virtual ChatEntity Chat { get; set; } = null!;
     public virtual MessageEntity? RepliedMessage { get; set; } = null!;
+    public virtual ICollection<MessageEntity> Replies { get; set; } = [];
 
     public static MessageEntity Create(string content, Guid senderId, Guid? repliedMessageId, Guid chatId)
     {
