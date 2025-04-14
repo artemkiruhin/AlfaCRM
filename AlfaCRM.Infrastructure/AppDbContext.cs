@@ -12,6 +12,8 @@ public class AppDbContext : DbContext
     public DbSet<PostCommentEntity> PostComments { get; set; }
     public DbSet<DepartmentEntity> Departments { get; set; }
     public DbSet<TicketEntity> Tickets { get; set; }
+    public DbSet<MessageEntity> Messages { get; set; }
+    public DbSet<ChatEntity> Chats { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -25,5 +27,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new TicketConfiguration());
+        modelBuilder.ApplyConfiguration(new ChatConfiguration());
+        modelBuilder.ApplyConfiguration(new MessageConfiguration());
     }
 }
