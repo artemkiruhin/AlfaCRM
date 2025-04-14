@@ -10,6 +10,8 @@ public interface IUnitOfWork
     public IPostCommentRepository PostCommentRepository { get; }
     public IPostReactionRepository PostReactionRepository { get; }
     public ITicketRepository TicketRepository { get; }
+    public IChatRepository ChatRepository { get; }
+    public IMessageRepository MessageRepository { get; }
     
     Task<int> SaveChangesAsync(CancellationToken ct);
     Task BeginTransactionAsync(CancellationToken ct);
