@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using AlfaCRM.Api.Extensions;
+using AlfaCRM.Api.Hubs;
 using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Database.Repositories;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
@@ -105,6 +106,8 @@ builder.Services.AddScoped<IPostReactionRepository, PostReactionRepository>();
 builder.Services.AddScoped<IPostCommentRepository, PostCommentRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IUserService, UserService>();
@@ -113,6 +116,8 @@ builder.Services.AddScoped<IPostReactionService, PostReactionService>();
 builder.Services.AddScoped<IPostCommentService, PostCommentService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IHashService, SHA256Hasher>();
 builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettings(
     Audience: configuration["JWT:Audience"] ?? throw new ApplicationException("Missing JWT:Audience"),
@@ -138,5 +143,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<ChatHub>("/chat");
 app.Run();
