@@ -185,8 +185,12 @@ public class MessageService : IMessageService
                         IsPinned: repliedMessage.IsPinned,
                         Sender: null,
                         RepliedMessage: null,
-                        Replies: new List<MessageDTO>()),
-                    Replies: new List<MessageDTO>());
+                        Replies: new List<MessageDTO>(),
+                        IsOwn: sender?.Id == message.SenderId
+                        ),
+                    Replies: new List<MessageDTO>(),
+                    IsOwn: sender?.Id == message.SenderId
+                    );
             }).ToList();
 
             return Result<List<MessageDTO>>.Success(dtos);
@@ -232,7 +236,9 @@ public class MessageService : IMessageService
                             Email: repliedMessageSender.Email,
                             DepartmentName: repliedMessageSender.Department?.Name ?? "No department"),
                         RepliedMessage: null,
-                        Replies: new List<MessageDTO>());
+                        Replies: new List<MessageDTO>(),
+                        IsOwn: sender?.Id == message.SenderId
+                        );
                 }
             }
 
@@ -250,7 +256,9 @@ public class MessageService : IMessageService
                     Email: sender.Email,
                     DepartmentName: sender.Department?.Name ?? "No department"),
                 RepliedMessage: repliedMessageDto,
-                Replies: new List<MessageDTO>());
+                Replies: new List<MessageDTO>(),
+                IsOwn: sender?.Id == message.SenderId
+                );
 
             return Result<MessageDTO>.Success(dto);
         }

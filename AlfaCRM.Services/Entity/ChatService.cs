@@ -273,7 +273,7 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<Result<List<ChatDetailedDTO>>> GetAll(CancellationToken ct)
+    public async Task<Result<List<ChatDetailedDTO>>> GetAll(Guid? userId, CancellationToken ct)
     {
         try
         {
@@ -325,9 +325,11 @@ public class ChatService : IChatService
                                     DepartmentName: message.RepliedMessage.Sender.Department?.Name ?? "Нет отдела"
                                 ),
                                 RepliedMessage: null,
-                                Replies: new List<MessageDTO>()
+                                Replies: new List<MessageDTO>(),
+                                IsOwn: userId.Value == message.SenderId
                             ),
-                            Replies: new List<MessageDTO>()
+                            Replies: new List<MessageDTO>(),
+                            IsOwn: userId.Value == message.SenderId
                         )).ToList(),
                     Members: chat.Members.Select(member => new UserShortDTO(
                         Id: member.Id,
@@ -348,7 +350,7 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<Result<ChatDetailedDTO>> GetById(Guid id, CancellationToken ct)
+    public async Task<Result<ChatDetailedDTO>> GetById(Guid id, Guid? userId, CancellationToken ct)
     {
         try
         {
@@ -399,9 +401,11 @@ public class ChatService : IChatService
                                 DepartmentName: message.RepliedMessage.Sender.Department?.Name ?? "Нет отдела"
                             ),
                             RepliedMessage: null,
-                            Replies: new List<MessageDTO>()
+                            Replies: new List<MessageDTO>(),
+                            IsOwn: userId.Value == message.SenderId
                         ),
-                        Replies: new List<MessageDTO>()
+                        Replies: new List<MessageDTO>(),
+                        IsOwn: userId.Value == message.SenderId
                     )).ToList(),
                 Members: chat.Members.Select(member => new UserShortDTO(
                     Id: member.Id,

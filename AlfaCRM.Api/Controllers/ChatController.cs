@@ -40,9 +40,14 @@ namespace AlfaCRM.Api.Controllers
         }
 
         [HttpGet("id/{id:guid}")]
-        public async Task<IActionResult> GetChatById(Guid id, CancellationToken ct)
+        public async Task<IActionResult> GetChatById([FromRoute] Guid id, [FromQuery] bool byUser, CancellationToken ct)
         {
-            var chat = await _chatService.GetById(id, ct);
+            var userId = await _userValidator.GetUserId(User, ct);
+            if (!userId.IsSuccess) return Unauthorized();
+
+            var chat = byUser
+                ? await _chatService.GetById(id, userId.Data, ct)
+                : await _chatService.GetById(id, null, ct);
             return Ok(new {data = chat});
         }
 
@@ -61,7 +66,7 @@ namespace AlfaCRM.Api.Controllers
             var userId = await _userValidator.GetUserId(User, ct);
             if (!userId.IsSuccess) return Unauthorized();
             
-            var chat = await _chatService.GetById(request.ChatId, ct);
+            var chat = await _chatService.GetById(request.ChatId, userId.Data, ct);
             if (!chat.IsSuccess) return BadRequest();
             
             var result = await _messageService.Create(request, ct);
@@ -86,7 +91,7 @@ namespace AlfaCRM.Api.Controllers
             var userId = await _userValidator.GetUserId(User, ct);
             if (!userId.IsSuccess) return Unauthorized();
             
-            var chat = await _chatService.GetById(chatId, ct);
+            var chat = await _chatService.GetById(chatId, userId.Data, ct);
             if (!chat.IsSuccess) return BadRequest();
             
             var result = await _messageService.GetAll(chatId, ct);
