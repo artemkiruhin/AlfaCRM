@@ -18,6 +18,7 @@ import {BrowserRouter, Routes, Route} from "react-router-dom";
 import AuthLayout from "./components/layout/AuthLayout";
 import {AuthPage} from "./pages/AuthPage/AuthPage";
 import React from "react";
+import ChatCreatePage from "./pages/chatCreatePage/ChatCreatePage";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
                 <Route path="/news/add" element={<AuthLayout><RootLayout page={<NewsPostCreatePage />}/></AuthLayout>} />
 
                 <Route path="/chat" element={<AuthLayout><RootLayout page={<ChatListPage />}/></AuthLayout>} />
+                <Route path="/chat/create" element={<AuthLayout><RootLayout page={<ChatCreatePage />}/></AuthLayout>} />
                 <Route path="/chat/:id" element={<AuthLayout><RootLayout page={<ChatConversationPage />}/></AuthLayout>} />
 
                 <Route path="/tickets/my" element={<AuthLayout><RootLayout page={<MyTicketPage type={0} />}/></AuthLayout>} />
