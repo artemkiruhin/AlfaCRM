@@ -23,7 +23,8 @@ public class UserEntity
     public virtual ICollection<PostReactionEntity> Reactions { get; set; } = [];
     public virtual ICollection<TicketEntity> AssignedTickets { get; set; } = [];
     public virtual ICollection<TicketEntity> CreatedTickets { get; set; } = [];
-    public virtual ICollection<ChatEntity> Chats { get; set; } = [];
+    public virtual ICollection<ChatEntity> ChatsAsAdmin { get; set; } = [];
+    public virtual ICollection<ChatEntity> ChatsAsMember { get; set; } = [];
     public virtual ICollection<MessageEntity> Messages { get; set; } = [];
 
     public static UserEntity Create(

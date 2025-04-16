@@ -126,6 +126,7 @@ builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettin
     ExpireHours: int.Parse(configuration["JWT:ExpireHours"] ?? throw new ApplicationException("Missing JWT:ExpireHours"))
 )));
 builder.Services.AddScoped<IUserValidator, UserValidator>();
+builder.Services.AddSignalR();
 
 #endregion
 

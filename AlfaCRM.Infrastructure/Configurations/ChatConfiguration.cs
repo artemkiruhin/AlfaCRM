@@ -17,13 +17,13 @@ public class ChatConfiguration : IEntityTypeConfiguration<ChatEntity>
         builder.Property(x => x.AdminId).IsRequired();
 
         builder.HasOne(x => x.Admin)
-            .WithMany(x => x.Chats)
+            .WithMany(x => x.ChatsAsAdmin)
             .HasForeignKey(x => x.AdminId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasMany(x => x.Messages)
             .WithOne(x => x.Chat)
             .HasForeignKey(x => x.ChatId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasMany(x => x.Members).WithMany(x => x.Chats);
+        builder.HasMany(x => x.Members).WithMany(x => x.ChatsAsMember);
     }
 }
