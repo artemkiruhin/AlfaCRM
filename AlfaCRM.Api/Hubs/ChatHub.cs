@@ -11,9 +11,15 @@ public class ChatHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, chatName);
     }
 
-    public async Task SendMessage(string username, string message, string chatName)
+    public async Task SendMessage(string senderId, string message, string chatName, string senderUsername)
     {
-        await Clients.Group(chatName).SendAsync("ReceiveMessage", username, message);
+        var createdAt = DateTime.UtcNow;
+
+        await Clients.Group(chatName).SendAsync("ReceiveMessage", 
+            senderId, 
+            message, 
+            createdAt.ToString("o"),
+            senderUsername);
     }
 
     public async Task LeaveChat(string chatName)
