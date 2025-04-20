@@ -37,8 +37,21 @@ public class ChatService : IChatService
             var usersExist = await AllUsersExist(membersIdsIncludeCreator, ct);
             if (!usersExist) 
                 return Result<Guid>.Failure("At least one user does not exist!");
-        
-            var newChat = ChatEntity.Create(request.Name, request.Creator);
+
+            var name = "";
+            if (request.IsPersonal)
+            {
+                var sender = await _database.UserRepository.GetByIdAsync(request.Creator, ct);
+                if (sender == null) return Result<Guid>.Failure("Cannot create a personal chat!");
+                
+                var member = await _database.UserRepository.GetByIdAsync(request.MembersIds[0], ct);
+                if (member == null) return Result<Guid>.Failure($"User with id {request.MembersIds[0]} not found");
+
+                name = $"P: {sender.Username} - {member.Username}";
+            }
+            else name = request.Name;
+            
+            var newChat = ChatEntity.Create(name, request.Creator);
             await _database.ChatRepository.CreateAsync(newChat, ct);
             await _database.SaveChangesAsync(ct);
             
@@ -212,17 +225,12 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<Result<List<ChatShortDTO>>> GetByNameAsync(string name, CancellationToken ct)
+    public async Task<Result<List<ChatShortDTO>>> GetByNameAsync(string name, Guid userId, CancellationToken ct)
     {
         try
         {
             var chats = await _database.ChatRepository.GetByNameAsync(name, ct);
-            var dtos = chats.Select(entity => new ChatShortDTO(
-                Id: entity.Id,
-                Name: entity.Name,
-                CreatedAt: entity.CreatedAt,
-                AdminId: entity.Admin?.Id
-            )).ToList();
+            var dtos = chats.Select(x => MapToChatShortDTO(x, userId)).ToList();
             
             return Result<List<ChatShortDTO>>.Success(dtos);
         }
@@ -241,12 +249,7 @@ public class ChatService : IChatService
                 return Result<List<ChatShortDTO>>.Failure("User not found");
             
             var chats = await _database.ChatRepository.GetByUserAsync(userId, ct);
-            var dtos = chats.Select(entity => new ChatShortDTO(
-                Id: entity.Id,
-                Name: entity.Name,
-                CreatedAt: entity.CreatedAt,
-                AdminId: entity.Admin?.Id
-            )).ToList();
+            var dtos = chats.Select(x => MapToChatShortDTO(x, userId)).ToList();
             
             return Result<List<ChatShortDTO>>.Success(dtos);
         }
@@ -256,17 +259,12 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<Result<List<ChatShortDTO>>> GetAllShort(CancellationToken ct)
+    public async Task<Result<List<ChatShortDTO>>> GetAllShort(Guid userId, CancellationToken ct)
     {
         try
         {
             var chats = await _database.ChatRepository.GetAllAsync(ct);
-            var dtos = chats.Select(entity => new ChatShortDTO(
-                Id: entity.Id,
-                Name: entity.Name,
-                CreatedAt: entity.CreatedAt,
-                AdminId: entity.Admin?.Id
-            )).ToList();
+            var dtos = chats.Select(x => MapToChatShortDTO(x, userId)).ToList();
             
             return Result<List<ChatShortDTO>>.Success(dtos);
         }
@@ -281,69 +279,7 @@ public class ChatService : IChatService
         try
         {
             var chats = await _database.ChatRepository.GetAllAsync(ct);
-            var dtos = new List<ChatDetailedDTO>();
-
-            foreach (var chat in chats)
-            {
-                var dto = new ChatDetailedDTO(
-                    Id: chat.Id,
-                    Name: chat.Name,
-                    CreatedAt: chat.CreatedAt,
-                    Admin: chat.Admin == null ? null : new UserShortDTO(
-                        Id: chat.Admin.Id,
-                        Username: chat.Admin.Username,
-                        Email: chat.Admin.Email,
-                        DepartmentName: chat.Admin.Department?.Name ?? "Нет отдела"
-                    ),
-                    Messages: chat.Messages
-                        .Where(m => !m.IsDeleted)
-                        .OrderByDescending(m => m.CreatedAt)
-                        .Take(50)
-                        .Select(message => new MessageDTO(
-                            Id: message.Id,
-                            Content: message.Content,
-                            CreatedAt: message.CreatedAt,
-                            UpdatedAt: message.UpdatedAt,
-                            DeletedAt: message.DeletedAt,
-                            IsDeleted: message.IsDeleted,
-                            IsPinned: message.IsPinned,
-                            Sender: new UserShortDTO(
-                                Id: message.Sender.Id,
-                                Username: message.Sender.Username,
-                                Email: message.Sender.Email,
-                                DepartmentName: message.Sender.Department?.Name ?? "Нет отдела"
-                            ),
-                            RepliedMessage: message.RepliedMessage == null ? null : new MessageDTO(
-                                Id: message.RepliedMessage.Id,
-                                Content: message.RepliedMessage.Content,
-                                CreatedAt: message.RepliedMessage.CreatedAt,
-                                UpdatedAt: message.RepliedMessage.UpdatedAt,
-                                DeletedAt: message.RepliedMessage.DeletedAt,
-                                IsDeleted: message.RepliedMessage.IsDeleted,
-                                IsPinned: message.RepliedMessage.IsPinned,
-                                Sender: new UserShortDTO(
-                                    Id: message.RepliedMessage.Sender.Id,
-                                    Username: message.RepliedMessage.Sender.Username,
-                                    Email: message.RepliedMessage.Sender.Email,
-                                    DepartmentName: message.RepliedMessage.Sender.Department?.Name ?? "Нет отдела"
-                                ),
-                                RepliedMessage: null,
-                                Replies: new List<MessageDTO>(),
-                                IsOwn: userId.Value == message.SenderId
-                            ),
-                            Replies: new List<MessageDTO>(),
-                            IsOwn: userId.Value == message.SenderId
-                        )).ToList(),
-                    Members: chat.Members.Select(member => new UserShortDTO(
-                        Id: member.Id,
-                        Username: member.Username,
-                        Email: member.Email,
-                        DepartmentName: member.Department?.Name ?? "Нет отдела"
-                    )).ToList()
-                );
-                
-                dtos.Add(dto);
-            }
+            var dtos = chats.Select(chat => MapToChatDetailedDTO(chat, userId)).ToList();
             
             return Result<List<ChatDetailedDTO>>.Success(dtos);
         }
@@ -361,63 +297,7 @@ public class ChatService : IChatService
             if (chat == null)
                 return Result<ChatDetailedDTO>.Failure("Chat not found");
 
-            var dto = new ChatDetailedDTO(
-                Id: chat.Id,
-                Name: chat.Name,
-                CreatedAt: chat.CreatedAt,
-                Admin: chat.Admin == null ? null : new UserShortDTO(
-                    Id: chat.Admin.Id,
-                    Username: chat.Admin.Username,
-                    Email: chat.Admin.Email,
-                    DepartmentName: chat.Admin.Department?.Name ?? "Нет отдела"
-                ),
-                Messages: chat.Messages
-                    .Where(m => !m.IsDeleted)
-                    .OrderByDescending(m => m.CreatedAt)
-                    .Select(message => new MessageDTO(
-                        Id: message.Id,
-                        Content: message.Content,
-                        CreatedAt: message.CreatedAt,
-                        UpdatedAt: message.UpdatedAt,
-                        DeletedAt: message.DeletedAt,
-                        IsDeleted: message.IsDeleted,
-                        IsPinned: message.IsPinned,
-                        Sender: new UserShortDTO(
-                            Id: message.Sender.Id,
-                            Username: message.Sender.Username,
-                            Email: message.Sender.Email,
-                            DepartmentName: message.Sender.Department?.Name ?? "Нет отдела"
-                        ),
-                        RepliedMessage: message.RepliedMessage == null ? null : new MessageDTO(
-                            Id: message.RepliedMessage.Id,
-                            Content: message.RepliedMessage.Content,
-                            CreatedAt: message.RepliedMessage.CreatedAt,
-                            UpdatedAt: message.RepliedMessage.UpdatedAt,
-                            DeletedAt: message.RepliedMessage.DeletedAt,
-                            IsDeleted: message.RepliedMessage.IsDeleted,
-                            IsPinned: message.RepliedMessage.IsPinned,
-                            Sender: new UserShortDTO(
-                                Id: message.RepliedMessage.Sender.Id,
-                                Username: message.RepliedMessage.Sender.Username,
-                                Email: message.RepliedMessage.Sender.Email,
-                                DepartmentName: message.RepliedMessage.Sender.Department?.Name ?? "Нет отдела"
-                            ),
-                            RepliedMessage: null,
-                            Replies: new List<MessageDTO>(),
-                            IsOwn: userId == message.SenderId
-                        ),
-                        Replies: new List<MessageDTO>(),
-                        IsOwn: userId == message.SenderId
-                    )).ToList(),
-                Members: chat.Members.Select(member => new UserShortDTO(
-                    Id: member.Id,
-                    Username: member.Username,
-                    Email: member.Email,
-                    DepartmentName: member.Department?.Name ?? "Нет отдела"
-                )).ToList()
-            );
-            
-            
+            var dto = MapToChatDetailedDTO(chat, userId);
             return Result<ChatDetailedDTO>.Success(dto);
         }
         catch (Exception e)
@@ -426,7 +306,7 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<Result<ChatShortDTO>> GetByIdShort(Guid id, CancellationToken ct)
+    public async Task<Result<ChatShortDTO>> GetByIdShort(Guid id, Guid userId, CancellationToken ct)
     {
         try
         {
@@ -434,13 +314,7 @@ public class ChatService : IChatService
             if (chat == null)
                 return Result<ChatShortDTO>.Failure("Chat not found");
 
-            var dto = new ChatShortDTO(
-                Id: chat.Id,
-                Name: chat.Name,
-                CreatedAt: chat.CreatedAt,
-                AdminId: chat.Admin?.Id
-            );
-            
+            var dto = MapToChatShortDTO(chat, userId);
             return Result<ChatShortDTO>.Success(dto);
         }
         catch (Exception e)
@@ -448,4 +322,88 @@ public class ChatService : IChatService
             return Result<ChatShortDTO>.Failure($"Error while getting chat: {e.Message}");
         }
     }
+
+    #region Mapping Methods
+
+    private ChatShortDTO MapToChatShortDTO(ChatEntity chat, Guid? userId)
+    {
+        var chatName = chat.Members.Count == 2 && userId.HasValue 
+            ? chat.Members.First(x => x.Id != userId).Username 
+            : chat.Name;
+        return new ChatShortDTO(
+            Id: chat.Id,
+            Name: chatName,
+            CreatedAt: chat.CreatedAt,
+            AdminId: chat.Admin?.Id
+        );
+    }
+
+    private ChatDetailedDTO MapToChatDetailedDTO(ChatEntity chat, Guid? userId)
+    {
+        var chatName = chat.Members.Count == 2 && userId.HasValue 
+            ? chat.Members.First(x => x.Id != userId).Username 
+            : chat.Name;
+
+        return new ChatDetailedDTO(
+            Id: chat.Id,
+            Name: chatName,
+            CreatedAt: chat.CreatedAt,
+            Admin: chat.Admin == null ? null : MapToUserShortDTO(chat.Admin),
+            Messages: chat.Messages
+                .Where(m => !m.IsDeleted)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(50)
+                .Select(message => MapToMessageDTO(message, userId))
+                .ToList(),
+            Members: chat.Members.Select(MapToUserShortDTO).ToList()
+        );
+    }
+
+    private MessageDTO MapToMessageDTO(MessageEntity message, Guid? userId)
+    {
+        return new MessageDTO(
+            Id: message.Id,
+            Content: message.Content,
+            CreatedAt: message.CreatedAt,
+            UpdatedAt: message.UpdatedAt,
+            DeletedAt: message.DeletedAt,
+            IsDeleted: message.IsDeleted,
+            IsPinned: message.IsPinned,
+            Sender: MapToUserShortDTO(message.Sender),
+            RepliedMessage: message.RepliedMessage == null 
+                ? null 
+                : MapToRepliedMessageDTO(message.RepliedMessage, userId),
+            Replies: new List<MessageDTO>(),
+            IsOwn: userId.HasValue && userId.Value == message.SenderId
+        );
+    }
+
+    private MessageDTO MapToRepliedMessageDTO(MessageEntity message, Guid? userId)
+    {
+        return new MessageDTO(
+            Id: message.Id,
+            Content: message.Content,
+            CreatedAt: message.CreatedAt,
+            UpdatedAt: message.UpdatedAt,
+            DeletedAt: message.DeletedAt,
+            IsDeleted: message.IsDeleted,
+            IsPinned: message.IsPinned,
+            Sender: MapToUserShortDTO(message.Sender),
+            RepliedMessage: null,
+            Replies: new List<MessageDTO>(),
+            IsOwn: userId.HasValue && userId.Value == message.SenderId
+        );
+    }
+
+    private UserShortDTO MapToUserShortDTO(UserEntity user)
+    {
+        return new UserShortDTO(
+            Id: user.Id,
+            Username: user.Username,
+            Email: user.Email,
+            DepartmentName: user.Department?.Name ?? "Нет отдела"
+        );
+    }
+
+    #endregion
 }

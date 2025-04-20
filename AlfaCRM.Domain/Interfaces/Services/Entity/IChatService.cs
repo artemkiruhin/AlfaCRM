@@ -13,11 +13,11 @@ public interface IChatService
     Task<Result<Guid>> AddMember(Guid chatId, Guid memberId, CancellationToken ct);
     Task<Result<List<Guid>>> RemoveMember(Guid chatId, Guid memberId, CancellationToken ct);
     
-    Task<Result<List<ChatShortDTO>>> GetByNameAsync(string name, CancellationToken ct);
+    Task<Result<List<ChatShortDTO>>> GetByNameAsync(string name, Guid userId, CancellationToken ct);
     Task<Result<List<ChatShortDTO>>> GetByUserAsync(Guid userId, CancellationToken ct);
     
-    Task<Result<List<ChatShortDTO>>> GetAllShort(CancellationToken ct);
+    Task<Result<List<ChatShortDTO>>> GetAllShort(Guid userId, CancellationToken ct);
     Task<Result<List<ChatDetailedDTO>>> GetAll(Guid? userId, CancellationToken ct);
     Task<Result<ChatDetailedDTO>> GetById(Guid id, Guid? userId, CancellationToken ct);
-    Task<Result<ChatShortDTO>> GetByIdShort(Guid id, CancellationToken ct);
+    Task<Result<ChatShortDTO>> GetByIdShort(Guid id, Guid userId, CancellationToken ct);
 }
