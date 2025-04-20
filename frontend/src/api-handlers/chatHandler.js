@@ -22,7 +22,7 @@ const getAllChats = async () => {
 
 const getChatById = async (id, byUser = false) => {
     try {
-        const response = await fetch(`${API_URL}/chat/id/${id}?byUser=${byUser}`, {
+        const response = await fetch(`${API_URL}/chat/id/${id}?byUser=${byUser.toString()}`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -109,46 +109,10 @@ const getAllMessages = async (chatId) => {
 };
 
 
-const initializeChatHub = (connection) => {
-    const startConnection = async () => {
-        try {
-            await connection.start();
-            console.log("SignalR Connected.");
-            return true;
-        } catch (err) {
-            console.log("SignalR Connection Error: ", err);
-            return false;
-        }
-    };
-
-    const joinChat = async (chatName, username) => {
-        try {
-            await connection.invoke("JoinChat", username, chatName);
-        } catch (err) {
-            console.error("Error joining chat: ", err);
-        }
-    };
-
-    const sendChatMessage = async (chatName, username, message) => {
-        try {
-            await connection.invoke("SendMessage", username, message, chatName);
-        } catch (err) {
-            console.error("Error sending message: ", err);
-        }
-    };
-
-    return {
-        startConnection,
-        joinChat,
-        sendChatMessage
-    };
-};
-
 export {
     getAllChats,
     getChatById,
     createChat,
     sendMessage,
-    getAllMessages,
-    initializeChatHub
+    getAllMessages
 };
