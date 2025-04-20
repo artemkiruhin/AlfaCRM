@@ -152,8 +152,8 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                var isUserValid = await _userValidator.IsAdmin(User, ct);
-                if (!isUserValid.IsSuccess) return Unauthorized();
+                // var isUserValid = await _userValidator.IsAdmin(User, ct);
+                // if (!isUserValid.IsSuccess) return Unauthorized();
                 
                 if (isShort is true)
                 {
@@ -177,8 +177,8 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                var isUserValid = await _userValidator.IsAdmin(User, ct);
-                if (!isUserValid.IsSuccess) return Unauthorized();
+                // var isUserValid = await _userValidator.IsAdmin(User, ct);
+                // if (!isUserValid.IsSuccess) return Unauthorized();
                 
                 if (isShort is true)
                 {
