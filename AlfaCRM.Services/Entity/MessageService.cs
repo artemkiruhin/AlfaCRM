@@ -138,7 +138,7 @@ public class MessageService : IMessageService
                 return Result<List<MessageDTO>>.Failure("Chat does not exist");
 
             var messages = await _database.MessageRepository.GetMessagesAsync(chatId, ct);
-            var filteredMessages = messages.Where(m => !m.IsDeleted).ToList();
+            var filteredMessages = messages.Where(m => m.IsDeleted == false).ToList();
             
             var senderIds = filteredMessages.Select(m => m.SenderId).Distinct();
             var senders = await _database.UserRepository.FindRangeAsync(
