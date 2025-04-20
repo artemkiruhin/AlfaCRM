@@ -9,6 +9,6 @@ public class MessageRepository(AppDbContext context) : BaseRepository<MessageEnt
 {
     public async Task<List<MessageEntity>> GetMessagesAsync(Guid chatId, CancellationToken ct)
     {
-        return await DbSet.AsNoTracking().Where(c => c.Id == chatId).ToListAsync(ct);
+        return await DbSet.AsNoTracking().Where(c => c.ChatId == chatId).ToListAsync(ct);
     }
 }
