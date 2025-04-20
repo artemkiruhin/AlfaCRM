@@ -1,5 +1,10 @@
 
 const formatDate = (dateString) => {
+    if (!dateString) return 'только что';
+    if (new Date() - new Date(dateString) < 5000) {
+        return 'только что';
+    }
+
     if (!(dateString instanceof Date)) {
         dateString = new Date(dateString);
     }
