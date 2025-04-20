@@ -1,3 +1,4 @@
+using System.Globalization;
 using AlfaCRM.Api.Contracts.Response;
 using AlfaCRM.Api.Extensions;
 using AlfaCRM.Api.Hubs;
@@ -40,7 +41,7 @@ namespace AlfaCRM.Api.Controllers
         }
 
         [HttpGet("id/{id:guid}")]
-        public async Task<IActionResult> GetChatById([FromRoute] Guid id, [FromQuery] bool byUser, CancellationToken ct)
+        public async Task<IActionResult> GetChatById(Guid id, [FromQuery] bool byUser, CancellationToken ct)
         {
             var userId = await _userValidator.GetUserId(User, ct);
             if (!userId.IsSuccess) return Unauthorized();
@@ -48,6 +49,7 @@ namespace AlfaCRM.Api.Controllers
             var chat = byUser
                 ? await _chatService.GetById(id, userId.Data, ct)
                 : await _chatService.GetById(id, null, ct);
+            if (!chat.IsSuccess) return BadRequest($"{chat.ErrorMessage}");
             return Ok(new {data = chat});
         }
 
@@ -55,7 +57,7 @@ namespace AlfaCRM.Api.Controllers
         public async Task<IActionResult> CreateChat([FromBody] ChatCreateRequest request, CancellationToken ct)
         {
             var result = await _chatService.Create(request, ct);
-            if (!result.IsSuccess) return BadRequest();
+            if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
             
             return Ok(new {data = result.Data});
         }
@@ -74,13 +76,18 @@ namespace AlfaCRM.Api.Controllers
             
             var message = await _messageService.GetById(result.Data, ct);
 
+            /*var culture = new CultureInfo("ru-RU");
+            var d = message.Data.CreatedAt.ToString("dd MMMM yyyy 'в' HH:mm", culture);
+            
+            Console.WriteLine(d);
+            
             await _hub.Clients.Group(chat.Data.Name).SendAsync("ReceiveMessage", new MessageResponse(
                 Id: message.Data.Id,
                 Content: message.Data.Content,
-                Timestamp: message.Data.CreatedAt,
+                CreatedAt: d,
                 Username: message.Data.Sender.Username,
                 IsOwn: message.Data.Sender.Id == userId.Data
-            ));
+            ), cancellationToken: ct);*/
             
             return Ok(new {data = result.Data});
         }
