@@ -1,13 +1,16 @@
 
 const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
+    if (!(dateString instanceof Date)) {
+        dateString = new Date(dateString);
+    }
+    const options = {
         year: 'numeric',
+        month: 'long',
+        day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    }).format(date);
+    };
+    return new Date(dateString).toLocaleDateString('ru-RU', options);
 };
 
 export {
