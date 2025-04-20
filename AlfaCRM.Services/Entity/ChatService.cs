@@ -26,34 +26,37 @@ public class ChatService : IChatService
     }
     
     public async Task<Result<Guid>> Create(ChatCreateRequest request, CancellationToken ct)
-    {
-        await _database.BeginTransactionAsync(ct);
+    { 
         try
         {
             if (request.IsPersonal && request.MembersIds.Count != 1)
                 return Result<Guid>.Failure("Personal chat must have 1 member!");
 
             var membersIdsIncludeCreator = new List<Guid>(request.MembersIds) { request.Creator };
-            
+        
             var usersExist = await AllUsersExist(membersIdsIncludeCreator, ct);
-            if (!usersExist) return Result<Guid>.Failure("At least one user is not exist!");
-            
+            if (!usersExist) 
+                return Result<Guid>.Failure("At least one user does not exist!");
+        
             var newChat = ChatEntity.Create(request.Name, request.Creator);
             await _database.ChatRepository.CreateAsync(newChat, ct);
             await _database.SaveChangesAsync(ct);
-           
-            var chat = await _database.ChatRepository.GetByIdAsync(newChat.Id, ct);
-            if (chat == null) return Result<Guid>.Failure("Chat not created!");
             
-            await AddMembers(chat.Id, membersIdsIncludeCreator, ct);
+            foreach (var memberId in membersIdsIncludeCreator)
+            {
+                var member = await _database.UserRepository.GetByIdAsync(memberId, ct);
+                if (member == null)
+                    return Result<Guid>.Failure($"User with id {memberId} not found");
+
+                newChat.Members.Add(member);
+            }
+
             await _database.SaveChangesAsync(ct);
-            await _database.CommitTransactionAsync(ct);
-            
+        
             return Result<Guid>.Success(newChat.Id);
         }
         catch (Exception e)
         {
-            await _database.RollbackTransactionAsync(ct);
             return Result<Guid>.Failure($"Error while creating chat: {e.Message}");
         }
     }
@@ -371,7 +374,6 @@ public class ChatService : IChatService
                 Messages: chat.Messages
                     .Where(m => !m.IsDeleted)
                     .OrderByDescending(m => m.CreatedAt)
-                    .Take(100)
                     .Select(message => new MessageDTO(
                         Id: message.Id,
                         Content: message.Content,
@@ -402,10 +404,10 @@ public class ChatService : IChatService
                             ),
                             RepliedMessage: null,
                             Replies: new List<MessageDTO>(),
-                            IsOwn: userId.Value == message.SenderId
+                            IsOwn: userId == message.SenderId
                         ),
                         Replies: new List<MessageDTO>(),
-                        IsOwn: userId.Value == message.SenderId
+                        IsOwn: userId == message.SenderId
                     )).ToList(),
                 Members: chat.Members.Select(member => new UserShortDTO(
                     Id: member.Id,
@@ -414,6 +416,7 @@ public class ChatService : IChatService
                     DepartmentName: member.Department?.Name ?? "Нет отдела"
                 )).ToList()
             );
+            
             
             return Result<ChatDetailedDTO>.Success(dto);
         }
