@@ -43,7 +43,9 @@ public class DepartmentService : IDepartmentService
                 Id: user.Id,
                 Username: user.Username,
                 Email: user.Email,
-                DepartmentName: entity.Name
+                DepartmentName: user.Department?.Name ?? "Нет отдела",
+                IsAdmin: user?.IsAdmin ?? false,
+                IsBlocked: user?.IsBlocked ?? false
             )).ToList()
         );
     }
@@ -58,7 +60,9 @@ public class DepartmentService : IDepartmentService
                 Id: user.Id,
                 Username: user.Username,
                 Email: user.Email,
-                DepartmentName: department.Name
+                DepartmentName: department.Name,
+                IsAdmin: user?.IsAdmin ?? false,
+                IsBlocked: user?.IsBlocked ?? false
             )).ToList()
         )).ToList();
     }

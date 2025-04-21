@@ -401,7 +401,9 @@ public class ChatService : IChatService
             Id: user.Id,
             Username: user.Username,
             Email: user.Email,
-            DepartmentName: user.Department?.Name ?? "Нет отдела"
+            DepartmentName: user.Department?.Name ?? "Нет отдела",
+            IsAdmin: user?.IsAdmin ?? false,
+            IsBlocked: user?.IsBlocked ?? false
         );
     }
 

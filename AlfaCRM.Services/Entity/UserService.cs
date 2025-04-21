@@ -26,7 +26,9 @@ public class UserService : IUserService
             Id: entity.Id,
             Username: entity.Username,
             Email: entity.Email,
-            DepartmentName: entity.Department?.Name ?? "Нет отдела"
+            DepartmentName: entity.Department?.Name ?? "Нет отдела",
+            IsAdmin: entity.IsAdmin,
+            IsBlocked: entity.IsBlocked
         );
     }
 
@@ -36,7 +38,9 @@ public class UserService : IUserService
             Id: entity.Id,
             Username: entity.Username,
             Email: entity.Email,
-            DepartmentName: entity.Department?.Name ?? "Нет отдела"
+            DepartmentName: entity.Department?.Name ?? "Нет отдела",
+            IsAdmin: entity.IsAdmin,
+            IsBlocked: entity.IsBlocked
         )).ToList();
     }
 

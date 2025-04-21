@@ -4,5 +4,7 @@ public record UserShortDTO(
     Guid Id,
     string Username,
     string Email,
-    string DepartmentName
+    string DepartmentName,
+    bool IsAdmin,
+    bool IsBlocked
 );

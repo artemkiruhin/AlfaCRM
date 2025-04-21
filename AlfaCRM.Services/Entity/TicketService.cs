@@ -199,13 +199,17 @@ public class TicketService : ITicketService
                     Id: ticket.Assignee.Id,
                     Username: ticket.Assignee.Username,
                     Email: ticket.Assignee.Email,
-                    DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела"
+                    DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела",
+                    IsAdmin: ticket.Assignee?.IsAdmin ?? false,
+                    IsBlocked: ticket.Assignee?.IsBlocked ?? false
                     ),
                 Creator: new UserShortDTO(
                     Id: ticket.Creator.Id,
                     Username: ticket.Creator.Username,
                     Email: ticket.Creator.Email,
-                    DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела"
+                    DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела",
+                    IsAdmin: ticket.Creator?.IsAdmin ?? false,
+                    IsBlocked: ticket.Creator?.IsBlocked ?? false
                 ),
                 ClosedAt: ticket.ClosedAt,
                 Type: ticket.Type switch
@@ -256,13 +260,17 @@ public class TicketService : ITicketService
                         Id: ticket.Assignee.Id,
                         Username: ticket.Assignee.Username,
                         Email: ticket.Assignee.Email,
-                        DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела"
+                        DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела",
+                        IsAdmin: ticket.Assignee?.IsAdmin ?? false,
+                        IsBlocked: ticket.Assignee?.IsBlocked ?? false
                     ),
                 Creator: new UserShortDTO(
                     Id: ticket.Creator.Id,
                     Username: ticket.Creator.Username,
                     Email: ticket.Creator.Email,
-                    DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела"
+                    DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела",
+                    IsAdmin: ticket.Creator?.IsAdmin ?? false,
+                    IsBlocked: ticket.Creator?.IsBlocked ?? false
                 ),
                 ClosedAt: ticket.ClosedAt,
                 Type: ticket.Type switch

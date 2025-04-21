@@ -27,7 +27,9 @@ public class PostCommentService : IPostCommentService
                 Id: entity.SenderId,
                 Username: entity.Sender.Username,
                 Email: entity.Sender.Email,
-                DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела"
+                DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела",
+                IsAdmin: entity.Sender?.IsAdmin ?? false,
+                IsBlocked: entity.Sender?.IsBlocked ?? false
             )
         );
     }
@@ -43,7 +45,9 @@ public class PostCommentService : IPostCommentService
                 Id: entity.SenderId,
                 Username: entity.Sender.Username,
                 Email: entity.Sender.Email,
-                DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела"
+                DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела",
+                IsAdmin: entity.Sender?.IsAdmin ?? false,
+                IsBlocked: entity.Sender?.IsBlocked ?? false
             )
         )).ToList();
     }

@@ -64,7 +64,9 @@ public class PostService : IPostService
                 Id: entity.PublisherId,
                 Username: entity.Publisher.Username,
                 Email: entity.Publisher.Email,
-                DepartmentName: entity.Publisher.Department?.Name ?? "Нет отдела"
+                DepartmentName: entity.Publisher.Department?.Name ?? "Нет отдела",
+                IsAdmin: entity.Publisher?.IsAdmin ?? false,
+                IsBlocked: entity.Publisher?.IsBlocked ?? false
             ),
             Department: entity.DepartmentId.HasValue
                 ? new DepartmentShortDTO(
@@ -79,7 +81,9 @@ public class PostService : IPostService
                     Id: reaction.SenderId,
                     Username: reaction.Sender.Username,
                     Email: reaction.Sender.Email,
-                    DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела"
+                    DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела",
+                    IsAdmin: reaction.Sender?.IsAdmin ?? false,
+                    IsBlocked: reaction.Sender?.IsBlocked ?? false
                 ),
                 CreatedAt: reaction.CreatedAt,
                 Type: ReactionTypeToString(reaction.Type)
@@ -93,7 +97,9 @@ public class PostService : IPostService
                     Id: comment.SenderId,
                     Username: comment.Sender.Username,
                     Email: comment.Sender.Email,
-                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
+                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела",
+                    IsAdmin: comment.Sender?.IsAdmin ?? false,
+                    IsBlocked: comment.Sender?.IsBlocked ?? false
                 )
             )).ToList()
         );
@@ -114,7 +120,9 @@ public class PostService : IPostService
                 Id: entity.PublisherId,
                 Username: entity.Publisher.Username,
                 Email: entity.Publisher.Email,
-                DepartmentName: entity.Publisher.Department?.Name ?? "Нет отдела"
+                DepartmentName: entity.Publisher.Department?.Name ?? "Нет отдела",
+                IsAdmin: entity.Publisher?.IsAdmin ?? false,
+                IsBlocked: entity.Publisher?.IsBlocked ?? false
             ),
             Department: entity.DepartmentId.HasValue
                 ? new DepartmentShortDTO(
@@ -129,7 +137,9 @@ public class PostService : IPostService
                     Id: reaction.SenderId,
                     Username: reaction.Sender.Username,
                     Email: reaction.Sender.Email,
-                    DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела"
+                    DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела",
+                    IsAdmin: reaction.Sender?.IsAdmin ?? false,
+                    IsBlocked: reaction.Sender?.IsBlocked ?? false
                 ),
                 CreatedAt: reaction.CreatedAt,
                 Type: ReactionTypeToString(reaction.Type)
@@ -143,7 +153,9 @@ public class PostService : IPostService
                     Id: comment.SenderId,
                     Username: comment.Sender.Username,
                     Email: comment.Sender.Email,
-                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела"
+                    DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела",
+                    IsAdmin: comment.Sender?.IsAdmin ?? false,
+                    IsBlocked: comment.Sender?.IsBlocked ?? false
                 )
             )).ToList()
         )).ToList();

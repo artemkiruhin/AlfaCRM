@@ -174,7 +174,9 @@ public class MessageService : IMessageService
                         Id: sender.Id,
                         Username: sender.Username,
                         Email: sender.Email,
-                        DepartmentName: sender.Department?.Name ?? "No department"),
+                        DepartmentName: sender.Department?.Name ?? "No department",
+                        IsAdmin: sender?.IsAdmin ?? false,
+                        IsBlocked: sender?.IsBlocked ?? false),
                     RepliedMessage: repliedMessage == null ? null : new MessageDTO(
                         Id: repliedMessage.Id,
                         Content: repliedMessage.Content,
@@ -234,7 +236,9 @@ public class MessageService : IMessageService
                             Id: repliedMessageSender.Id,
                             Username: repliedMessageSender.Username,
                             Email: repliedMessageSender.Email,
-                            DepartmentName: repliedMessageSender.Department?.Name ?? "No department"),
+                            DepartmentName: repliedMessageSender.Department?.Name ?? "No department",
+                            IsAdmin: repliedMessageSender?.IsAdmin ?? false,
+                            IsBlocked: repliedMessageSender?.IsBlocked ?? false),
                         RepliedMessage: null,
                         Replies: new List<MessageDTO>(),
                         IsOwn: sender?.Id == message.SenderId
@@ -254,7 +258,9 @@ public class MessageService : IMessageService
                     Id: sender.Id,
                     Username: sender.Username,
                     Email: sender.Email,
-                    DepartmentName: sender.Department?.Name ?? "No department"),
+                    DepartmentName: sender.Department?.Name ?? "No department",
+                    IsAdmin: sender?.IsAdmin ?? false,
+                    IsBlocked: sender?.IsBlocked ?? false),
                 RepliedMessage: repliedMessageDto,
                 Replies: new List<MessageDTO>(),
                 IsOwn: sender?.Id == message.SenderId
