@@ -31,8 +31,7 @@ const RootLayout = ({ page }) => {
         { icon: <Calendar size={20} className="nav-icon" />, label: 'Отправленные заявки', link: "/tickets/sent" },
         { icon: <Settings size={20} className="nav-icon" />, label: 'Предложения', link: "/suggestions/my" },
         { icon: <Settings size={20} className="nav-icon" />, label: 'Отправленные предложения', link: "/suggestions/sent" },
-        { icon: <Settings size={20} className="nav-icon" />, label: 'Отделы', link: "/departments" },
-        { icon: <Settings size={20} className="nav-icon" />, label: 'Сотрудники', link: "/users" },
+        { icon: <Settings size={20} className="nav-icon" />, label: 'Панель администратора', link: "/admin" }
     ];
 
     let items = emplMenuItems;

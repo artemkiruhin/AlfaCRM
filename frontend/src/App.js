@@ -19,6 +19,7 @@ import AuthLayout from "./components/layout/AuthLayout";
 import {AuthPage} from "./pages/AuthPage/AuthPage";
 import React from "react";
 import ChatCreatePage from "./pages/chatCreatePage/ChatCreatePage";
+import AdminPanel from "./pages/adminPanel/AdminPanel";
 
 function App() {
   return (
@@ -50,6 +51,8 @@ function App() {
                 <Route path="/users/create" element={<AuthLayout><RootLayout page={<UserCreatePage />}/></AuthLayout>} />
 
                 <Route path="/departments" element={<AuthLayout><RootLayout page={<DepartmentListPage />}/></AuthLayout>} />
+
+                <Route path="/admin" element={<AuthLayout><RootLayout page={<AdminPanel />}/></AuthLayout>} />
 
                 <Route path="/login" element={<AuthPage/>}/>
             </Routes>
