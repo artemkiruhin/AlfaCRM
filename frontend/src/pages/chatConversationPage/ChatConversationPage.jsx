@@ -259,7 +259,7 @@ const ChatConversationPage = () => {
         return (
             <div className="loading-container">
                 <Header />
-                <div className="loading-content">Loading chat...</div>
+                <div className="loading-content">Загрузка данных...</div>
             </div>
         );
     }
@@ -276,20 +276,20 @@ const ChatConversationPage = () => {
                         Назад
                     </div>
                     <div className="chat-partner">
-                        <h2 className="chat-partner-name">{currentChat?.name || 'Loading...'}</h2>
-                        <div className={`connection-status ${connectionStatus}`}>
-                            {connectionStatus === 'connected' ? 'Online' :
-                                connectionStatus === 'reconnecting' ? 'Reconnecting...' : 'Offline'}
-                        </div>
+                        <h2 className="chat-partner-name">{currentChat?.name || 'Загрузка...'}</h2>
+                        {/*<div className={`connection-status ${connectionStatus}`}>*/}
+                        {/*    {connectionStatus === 'connected' ? 'Online' :*/}
+                        {/*        connectionStatus === 'reconnecting' ? 'Reconnecting...' : 'Offline'}*/}
+                        {/*</div>*/}
                     </div>
-                    <button className="leave-chat-button" onClick={handleLeaveChat}>
-                        Leave Chat
-                    </button>
+                    {/*<button className="leave-chat-button" onClick={handleLeaveChat}>*/}
+                    {/*    Leave Chat*/}
+                    {/*</button>*/}
                 </div>
 
                 <div className="chat-messages">
                     {messages.length === 0 ? (
-                        <div className="no-messages">No messages yet. Start the conversation!</div>
+                        <div className="no-messages">Сообщений еще нет. Начните беседу!</div>
                     ) : (
                         messages.map((message) => (
                             <div key={message.id}
@@ -308,7 +308,7 @@ const ChatConversationPage = () => {
                 <div className="chat-input-container">
                     <textarea
                         className="chat-input"
-                        placeholder="Type your message..."
+                        placeholder="Введите ваше сообщение..."
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
@@ -319,7 +319,7 @@ const ChatConversationPage = () => {
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || connectionStatus !== 'connected'}
                     >
-                        {connectionStatus === 'connected' ? 'Send' : 'Connecting...'}
+                        {connectionStatus === 'connected' ? 'Отправить' : 'Соединение...'}
                     </button>
                 </div>
             </div>
