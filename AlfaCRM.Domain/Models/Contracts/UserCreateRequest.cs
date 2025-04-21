@@ -1,6 +1,7 @@
 ﻿namespace AlfaCRM.Domain.Models.Contracts;
 
 public record UserCreateRequest(
+    string FullName,
     string Email,
     string Username,
     string PasswordHash,

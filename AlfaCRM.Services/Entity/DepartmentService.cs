@@ -41,6 +41,7 @@ public class DepartmentService : IDepartmentService
             IsSpecific: entity.IsSpecific,
             Users: entity.Users.Select(user => new UserShortDTO(
                 Id: user.Id,
+                FullName: user.FullName,
                 Username: user.Username,
                 Email: user.Email,
                 DepartmentName: user.Department?.Name ?? "Нет отдела",
@@ -58,6 +59,7 @@ public class DepartmentService : IDepartmentService
             IsSpecific: department.IsSpecific,
             Users: department.Users.Select(user => new UserShortDTO(
                 Id: user.Id,
+                FullName: user.FullName,
                 Username: user.Username,
                 Email: user.Email,
                 DepartmentName: department.Name,

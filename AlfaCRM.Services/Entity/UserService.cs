@@ -24,6 +24,7 @@ public class UserService : IUserService
     {
         return new UserShortDTO(
             Id: entity.Id,
+            FullName: entity.FullName,
             Username: entity.Username,
             Email: entity.Email,
             DepartmentName: entity.Department?.Name ?? "Нет отдела",
@@ -36,6 +37,7 @@ public class UserService : IUserService
     {
         return entities.Select(entity => new UserShortDTO(
             Id: entity.Id,
+            FullName: entity.FullName,
             Username: entity.Username,
             Email: entity.Email,
             DepartmentName: entity.Department?.Name ?? "Нет отдела",
@@ -143,6 +145,7 @@ public class UserService : IUserService
             if (department == null) return Result<Guid>.Failure("Department not found");
 
             var newUser = UserEntity.Create(
+                fullName: request.FullName,
                 email: request.Email,
                 username: request.Username,
                 passwordHash: _hasher.ComputeHash(request.PasswordHash),

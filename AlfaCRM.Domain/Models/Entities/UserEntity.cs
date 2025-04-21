@@ -3,6 +3,7 @@
 public class UserEntity
 {
     public Guid Id { get; set; }
+    public required string FullName { get; set; }
     public required string Email { get; set; }
     public required string Username { get; set; }
     public required string PasswordHash { get; set; }
@@ -28,6 +29,7 @@ public class UserEntity
     public virtual ICollection<MessageEntity> Messages { get; set; } = [];
 
     public static UserEntity Create(
+        string fullName,
         string email,
         string username,
         string passwordHash,
@@ -41,6 +43,7 @@ public class UserEntity
         return new()
         {
             Id = Guid.NewGuid(),
+            FullName = fullName,
             Email = email,
             Username = username,
             PasswordHash = passwordHash,

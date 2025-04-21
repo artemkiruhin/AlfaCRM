@@ -172,6 +172,7 @@ public class MessageService : IMessageService
                     IsPinned: message.IsPinned,
                     Sender: sender == null ? null : new UserShortDTO(
                         Id: sender.Id,
+                        FullName: sender.FullName,
                         Username: sender.Username,
                         Email: sender.Email,
                         DepartmentName: sender.Department?.Name ?? "No department",
@@ -234,6 +235,7 @@ public class MessageService : IMessageService
                         IsPinned: repliedMessage.IsPinned,
                         Sender: repliedMessageSender == null ? null : new UserShortDTO(
                             Id: repliedMessageSender.Id,
+                            FullName: repliedMessageSender.FullName,
                             Username: repliedMessageSender.Username,
                             Email: repliedMessageSender.Email,
                             DepartmentName: repliedMessageSender.Department?.Name ?? "No department",
@@ -256,6 +258,7 @@ public class MessageService : IMessageService
                 IsPinned: message.IsPinned,
                 Sender: sender == null ? null : new UserShortDTO(
                     Id: sender.Id,
+                    FullName: sender.FullName,
                     Username: sender.Username,
                     Email: sender.Email,
                     DepartmentName: sender.Department?.Name ?? "No department",

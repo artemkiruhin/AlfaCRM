@@ -25,6 +25,7 @@ public class PostCommentService : IPostCommentService
             CreatedAt: entity.CreatedAt,
             Sender: new UserShortDTO(
                 Id: entity.SenderId,
+                FullName: entity.Sender.FullName,
                 Username: entity.Sender.Username,
                 Email: entity.Sender.Email,
                 DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела",
@@ -43,6 +44,7 @@ public class PostCommentService : IPostCommentService
             CreatedAt: entity.CreatedAt,
             Sender: new UserShortDTO(
                 Id: entity.SenderId,
+                FullName: entity.Sender.FullName,
                 Username: entity.Sender.Username,
                 Email: entity.Sender.Email,
                 DepartmentName: entity.Sender.Department?.Name ?? "Нет отдела",

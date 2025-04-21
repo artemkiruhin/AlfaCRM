@@ -8,10 +8,18 @@ public static class DbInitializer
 {
     public static int Initialize(AppDbContext context, IHashService hasher)
     {
-        // if (context.Users.Any() || context.Departments.Any() || context.Posts.Any())
-        // {
-        //     return -1;
-        // }
+        if (context.Users.Any() || context.Departments.Any() || context.Posts.Any())
+        {
+            context.Users.RemoveRange(context.Users);
+            context.Posts.RemoveRange(context.Posts);
+            context.PostReactions.RemoveRange(context.PostReactions);
+            context.PostComments.RemoveRange(context.PostComments);
+            context.Departments.RemoveRange(context.Departments);
+            context.Tickets.RemoveRange(context.Tickets);
+            context.Messages.RemoveRange(context.Messages);
+            context.Chats.RemoveRange(context.Chats);
+            context.SaveChanges();
+        }
         
         var departments = new List<DepartmentEntity>
         {
@@ -28,6 +36,7 @@ public static class DbInitializer
         var users = new List<UserEntity>
         {
             UserEntity.Create(
+                fullName: "Иванов Иван Иванович",
                 email: "ivanov@example.com",
                 username: "ivanov",
                 passwordHash: hasher.ComputeHash("1"),
@@ -39,6 +48,7 @@ public static class DbInitializer
                 departmentId: departments[0].Id
             ),
             UserEntity.Create(
+                fullName: "Петров Петр Петрович",
                 email: "petrov@example.com",
                 username: "petrov",
                 passwordHash: hasher.ComputeHash("1"),
@@ -50,6 +60,7 @@ public static class DbInitializer
                 departmentId: departments[1].Id
             ),
             UserEntity.Create(
+                fullName: "Сидорова Мария Серафимовна",
                 email: "sidorova@example.com",
                 username: "sidorova",
                 passwordHash: hasher.ComputeHash("1"),

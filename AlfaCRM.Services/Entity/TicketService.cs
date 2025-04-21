@@ -197,6 +197,7 @@ public class TicketService : ITicketService
                 },
                 Assignee: ticket.Assignee == null ? null : new UserShortDTO(
                     Id: ticket.Assignee.Id,
+                    FullName: ticket.Assignee.FullName,
                     Username: ticket.Assignee.Username,
                     Email: ticket.Assignee.Email,
                     DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела",
@@ -205,6 +206,7 @@ public class TicketService : ITicketService
                     ),
                 Creator: new UserShortDTO(
                     Id: ticket.Creator.Id,
+                    FullName: ticket.Creator.FullName,
                     Username: ticket.Creator.Username,
                     Email: ticket.Creator.Email,
                     DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела",
@@ -258,6 +260,7 @@ public class TicketService : ITicketService
                     ? null
                     : new UserShortDTO(
                         Id: ticket.Assignee.Id,
+                        FullName: ticket.Assignee.FullName,
                         Username: ticket.Assignee.Username,
                         Email: ticket.Assignee.Email,
                         DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела",
@@ -266,6 +269,7 @@ public class TicketService : ITicketService
                     ),
                 Creator: new UserShortDTO(
                     Id: ticket.Creator.Id,
+                    FullName: ticket.Creator.FullName,
                     Username: ticket.Creator.Username,
                     Email: ticket.Creator.Email,
                     DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела",

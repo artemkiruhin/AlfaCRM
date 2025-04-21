@@ -62,6 +62,7 @@ public class PostService : IPostService
             IsActual: entity.IsActual,
             Publisher: new UserShortDTO(
                 Id: entity.PublisherId,
+                FullName: entity.Publisher.FullName,
                 Username: entity.Publisher.Username,
                 Email: entity.Publisher.Email,
                 DepartmentName: entity.Publisher.Department?.Name ?? "Нет отдела",
@@ -79,6 +80,7 @@ public class PostService : IPostService
                 Id: reaction.Id,
                 Sender: new UserShortDTO(
                     Id: reaction.SenderId,
+                    FullName: reaction.Sender.FullName,
                     Username: reaction.Sender.Username,
                     Email: reaction.Sender.Email,
                     DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела",
@@ -95,6 +97,7 @@ public class PostService : IPostService
                 CreatedAt: comment.CreatedAt,
                 Sender: new UserShortDTO(
                     Id: comment.SenderId,
+                    FullName: comment.Sender.FullName,
                     Username: comment.Sender.Username,
                     Email: comment.Sender.Email,
                     DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела",
@@ -118,6 +121,7 @@ public class PostService : IPostService
             IsActual: entity.IsActual,
             Publisher: new UserShortDTO(
                 Id: entity.PublisherId,
+                FullName: entity.Publisher.FullName,
                 Username: entity.Publisher.Username,
                 Email: entity.Publisher.Email,
                 DepartmentName: entity.Publisher.Department?.Name ?? "Нет отдела",
@@ -135,6 +139,7 @@ public class PostService : IPostService
                 Id: reaction.Id,
                 Sender: new UserShortDTO(
                     Id: reaction.SenderId,
+                    FullName: reaction.Sender.FullName,
                     Username: reaction.Sender.Username,
                     Email: reaction.Sender.Email,
                     DepartmentName: reaction.Sender.Department?.Name ?? "Нет отдела",
@@ -151,6 +156,7 @@ public class PostService : IPostService
                 CreatedAt: comment.CreatedAt,
                 Sender: new UserShortDTO(
                     Id: comment.SenderId,
+                    FullName: comment.Sender.FullName,
                     Username: comment.Sender.Username,
                     Email: comment.Sender.Email,
                     DepartmentName: comment.Sender.Department?.Name ?? "Нет отдела",

@@ -399,6 +399,7 @@ public class ChatService : IChatService
     {
         return new UserShortDTO(
             Id: user.Id,
+            FullName: user.FullName,
             Username: user.Username,
             Email: user.Email,
             DepartmentName: user.Department?.Name ?? "Нет отдела",
