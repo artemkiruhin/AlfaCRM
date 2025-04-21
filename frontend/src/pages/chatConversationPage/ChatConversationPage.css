@@ -1,4 +1,3 @@
-/* Chat Conversation Page Styles */
 .chat-conversation-container {
     max-width: 800px;
     margin: 0 auto;
@@ -214,7 +213,6 @@
     transform: none;
 }
 
-/* Custom scrollbar */
 .chat-messages::-webkit-scrollbar {
     width: 6px;
 }
@@ -228,7 +226,6 @@
     border-radius: 3px;
 }
 
-/* Typing indicator */
 .typing-indicator {
     display: flex;
     align-items: center;
@@ -270,7 +267,6 @@
     40% { transform: scale(1); }
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .chat-conversation-container {
         height: calc(100vh - 60px);
