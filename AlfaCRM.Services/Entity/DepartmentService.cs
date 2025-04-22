@@ -104,12 +104,16 @@ public class DepartmentService : IDepartmentService
 
         try
         {
+            if (!request.IsSpecific.HasValue && string.IsNullOrEmpty(request.Name)) 
+                return Result<Guid>.Failure("At least 1 field is required");
+            
             var dbDepartment = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
             if (dbDepartment == null) return Result<Guid>.Failure("Department not found");
             
-            dbDepartment.Name = request.Name;
-            if (request.IsSpecific.HasValue) dbDepartment.IsSpecific = request.IsSpecific.Value;
-            
+            if (!string.IsNullOrEmpty(request.Name) && dbDepartment.Name != request.Name) 
+                dbDepartment.Name = request.Name;
+            if (request.IsSpecific.HasValue && request.IsSpecific != dbDepartment.IsSpecific) 
+                dbDepartment.IsSpecific = request.IsSpecific.Value;
             _database.DepartmentRepository.Update(dbDepartment, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);

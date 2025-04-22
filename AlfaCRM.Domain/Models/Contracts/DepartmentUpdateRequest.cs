@@ -2,6 +2,6 @@
 
 public record DepartmentUpdateRequest(
     Guid DepartmentId,
-    string Name,
+    string? Name,
     bool? IsSpecific
 );
