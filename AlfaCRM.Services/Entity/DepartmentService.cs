@@ -20,6 +20,7 @@ public class DepartmentService : IDepartmentService
         return new DepartmentShortDTO(
             Id: entity.Id,
             Name: entity.Name,
+            MembersCount: entity.Users.Count,
             IsSpecific: entity.IsSpecific
         );
     }
@@ -29,6 +30,7 @@ public class DepartmentService : IDepartmentService
         return entities.Select(entitiy => new DepartmentShortDTO(
             Id: entitiy.Id,
             Name: entitiy.Name,
+            MembersCount: entitiy.Users.Count,
             IsSpecific: entitiy.IsSpecific
         )).ToList();
     }

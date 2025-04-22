@@ -65,6 +65,7 @@ public class UserService : IUserService
                 ? new DepartmentShortDTO(
                     Id: entity.DepartmentId.Value,
                     Name: entity.Department.Name,
+                    MembersCount: entity.Department.Users.Count,
                     IsSpecific: entity.Department.IsSpecific
                 )
                 : null,
@@ -98,6 +99,7 @@ public class UserService : IUserService
                 ? new DepartmentShortDTO(
                     Id: entity.DepartmentId.Value,
                     Name: entity.Department.Name,
+                    MembersCount: entity.Department.Users.Count,
                     IsSpecific: entity.Department.IsSpecific
                 )
                 : null,

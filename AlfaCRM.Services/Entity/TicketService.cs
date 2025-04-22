@@ -184,6 +184,7 @@ public class TicketService : ITicketService
                 Department: new DepartmentShortDTO(
                     Id: ticket.DepartmentId,
                     Name: ticket.Department.Name,
+                    MembersCount: ticket.Department.Users.Count,
                     IsSpecific: ticket.Department.IsSpecific
                     ),
                 CreatedAt: ticket.CreatedAt,
@@ -245,6 +246,7 @@ public class TicketService : ITicketService
                 Department: new DepartmentShortDTO(
                     Id: ticket.DepartmentId,
                     Name: ticket.Department.Name,
+                    MembersCount: ticket.Department.Users.Count,
                     IsSpecific: ticket.Department.IsSpecific
                 ),
                 CreatedAt: ticket.CreatedAt,
