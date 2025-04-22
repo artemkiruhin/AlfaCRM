@@ -1,48 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './DepartmentListPage.css';
-import { Plus, Pencil, Trash2, Trash } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Modal from '../../components/layout/modal/base/Modal';
 import Header from "../../components/layout/header/Header";
 import ConfirmationModal from '../../components/layout/modal/confirmation/ConfirmationModal';
+import {
+    getAllDepartmentsShort,
+    createDepartment,
+    editDepartment,
+    deleteDepartment
+} from "../../api-handlers/departmentsHandler";
 
 const DepartmentListPage = () => {
-    const [departments, setDepartments] = useState([]);
+    const [departments, setDepartments] = useState([{
+        id: '',
+        name: '',
+        membersCount: -1,
+        isSpecific: false
+    }]);
     const [isLoading, setIsLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentDepartment, setCurrentDepartment] = useState(null);
     const [departmentName, setDepartmentName] = useState('');
+    const [isSpecific, setIsSpecific] = useState(false);
+
+    const fetchDepartments = async () => {
+        try {
+            setIsLoading(true);
+            const response = await getAllDepartmentsShort();
+            setDepartments(response);
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Ошибка при загрузке отделов:', error);
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const mockDepartments = [
-                    { id: '1', name: 'Разработка', memberCount: 12 },
-                    { id: '2', name: 'Дизайн', memberCount: 8 },
-                    { id: '3', name: 'Маркетинг', memberCount: 6 },
-                ];
-
-                setDepartments(mockDepartments);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Ошибка при загрузке отделов:', error);
-                setIsLoading(false);
-            }
-        };
-
         fetchDepartments();
     }, []);
 
     const handleAddDepartment = () => {
         setDepartmentName('');
+        setIsSpecific(false);
         setIsAddModalOpen(true);
     };
 
     const handleEditDepartment = (department) => {
         setCurrentDepartment(department);
         setDepartmentName(department.name);
+        setIsSpecific(department.isSpecific);
         setIsEditModalOpen(true);
     };
 
@@ -55,10 +64,9 @@ const DepartmentListPage = () => {
         if (!currentDepartment) return;
 
         try {
-            console.log('Удаление отдела с ID:', currentDepartment.id);
-            setDepartments(departments.filter(dept => dept.id !== currentDepartment.id));
+            await deleteDepartment(currentDepartment.id);
+            await fetchDepartments();
             setIsDeleteModalOpen(false);
-            alert('Отдел успешно удален');
         } catch (error) {
             console.error('Ошибка при удалении отдела:', error);
             alert('Произошла ошибка при удалении отдела');
@@ -70,15 +78,9 @@ const DepartmentListPage = () => {
         if (!departmentName.trim()) return;
 
         try {
-            const newDepartment = {
-                id: String(Math.max(...departments.map(d => parseInt(d.id))) + 1),
-                name: departmentName,
-                memberCount: 0
-            };
-
-            setDepartments([...departments, newDepartment]);
+            await createDepartment(departmentName, isSpecific);
+            await fetchDepartments();
             setIsAddModalOpen(false);
-            alert('Отдел успешно добавлен');
         } catch (error) {
             console.error('Ошибка при добавлении отдела:', error);
             alert('Произошла ошибка при добавлении отдела');
@@ -90,16 +92,9 @@ const DepartmentListPage = () => {
         if (!departmentName.trim() || !currentDepartment) return;
 
         try {
-            console.log('Обновление отдела:', currentDepartment.id, departmentName);
-
-            setDepartments(departments.map(dept =>
-                dept.id === currentDepartment.id
-                    ? { ...dept, name: departmentName }
-                    : dept
-            ));
-
+            await editDepartment(currentDepartment.id, departmentName, isSpecific);
+            await fetchDepartments();
             setIsEditModalOpen(false);
-            alert('Отдел успешно обновлен');
         } catch (error) {
             console.error('Ошибка при обновлении отдела:', error);
             alert('Произошла ошибка при обновлении отдела');
@@ -132,6 +127,7 @@ const DepartmentListPage = () => {
                         <tr>
                             <th>Название отдела</th>
                             <th>Количество сотрудников</th>
+                            <th>Наделен особыми правами</th>
                             <th>Действия</th>
                         </tr>
                         </thead>
@@ -139,7 +135,8 @@ const DepartmentListPage = () => {
                         {departments.map(department => (
                             <tr key={department.id}>
                                 <td>{department.name}</td>
-                                <td>{department.memberCount}</td>
+                                <td>{department.membersCount}</td>
+                                <td>{department.isSpecific ? "Да" : "Нет"}</td>
                                 <td>
                                     <div className="actions">
                                         <button
@@ -183,6 +180,16 @@ const DepartmentListPage = () => {
                             autoFocus
                         />
                     </div>
+                    <div className="form-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={isSpecific}
+                                onChange={(e) => setIsSpecific(e.target.checked)}
+                            />
+                            Наделить особыми правами
+                        </label>
+                    </div>
                     <div className="form-actions">
                         <button
                             type="button"
@@ -215,6 +222,16 @@ const DepartmentListPage = () => {
                             placeholder="Введите название отдела"
                             autoFocus
                         />
+                    </div>
+                    <div className="form-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={isSpecific}
+                                onChange={(e) => setIsSpecific(e.target.checked)}
+                            />
+                            Наделить особыми правами
+                        </label>
                     </div>
                     <div className="form-actions">
                         <button
