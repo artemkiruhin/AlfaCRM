@@ -62,7 +62,7 @@ const getDepartmentById = async (id) => {
         console.error('Getting dep by id error: ', e);
     }
 }
-const createDepartment = async (name) => {
+const createDepartment = async (name, isSpecific) => {
     try {
         const response = await fetch(`${API_URL}/departments/create`, {
             method: 'POST',
@@ -70,7 +70,8 @@ const createDepartment = async (name) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                name: name
+                name: name,
+                isSpecific: isSpecific
             }),
             credentials: 'include'
         })
@@ -87,7 +88,7 @@ const createDepartment = async (name) => {
         console.error('Creating dep error: ', e);
     }
 }
-const editDepartment = async (id, name) => {
+const editDepartment = async (id, name, isSpecific) => {
     try {
         const response = await fetch(`${API_URL}/departments/edit`, {
             method: 'PUT',
@@ -96,7 +97,8 @@ const editDepartment = async (id, name) => {
             },
             body: JSON.stringify({
                 departmentId: id,
-                name: name
+                name: name,
+                isSpecific: isSpecific
             }),
             credentials: 'include'
         })
