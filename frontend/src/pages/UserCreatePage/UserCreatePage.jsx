@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UserCreatePage.css';
 import {ArrowLeft} from "lucide-react";
 import Header from "../../components/layout/header/Header";
+import {getAllDepartmentsShort} from "../../api-handlers/departmentsHandler";
+import {createUser} from "../../api-handlers/usersHandler";
 
 const UserCreatePage = () => {
-    //const navigate = useNavigate();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         username: '',
+        fullName: '', // Добавлено новое поле
         password: '',
         hiredAt: '',
         birthday: '',
@@ -18,13 +21,25 @@ const UserCreatePage = () => {
         departmentId: ''
     });
 
-    const departments = [
-        { id: '1', name: 'Разработка' },
-        { id: '2', name: 'Дизайн' },
-        { id: '3', name: 'Маркетинг' },
-        { id: '4', name: 'HR' },
-        { id: '5', name: 'Тестирование' }
-    ];
+    const [departments, setDepartments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const response = await getAllDepartmentsShort();
+                setDepartments(response);
+                setLoading(false);
+            } catch (err) {
+                setError('Не удалось загрузить отделы');
+                setLoading(false);
+                console.error('Ошибка при загрузке отделов:', err);
+            }
+        };
+
+        fetchDepartments();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -37,34 +52,38 @@ const UserCreatePage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.email || !formData.username || !formData.password || !formData.birthday || !formData.departmentId) {
-            alert('Пожалуйста, заполните все обязательные поля');
+        const requiredFields = ['email', 'username', 'fullName', 'password', 'birthday', 'departmentId'];
+        const missingFields = requiredFields.filter(field => !formData[field]);
+
+        if (missingFields.length > 0) {
+            alert(`Пожалуйста, заполните все обязательные поля: ${missingFields.join(', ')}`);
             return;
         }
 
         try {
-            const userData = {
-                Email: formData.email,
-                Username: formData.username,
-                PasswordHash: formData.password, // В реальном приложении нужно хэшировать
-                HiredAt: formData.hiredAt ? new Date(formData.hiredAt) : null,
-                Birthday: new Date(formData.birthday),
-                IsMale: formData.isMale,
-                IsAdmin: formData.isAdmin,
-                HasPublishedRights: formData.hasPublishedRights,
-                DepartmentId: formData.departmentId
-            };
-
-            console.log('Отправка данных:', userData);
-
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await createUser(
+                formData.fullName,
+                formData.email,
+                formData.username,
+                formData.password,
+                formData.hiredAt || null,
+                formData.birthday,
+                formData.isMale,
+                formData.isAdmin,
+                formData.hasPublishedRights,
+                formData.departmentId
+            );
 
             alert('Пользователь успешно создан!');
-            //navigate('/users');
+            navigate('/users');
         } catch (error) {
             console.error('Ошибка при создании пользователя:', error);
-            alert('Произошла ошибка при создании пользователя');
+            alert(error.message || 'Произошла ошибка при создании пользователя');
         }
+    };
+
+    const handleBack = () => {
+        navigate(-1);
     };
 
     return (
@@ -72,12 +91,10 @@ const UserCreatePage = () => {
             <Header title={"Создание нового пользователя"} />
 
             <div className="page-header">
-                <button className="back-button">
+                <button className="back-button" onClick={handleBack}>
                     <ArrowLeft size={18} className="back-icon" />
                     Назад
                 </button>
-                {/*<button className="back-button" onClick={() => navigate(-1)}>*/}
-                {/*<h1>Создание нового пользователя</h1>*/}
             </div>
 
             <form onSubmit={handleSubmit} className="user-create-form">
@@ -108,6 +125,19 @@ const UserCreatePage = () => {
                                 onChange={handleChange}
                                 required
                                 placeholder="Введите логин"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="fullName">ФИО*</label>
+                            <input
+                                type="text"
+                                id="fullName"
+                                name="fullName"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                                required
+                                placeholder="Иванов Иван Иванович"
                             />
                         </div>
 
@@ -152,18 +182,24 @@ const UserCreatePage = () => {
 
                         <div className="form-group">
                             <label htmlFor="departmentId">Отдел*</label>
-                            <select
-                                id="departmentId"
-                                name="departmentId"
-                                value={formData.departmentId}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="" disabled>Выберите отдел</option>
-                                {departments.map(dept => (
-                                    <option key={dept.id} value={dept.id}>{dept.name}</option>
-                                ))}
-                            </select>
+                            {loading ? (
+                                <p>Загрузка отделов...</p>
+                            ) : error ? (
+                                <p className="error">{error}</p>
+                            ) : (
+                                <select
+                                    id="departmentId"
+                                    name="departmentId"
+                                    value={formData.departmentId}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="" disabled>Выберите отдел</option>
+                                    {departments.map(dept => (
+                                        <option key={dept.id} value={dept.id}>{dept.name}</option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -208,8 +244,7 @@ const UserCreatePage = () => {
                 </div>
 
                 <div className="form-actions">
-                    {/*<button type="button" className="cancel-button" onClick={() => navigate('/users')}>*/}
-                    <button type="button" className="cancel-button">
+                    <button type="button" className="cancel-button" onClick={handleBack}>
                         Отмена
                     </button>
                     <button type="submit" className="submit-button">

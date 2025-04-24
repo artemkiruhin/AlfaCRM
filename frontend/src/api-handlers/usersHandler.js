@@ -1,12 +1,13 @@
 import {API_URL} from "./baseHandler";
 
-const createUser = async (email, username, passwordHash, hiredAt, birthday, isMale, isAdmin, hasPublishedRights, departmentId) => {
+const createUser = async (fullName, email, username, passwordHash, hiredAt, birthday, isMale, isAdmin, hasPublishedRights, departmentId) => {
     try {
         let body = {
+            fullName: fullName,
             email: email,
             username: username,
             passwordHash: passwordHash,
-            birthday: birthday,
+            birthday: new Date(birthday).toISOString(),
             isMale: isMale,
             isAdmin: isAdmin,
             hasPublishedRights: hasPublishedRights,
@@ -14,7 +15,7 @@ const createUser = async (email, username, passwordHash, hiredAt, birthday, isMa
         }
 
         if (hiredAt) {
-            body.hiredAt = hiredAt
+            body.hiredAt = new Date(hiredAt).toISOString();
         }
 
         const response = await fetch(`${API_URL}/users/create`, {
@@ -27,14 +28,15 @@ const createUser = async (email, username, passwordHash, hiredAt, birthday, isMa
         })
 
         if (!response.ok) {
-            console.error(`Creating user error: ${response.statusText} | ${response.status}`)
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Ошибка при создании пользователя');
         }
 
-        const data = await response.json()
-        return data.id
+        return await response.json();
 
     } catch (e) {
         console.error('Creating user error: ', e);
+        throw e;
     }
 }
 const blockUser = async (id) => {
