@@ -29,6 +29,8 @@ namespace AlfaCRM.Api.Controllers
                 
                 if (string.IsNullOrEmpty(request.Username) || string.IsNullOrWhiteSpace(request.Username))
                     return BadRequest("Username is required");
+                if (string.IsNullOrEmpty(request.FullName) || string.IsNullOrWhiteSpace(request.FullName))
+                    return BadRequest("Full name is required");
                 if (string.IsNullOrEmpty(request.Email) || string.IsNullOrWhiteSpace(request.Username))
                     return BadRequest("Email is required");
                 if (string.IsNullOrEmpty(request.PasswordHash) || string.IsNullOrWhiteSpace(request.PasswordHash))
