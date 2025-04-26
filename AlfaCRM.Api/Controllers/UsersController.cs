@@ -106,11 +106,11 @@ namespace AlfaCRM.Api.Controllers
                 var userIdResult = await _userValidator.GetUserId(User, ct);
                 if (!userIdResult.IsSuccess) return Unauthorized();
                 var userId = userIdResult.Data;
-                var isUserAdmin = await _userValidator.IsAdmin(User, ct);
-                if (!isUserAdmin.IsSuccess || userId != request.Id) return Unauthorized();
-                
-                if (request.IsAdmin.HasValue && request.IsAdmin.Value && !isUserAdmin.IsSuccess) return Unauthorized();
-                
+                // var isUserAdmin = await _userValidator.IsAdmin(User, ct);
+                // if (!isUserAdmin.IsSuccess || userId != request.Id) return Unauthorized();
+                //
+                // if (request.IsAdmin.HasValue && request.IsAdmin.Value && !isUserAdmin.IsSuccess) return Unauthorized();
+                //
                 if (string.IsNullOrEmpty(request.Email)
                     && !request.IsAdmin.HasValue
                     && !request.HasPublishedRights.HasValue
