@@ -19,7 +19,6 @@ const AdminPanel = () => {
     useEffect(() => {
         const fetchData = async () => {
             const response = await getStats();
-            console.log(response);
             setStatsData(response);
         }
 
