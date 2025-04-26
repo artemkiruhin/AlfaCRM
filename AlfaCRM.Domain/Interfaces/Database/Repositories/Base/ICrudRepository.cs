@@ -11,4 +11,6 @@ public interface ICrudRepository<TEntity> where TEntity: class
     TEntity Delete(TEntity entity, CancellationToken ct);
     Task<IEnumerable<TEntity>> FindRangeAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
     Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
+    Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct);
+    Task<int> CountAsync(CancellationToken ct);
 }

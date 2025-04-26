@@ -53,4 +53,14 @@ public class BaseRepository<TEntity> : ICrudRepository<TEntity> where TEntity : 
     {
         return await DbSet.AsNoTracking().FirstOrDefaultAsync(predicate, ct);
     }
+
+    public async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct)
+    {
+        return await DbSet.AsNoTracking().CountAsync(predicate, ct);
+    }
+
+    public async Task<int> CountAsync(CancellationToken ct)
+    {
+        return await DbSet.AsNoTracking().CountAsync(ct);
+    }
 }
