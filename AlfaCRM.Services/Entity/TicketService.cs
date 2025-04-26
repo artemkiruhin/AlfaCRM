@@ -428,16 +428,20 @@ public class TicketService : ITicketService
         }
     }
 
-    public async Task<Result<int>> GetTicketsCount(TicketType type, CancellationToken ct)
+    public async Task<Result<(int, int)>> GetTicketsCount(TicketType type, CancellationToken ct)
     {
         try
         {
-            var ticketsCount = await _database.TicketRepository.CountAsync(ticket => ticket.Type == type, ct);
-            return Result<int>.Success(ticketsCount);
+            var allTicketsCount = await _database.TicketRepository.CountAsync(ticket => ticket.Type == type, ct);
+            var solvedTicketsCount = await _database.TicketRepository.CountAsync(
+                ticket => ticket.Type == type && ticket.Status == TicketStatus.Completed,
+                ct
+            );
+            return Result<(int, int)>.Success((allTicketsCount, solvedTicketsCount));
         }
         catch (Exception e)
         {
-            return Result<int>.Failure($"Error while counting tickets: {e.Message}");
+            return Result<(int, int)>.Failure($"Error while counting tickets: {e.Message}");
         }
     }
 }
