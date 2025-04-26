@@ -1,17 +1,30 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Building, Users, Settings, Plus, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './AdminPanel.css'
+import {getStats} from "../../api-handlers/adminHandler";
 
 const AdminPanel = () => {
     const navigate = useNavigate();
 
-    const stats = {
-        departments: 8,
-        employees: 42,
-        activeTickets: 15,
-        resolvedTickets: 127
-    };
+    const [statsData, setStatsData] = useState({
+        departmentsAmount: '',
+        usersAmount: '',
+        problemCasesCount: '',
+        solvedProblemCasesCount: '',
+        suggestionsCount: '',
+        solvedSuggestionsCount: ''
+    });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await getStats();
+            console.log(response);
+            setStatsData(response);
+        }
+
+        fetchData();
+    }, []);
 
     return (
         <div className="admin-panel">
@@ -33,7 +46,7 @@ const AdminPanel = () => {
                     <div className="admin-card-body">
                         <div className="admin-card-stats">
                             <div className="stat-item">
-                                <div className="stat-value">{stats.departments}</div>
+                                <div className="stat-value">{statsData.departmentsAmount}</div>
                                 <div className="stat-label">Отделов</div>
                             </div>
                         </div>
@@ -56,7 +69,7 @@ const AdminPanel = () => {
                     <div className="admin-card-body">
                         <div className="admin-card-stats">
                             <div className="stat-item">
-                                <div className="stat-value">{stats.employees}</div>
+                                <div className="stat-value">{statsData.usersAmount}</div>
                                 <div className="stat-label">Сотрудников</div>
                             </div>
                         </div>
@@ -85,11 +98,11 @@ const AdminPanel = () => {
                     <div className="admin-card-body">
                         <div className="admin-card-stats">
                             <div className="stat-item">
-                                <div className="stat-value">{stats.activeTickets}</div>
+                                <div className="stat-value">{statsData.problemCasesCount}</div>
                                 <div className="stat-label">Активных</div>
                             </div>
                             <div className="stat-item">
-                                <div className="stat-value">{stats.resolvedTickets}</div>
+                                <div className="stat-value">{statsData.solvedProblemCasesCount}</div>
                                 <div className="stat-label">Решённых</div>
                             </div>
                         </div>
@@ -112,11 +125,11 @@ const AdminPanel = () => {
                     <div className="admin-card-body">
                         <div className="admin-card-stats">
                             <div className="stat-item">
-                                <div className="stat-value">{stats.activeTickets}</div>
+                                <div className="stat-value">{statsData.suggestionsCount}</div>
                                 <div className="stat-label">Активных</div>
                             </div>
                             <div className="stat-item">
-                                <div className="stat-value">{stats.resolvedTickets}</div>
+                                <div className="stat-value">{statsData.solvedSuggestionsCount}</div>
                                 <div className="stat-label">Решённых</div>
                             </div>
                         </div>
