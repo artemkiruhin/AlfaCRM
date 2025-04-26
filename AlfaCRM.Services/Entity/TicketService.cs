@@ -432,7 +432,7 @@ public class TicketService : ITicketService
     {
         try
         {
-            var allTicketsCount = await _database.TicketRepository.CountAsync(ticket => ticket.Type == type, ct);
+            var allTicketsCount = await _database.TicketRepository.CountAsync(ticket => ticket.Type == type && (ticket.Status == TicketStatus.Created || ticket.Status == TicketStatus.InWork), ct);
             var solvedTicketsCount = await _database.TicketRepository.CountAsync(
                 ticket => ticket.Type == type && ticket.Status == TicketStatus.Completed,
                 ct
