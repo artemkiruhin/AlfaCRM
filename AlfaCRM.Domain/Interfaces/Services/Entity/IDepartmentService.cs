@@ -13,4 +13,5 @@ public interface IDepartmentService
     Task<Result<List<DepartmentDetailedDTO>>> GetAll(CancellationToken ct);
     Task<Result<DepartmentDetailedDTO>> GetById(Guid id, CancellationToken ct);
     Task<Result<DepartmentShortDTO>> GetByIdShort(Guid id, CancellationToken ct);
+    Task<Result<int>> GetDepartmentCount(CancellationToken ct);
 }

@@ -212,4 +212,17 @@ public class DepartmentService : IDepartmentService
             return Result<DepartmentShortDTO>.Failure($"Error while retrieving department: {ex.Message}");
         }
     }
+
+    public async Task<Result<int>> GetDepartmentCount(CancellationToken ct)
+    {
+        try
+        {
+            var departmentCount = await _database.DepartmentRepository.CountAsync(ct);
+            return Result<int>.Success(departmentCount);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Failure($"Error while counting departments: {ex.Message}");
+        }
+    }
 }
