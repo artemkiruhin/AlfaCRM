@@ -50,6 +50,7 @@ public class UserService : IUserService
     {
         return new UserDetailedDTO(
             Id: entity.Id,
+            FullName: entity.FullName,
             Username: entity.Username,
             Email: entity.Email,
             PasswordHash: entity.PasswordHash,
@@ -84,6 +85,7 @@ public class UserService : IUserService
     {
         return entities.Select(entity => new UserDetailedDTO(
             Id: entity.Id,
+            FullName: entity.FullName,
             Username: entity.Username,
             Email: entity.Email,
             PasswordHash: entity.PasswordHash,

@@ -2,6 +2,7 @@
 
 public record UserDetailedDTO(
     Guid Id,
+    string FullName,
     string Username,
     string Email,
     string PasswordHash,
