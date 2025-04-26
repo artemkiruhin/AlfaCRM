@@ -381,4 +381,17 @@ public class UserService : IUserService
             return Result<Guid>.Failure($"Error while resetting password: {e.Message}");
         }
     }
+
+    public async Task<Result<int>> GetUserCount(CancellationToken ct)
+    {
+        try
+        {
+            var usersCount = await _database.UserRepository.CountAsync(ct);
+            return Result<int>.Success(usersCount);
+        }
+        catch (Exception e)
+        {
+            return Result<int>.Failure($"Error while counting users: {e.Message}");
+        }
+    }
 }
