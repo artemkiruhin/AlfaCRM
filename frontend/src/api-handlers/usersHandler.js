@@ -92,21 +92,25 @@ const resetPassword = async (userId, newPassword, mustValidate, oldPassword) => 
 const editUser = async (id, email, isAdmin, hasPublishedRights, departmentId) => {
     try {
         let body = {
-           id: id
+            id: id
         }
 
-        if (email) {
-            body.email = email
+        if (email !== undefined) {
+            body.email = email;
         }
-        if (isAdmin) {
-            body.isAdmin = isAdmin
+
+        if (isAdmin !== undefined) {
+            body.isAdmin = isAdmin;
         }
-        if (hasPublishedRights) {
-            body.hasPublishedRights = hasPublishedRights
+
+        if (hasPublishedRights !== undefined) {
+            body.hasPublishedRights = hasPublishedRights;
         }
+
         if (departmentId) {
-            body.departmentId = departmentId
+            body.departmentId = departmentId;
         }
+
         const response = await fetch(`${API_URL}/users/edit`, {
             method: 'PATCH',
             headers: {
@@ -114,17 +118,19 @@ const editUser = async (id, email, isAdmin, hasPublishedRights, departmentId) =>
             },
             body: JSON.stringify(body),
             credentials: 'include'
-        })
+        });
 
         if (!response.ok) {
-            console.error(`Editing user error: ${response.statusText} | ${response.status}`)
+            console.error(`Editing user error: ${response.statusText} | ${response.status}`);
+            throw new Error(`Failed to edit user: ${response.statusText}`);
         }
 
-        const data = await response.json()
-        return data.id
+        const data = await response.json();
+        return data.id;
 
     } catch (e) {
         console.error('Editing user error: ', e);
+        throw e;
     }
 }
 const deleteUser = async (id) => {
