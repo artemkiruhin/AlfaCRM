@@ -427,4 +427,17 @@ public class TicketService : ITicketService
             return Result<Guid>.Failure($"Error while updating ticket: {e.Message}");
         }
     }
+
+    public async Task<Result<int>> GetTicketsCount(TicketType type, CancellationToken ct)
+    {
+        try
+        {
+            var ticketsCount = await _database.TicketRepository.CountAsync(ticket => ticket.Type == type, ct);
+            return Result<int>.Success(ticketsCount);
+        }
+        catch (Exception e)
+        {
+            return Result<int>.Failure($"Error while counting tickets: {e.Message}");
+        }
+    }
 }

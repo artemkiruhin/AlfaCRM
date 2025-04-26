@@ -18,4 +18,5 @@ public interface ITicketService
     Task<Result<Guid>> TakeToWork (Guid id, Guid assigneeId, CancellationToken ct);
     Task<Result<Guid>> Complete (Guid id, Guid assigneeId, string feedback, CancellationToken ct);
     Task<Result<Guid>> Reject (Guid id, Guid assigneeId, string feedback, CancellationToken ct);
+    Task<Result<int>> GetTicketsCount(TicketType type, CancellationToken ct);
 }
