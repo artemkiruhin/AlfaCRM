@@ -126,7 +126,7 @@ const TopNavigation = ({ menuItems }) => {
                 </div>
 
                 <div className="nav-right">
-                    <button className="nav-profile">
+                    <button className="nav-profile" onClick={() => navigate('/profile')}>
                         <span className="nav-icon-wrapper">
                             <User size={20} className="nav-icon" />
                         </span>
