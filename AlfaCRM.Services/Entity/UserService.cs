@@ -1,4 +1,5 @@
-﻿using AlfaCRM.Domain.Interfaces.Database;
+﻿using System.Globalization;
+using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Interfaces.Services.Security;
 using AlfaCRM.Domain.Models.Contracts;
@@ -392,6 +393,37 @@ public class UserService : IUserService
         catch (Exception e)
         {
             return Result<int>.Failure($"Error while counting users: {e.Message}");
+        }
+    }
+    public async Task<Result<UserProfileDTO>> GetUserProfile(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
+            if (user == null) return Result<UserProfileDTO>.Failure("User not found");
+
+            var dto = new UserProfileDTO(
+                Id: user.Id,
+                Fullname: user.FullName,
+                Email: user.Email,
+                Username: user.Username,
+                Birthday: user.Birthday.ToString(CultureInfo.CurrentCulture),
+                HiredAt: user.HiredAt.ToString(CultureInfo.CurrentCulture),
+                FiredAt: user.FiredAt.HasValue ? user.FiredAt.Value.ToString(CultureInfo.CurrentCulture) : "",
+                IsMale: user.IsMale,
+                IsAdmin: user.IsAdmin,
+                HasPublishedRights: user.HasPublishedRights,
+                DepartmentName: user.Department?.Name ?? "",
+                PostsAmount: user.Posts.Count,
+                CommentsAmount: user.Comments.Count,
+                MessagesAmount: user.Messages.Count
+            );
+            
+            return Result<UserProfileDTO>.Success(dto);
+        }
+        catch (Exception e)
+        {
+            return Result<UserProfileDTO>.Failure($"Error while getting info: {e.Message}");
         }
     }
 }

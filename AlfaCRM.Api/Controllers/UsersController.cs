@@ -198,5 +198,24 @@ namespace AlfaCRM.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        [HttpGet("profile")]
+        public async Task<ActionResult> GetProfileInfo(CancellationToken ct)
+        {
+            try
+            {
+                var userId = await _userValidator.GetUserId(User, ct);
+                if (!userId.IsSuccess) return BadRequest(userId);
+
+                var userInfo = await _userService.GetUserProfile(userId.Data, ct);
+                if (!userInfo.IsSuccess) return BadRequest(userInfo);
+                
+                return Ok(new {data = userInfo.Data});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
