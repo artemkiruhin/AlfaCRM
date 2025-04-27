@@ -20,4 +20,5 @@ public interface IUserService
     Task<Result<Guid>> ResetPassword(Guid id, string oldPassword, string newPassword, CancellationToken ct);
     Task<Result<Guid>> ResetPasswordAsAdmin(Guid id, string newPassword, CancellationToken ct);
     Task<Result<int>> GetUserCount(CancellationToken ct);
+    Task<Result<UserProfileDTO>> GetUserProfile(Guid id, CancellationToken ct);
 }
