@@ -191,6 +191,25 @@ const getUserById = async (id) => {
     }
 }
 
+const getProfile = async () => {
+    try {
+        const response = await fetch(`${API_URL}/users/profile`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+
+        if (!response.ok) {
+            console.error(`Getting user by id error: ${response.statusText} | ${response.status}`)
+        }
+
+        const data = await response.json()
+        return data.data
+
+    } catch (e) {
+        console.error('Deleting user by id error: ', e);
+    }
+}
+
 export {
     createUser,
     blockUser,
@@ -199,4 +218,5 @@ export {
     deleteUser,
     getAllUsers,
     getUserById,
+    getProfile
 }
