@@ -127,6 +127,7 @@ builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettin
 )));
 builder.Services.AddScoped<IUserValidator, UserValidator>();
 builder.Services.AddSignalR();
+builder.Services.AddScoped<ExcelReportService>();
 
 #endregion
 
