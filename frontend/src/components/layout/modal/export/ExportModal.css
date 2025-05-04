@@ -1,0 +1,56 @@
+.export-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.export-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.export-form label {
+    font-weight: 500;
+}
+
+.export-form input,
+.export-form textarea {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.export-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.export-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.export-form .cancel-button {
+    padding: 0.5rem 1rem;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.export-form .submit-button {
+    padding: 0.5rem 1rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.export-form .submit-button:hover {
+    background: #45a049;
+}
