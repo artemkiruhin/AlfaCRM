@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {getProfile} from "../../api-handlers/usersHandler";
+import { getProfile } from "../../api-handlers/usersHandler";
 import './ProfilePage.css'
+import { useNavigate } from 'react-router-dom';
+import {logout} from "../../api-handlers/authHandler";
 
 const ProfilePage = () => {
     const [profile, setProfile] = useState({
@@ -21,6 +23,7 @@ const ProfilePage = () => {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -40,6 +43,12 @@ const ProfilePage = () => {
 
     const handleChangePassword = () => {
         alert('Функция изменения пароля в разработке');
+    };
+
+    const handleLogout = async () => {
+        await logout();
+        localStorage.clear();
+        navigate('/login');
     };
 
     if (loading) {
@@ -212,6 +221,12 @@ const ProfilePage = () => {
                         className="change-password-btn"
                     >
                         Изменить пароль
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="logout-btn"
+                    >
+                        Выйти из аккаунта
                     </button>
                 </div>
             </div>
