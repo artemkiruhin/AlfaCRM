@@ -10,6 +10,7 @@ using AlfaCRM.Domain.Models.Settings;
 using AlfaCRM.Infrastructure;
 using AlfaCRM.Infrastructure.Repositories;
 using AlfaCRM.Services.Entity;
+using AlfaCRM.Services.Report;
 using AlfaCRM.Services.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -100,6 +101,8 @@ builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
         .UseLazyLoadingProxies();
 }, ServiceLifetime.Scoped);
 
+
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostReactionRepository, PostReactionRepository>();
@@ -126,8 +129,9 @@ builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettin
     ExpireHours: int.Parse(configuration["JWT:ExpireHours"] ?? throw new ApplicationException("Missing JWT:ExpireHours"))
 )));
 builder.Services.AddScoped<IUserValidator, UserValidator>();
-builder.Services.AddSignalR();
 builder.Services.AddScoped<ExcelReportService>();
+builder.Services.AddScoped<CreateReportUseCase>();
+builder.Services.AddSignalR();
 
 #endregion
 
