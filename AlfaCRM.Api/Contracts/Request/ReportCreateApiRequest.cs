@@ -1,6 +1,9 @@
-﻿namespace AlfaCRM.Api.Contracts.Request;
+﻿using AlfaCRM.Domain.Models.Settings;
+
+namespace AlfaCRM.Api.Contracts.Request;
 
 public record ReportCreateApiRequest(
-    string Title,
-    string? Description
+    string? Title,
+    string? Description,
+    ReportTableNumber Table
     );
