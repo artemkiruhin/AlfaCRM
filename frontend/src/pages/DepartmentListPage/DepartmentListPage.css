@@ -9,6 +9,7 @@
 .page-header {
     display: flex;
     justify-content: flex-end;
+    gap: 12px;
     margin-bottom: 24px;
 }
 
@@ -29,6 +30,30 @@
 
 .add-button:hover {
     background-color: var(--primary-dark);
+}
+
+.export-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--success-dark);
+    color: var(--bg-white);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-button:hover {
+    background-color: var(--success-color);
+}
+
+.export-button:disabled {
+    background-color: var(--gray-300);
+    cursor: not-allowed;
 }
 
 .loading {
@@ -132,7 +157,7 @@
     color: var(--text-medium);
 }
 
-.department-form input {
+.department-form input[type="text"] {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--border-color);
@@ -143,10 +168,14 @@
     transition: all 0.2s ease;
 }
 
-.department-form input:focus {
+.department-form input[type="text"]:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.department-form input[type="checkbox"] {
+    margin-right: 8px;
 }
 
 .department-form .form-actions {
@@ -188,135 +217,10 @@
     background-color: var(--primary-dark);
 }
 
-.actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-}
-
-.edit-button, .delete-button {
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background-color: transparent;
-}
-
-.edit-button {
-    color: var(--info-dark);
-    border: 1px solid var(--info-dark);
-}
-
-.edit-button:hover {
-    background-color: var(--info-light);
-}
-
-.delete-button {
-    color: var(--error-dark);
-    border: 1px solid var(--error-dark);
-}
-
-.delete-button:hover {
-    background-color: var(--error-light);
-}
-
-.department-list-page {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 24px;
-    font-family: 'Inter', sans-serif;
-}
-
-.departments-table-container {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
-
-.departments-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.departments-table th {
-    padding: 16px;
-    text-align: left;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-    font-weight: 600;
-    color: #4b5563;
-}
-
-.departments-table td {
-    padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #1f2937;
-}
-
-.departments-table tr:last-child td {
-    border-bottom: none;
-}
-
-.actions {
-    display: flex;
-    gap: 8px;
-}
-
-.action-button {
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.action-button.edit {
-    color: #3b82f6;
-    background-color: #dbeafe;
-}
-
-.action-button.edit:hover {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.action-button.delete {
-    color: #ef4444;
-    background-color: #fee2e2;
-}
-
-.action-button.delete:hover {
-    background-color: #ef4444;
-    color: white;
-}
-
-.edit-button, .delete-button {
-    width: 36px !important;
-    height: 36px !important;
-}
-
-.edit-button svg, .delete-button svg {
-    width: 18px  !important;
-    height: 18px !important;
-}
-
 @media (max-width: 768px) {
     .page-header {
-        justify-content: center;
-    }
-
-    .add-button {
-        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .departments-table {

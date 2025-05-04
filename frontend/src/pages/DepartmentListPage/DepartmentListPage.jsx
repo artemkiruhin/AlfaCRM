@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './DepartmentListPage.css';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileDown } from 'lucide-react';
 import Modal from '../../components/layout/modal/base/Modal';
 import Header from "../../components/layout/header/Header";
 import ConfirmationModal from '../../components/layout/modal/confirmation/ConfirmationModal';
+import ExportModal from '../../components/layout/modal/export/ExportModal';
 import {
     getAllDepartmentsShort,
     createDepartment,
     editDepartment,
     deleteDepartment
 } from "../../api-handlers/departmentsHandler";
+import { exportToExcel } from "../../api-handlers/reportsHandler";
 
 const DepartmentListPage = () => {
     const [departments, setDepartments] = useState([{
@@ -22,6 +24,7 @@ const DepartmentListPage = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [currentDepartment, setCurrentDepartment] = useState(null);
     const [departmentName, setDepartmentName] = useState('');
     const [isSpecific, setIsSpecific] = useState(false);
@@ -101,6 +104,20 @@ const DepartmentListPage = () => {
         }
     };
 
+    const handleExportClick = () => {
+        setIsExportModalOpen(true);
+    };
+
+    const handleExportConfirm = async (filename, description) => {
+        try {
+            await exportToExcel(1, filename || "Отчет_по_отделам", description || "");
+            setIsExportModalOpen(false);
+        } catch (error) {
+            console.error('Ошибка при экспорте:', error);
+            alert('Произошла ошибка при экспорте данных');
+        }
+    };
+
     return (
         <div className="department-list-page">
             <Header title={"Управление отделами"}/>
@@ -111,6 +128,14 @@ const DepartmentListPage = () => {
                 >
                     <Plus size={18} />
                     Добавить отдел
+                </button>
+                <button
+                    className="export-button"
+                    onClick={handleExportClick}
+                    disabled={isLoading || departments.length === 0}
+                >
+                    <FileDown size={18} />
+                    Экспорт в Excel
                 </button>
             </div>
 
@@ -147,7 +172,7 @@ const DepartmentListPage = () => {
                                             <Pencil size={16} />
                                         </button>
                                         <button
-                                            className="edit-button"
+                                            className="delete-button"
                                             onClick={() => handleDeleteClick(department)}
                                             title="Удалить"
                                         >
@@ -256,6 +281,13 @@ const DepartmentListPage = () => {
                 message={`Вы уверены, что хотите удалить отдел "${currentDepartment?.name}"?`}
                 confirmText="Удалить"
                 cancelText="Отмена"
+            />
+
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                onExport={handleExportConfirm}
+                defaultFilename="Отчет_по_отделам"
             />
         </div>
     );

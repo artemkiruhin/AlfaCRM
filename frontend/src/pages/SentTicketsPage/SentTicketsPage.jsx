@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import "./SentTicketsPage.css";
 import Header from "../../components/layout/header/Header";
-import TicketList from '../../components/ticket/TicketList';
 import {getAllTickets, changeTicketStatus, deleteTicket} from '../../api-handlers/ticketsHandler';
 import SentTicketList from "../../components/ticket/SentTicketList";
+import { FileDown } from 'lucide-react';
+import ExportModal from "../../components/layout/modal/export/ExportModal";
+import {exportToExcel} from "../../api-handlers/reportsHandler";
 
 const SentTicketsPage = ({type}) => {
     const navigate = useNavigate();
@@ -15,6 +17,7 @@ const SentTicketsPage = ({type}) => {
     const [filterEmployeeId, setFilterEmployeeId] = useState('');
     const [filteredTickets, setFilteredTickets] = useState([]);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -54,7 +57,7 @@ const SentTicketsPage = ({type}) => {
         };
 
         fetchTickets();
-    }, [type, location.key]); // Добавляем location.key в зависимости
+    }, [type, location.key]);
 
     useEffect(() => {
         if (filterEmployeeId) {
@@ -138,27 +141,84 @@ const SentTicketsPage = ({type}) => {
         }
     };
 
+    const handleExportClick = () => {
+        setIsExportModalOpen(true);
+    };
+
+    const handleExportConfirm = async (filename, description) => {
+        try {
+            const reportType = type === 0 ? 3 : 4;
+            await exportToExcel(reportType, filename || (type === 0 ? "Отчет_по_заявкам" : "Отчет_по_предложениям"), description || "");
+            setIsExportModalOpen(false);
+        } catch (error) {
+            console.error('Ошибка при экспорте:', error);
+            alert('Произошла ошибка при экспорте данных');
+        }
+    };
+
+    const getDefaultFilename = () => {
+        return type === 0 ? "Отчет_по_заявкам" : "Отчет_по_предложениям";
+    };
+
     return (
         <div className="sent-tickets-page">
             <Header title={type === 0 ? "Отправленные заявки" : "Отправленные предложения"} info={`Всего: ${filteredTickets.length}`} />
 
-            <div className="filter-container">
-                <input
-                    type="text"
-                    placeholder="Поиск по ID сотрудника..."
-                    value={filterEmployeeId}
-                    onChange={(e) => setFilterEmployeeId(e.target.value)}
-                    className="filter-input"
-                />
+            <div className="page-controls">
+                <div className="filter-container">
+                    <input
+                        type="text"
+                        placeholder="Поиск по ID сотрудника..."
+                        value={filterEmployeeId}
+                        onChange={(e) => setFilterEmployeeId(e.target.value)}
+                        className="filter-input"
+                    />
+                </div>
+
+                <div className="export-buttons">
+                    <button
+                        className="export-button"
+                        onClick={() => handleExportClick('standard')}
+                        disabled={loading || filteredTickets.length === 0}
+                    >
+                        <FileDown size={18} />
+                        Стандартный экспорт
+                    </button>
+                    <button
+                        className="export-button export-button-detailed"
+                        onClick={() => handleExportClick('detailed')}
+                        disabled={loading || filteredTickets.length === 0}
+                    >
+                        <FileDown size={18} />
+                        Детальный экспорт
+                    </button>
+                </div>
             </div>
 
-            <SentTicketList
-                tickets={filteredTickets}
-                isAdmin={isAdmin}
-                onTakeToWork={handleTakeToWork}
-                onClose={handleCloseTicket}
-                onComplete={handleCompleteTicket}
-                onDelete={handleDelete}
+            {loading ? (
+                <div className="loading">Загрузка...</div>
+            ) : error ? (
+                <div className="error-message">{error}</div>
+            ) : filteredTickets.length === 0 ? (
+                <div className="empty-state">
+                    <p>{type === 0 ? "Нет отправленных заявок" : "Нет отправленных предложений"}</p>
+                </div>
+            ) : (
+                <SentTicketList
+                    tickets={filteredTickets}
+                    isAdmin={isAdmin}
+                    onTakeToWork={handleTakeToWork}
+                    onClose={handleCloseTicket}
+                    onComplete={handleCompleteTicket}
+                    onDelete={handleDelete}
+                />
+            )}
+
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                onExport={handleExportConfirm}
+                defaultFilename={getDefaultFilename()}
             />
         </div>
     );

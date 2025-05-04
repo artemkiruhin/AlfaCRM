@@ -3,6 +3,9 @@ import './UserListPage.css';
 import Header from "../../components/layout/header/Header";
 import {deleteUser, getAllUsers} from "../../api-handlers/usersHandler";
 import {useNavigate} from "react-router-dom";
+import {FileDown} from 'lucide-react';
+import ExportModal from '../../components/layout/modal/export/ExportModal';
+import {exportToExcel} from "../../api-handlers/reportsHandler";
 
 const UserListPage = () => {
     const navigate = useNavigate();
@@ -17,6 +20,7 @@ const UserListPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
     const [deleteError, setDeleteError] = useState(null);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     const filteredUsers = users.filter(user => {
         const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -82,6 +86,20 @@ const UserListPage = () => {
         setDeleteError(null);
     };
 
+    const handleExportClick = () => {
+        setIsExportModalOpen(true);
+    };
+
+    const handleExportConfirm = async (filename, description) => {
+        try {
+            await exportToExcel(0, filename || "Отчет_по_пользователям", description || "");
+            setIsExportModalOpen(false);
+        } catch (error) {
+            console.error('Ошибка при экспорте:', error);
+            alert('Произошла ошибка при экспорте данных');
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
     }, []);
@@ -128,6 +146,14 @@ const UserListPage = () => {
                             <path d="M5 12h14"></path>
                         </svg>
                         Добавить сотрудника
+                    </button>
+                    <button
+                        className="admin-button secondary"
+                        onClick={handleExportClick}
+                        disabled={isLoading || users.length === 0}
+                    >
+                        <FileDown size={16} />
+                        Экспорт в Excel
                     </button>
                 </div>
             </div>
@@ -315,6 +341,13 @@ const UserListPage = () => {
                     )}
                 </>
             )}
+
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                onExport={handleExportConfirm}
+                defaultFilename="Отчет_по_пользователям"
+            />
         </div>
     );
 };
