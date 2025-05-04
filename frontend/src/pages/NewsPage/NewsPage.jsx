@@ -127,18 +127,23 @@ const NewsPage = () => {
                         />
                         <div className="news-action-buttons">
                             {isAdminOrPublisher && (
-                                <button className="add-news-button" onClick={handleAddNews}>
-                                    <Plus size={18}/> Добавить новость
-                                </button>
+                                <>
+                                    <button
+                                        className="add-news-button"
+                                        onClick={handleAddNews}
+                                    >
+                                        <Plus size={18}/> Добавить новость
+                                    </button>
+                                    <button
+                                        className="export-button"
+                                        onClick={handleExportClick}
+                                        disabled={isLoading || filteredNews.length === 0}
+                                    >
+                                        <FileDown size={18}/>
+                                        Экспорт в Excel
+                                    </button>
+                                </>
                             )}
-                            <button
-                                className="export-button"
-                                onClick={handleExportClick}
-                                disabled={isLoading || filteredNews.length === 0}
-                            >
-                                <FileDown size={18} />
-                                Экспорт в Excel
-                            </button>
                         </div>
                     </div>
 
