@@ -2,60 +2,45 @@ import { API_URL } from "./baseHandler";
 import { saveAs } from 'file-saver';
 
 /**
- * Универсальный метод для экспорта данных в Excel
- * @param {Array} data - Массив объектов с данными для экспорта
+ * Экспорт данных в Excel через API бекенда
+ * @param {string} table - Тип таблицы: 'Departments', 'Posts', 'Tickets' или 'Users'
  * @param {string} title - Заголовок отчета
- * @param {string} description - Описание отчета
- * @param {Object} options - Дополнительные параметры
- * @param {Array} options.columnNames - Названия колонок (по умолчанию - ключи первого объекта)
- * @param {Object} options.columnFormats - Форматы колонок (например, { "Дата": "dd.MM.yyyy" })
- * @param {string} options.endpoint - Конечная точка API (по умолчанию '/reports/export-excel')
- * @param {string} options.filename - Имя файла (по умолчанию 'Отчет_дата.xlsx')
+ * @param {string} [description] - Описание отчета (опционально)
+ * @param {Object} [options] - Дополнительные параметры
+ * @param {string} [options.filename] - Имя файла (по умолчанию 'Title_дата.xlsx')
+ * @returns {Promise<boolean>} Возвращает true при успешном экспорте
+ * @throws {Error} При ошибке запроса
  */
-const exportToExcel = async (
-    data,
+export const exportToExcel = async (
+    table,
     title,
     description,
     options = {}
 ) => {
     try {
         const {
-            columnNames = [],
-            columnFormats = {},
-            endpoint = '/reports/export-excel',
-            filename = `Отчет_${new Date().toISOString().slice(0, 10)}.xlsx`
+            filename = `${title}_${new Date().toISOString().slice(0, 10)}.xlsx`
         } = options;
 
-        const headers = columnNames.length > 0
-            ? columnNames
-            : data.length > 0
-                ? Object.keys(data[0])
-                : [];
-
-        const exportData = {
-            DocumentTitle: title,
-            Description: description,
-            Tables: [{
-                TableName: "Данные",
-                Columns: headers.map(header => ({
-                    ColumnName: header,
-                    DataType: typeof data[0]?.[header] === 'number' ? 'number' : 'string'
-                })),
-                Rows: data.map(item =>
-                    headers.map(header => item[header])
-                )
-            }],
-            ColumnFormats: columnFormats
+        const requestData = {
+            title: title ?? "Отчет",
+            description: description ?? "",
+            table: table
         };
 
-        const response = await fetch(`${API_URL}${endpoint}`, {
+        const response = await fetch(`${API_URL}/reports/export-excel`, {
             method: "POST",
-            body: JSON.stringify(exportData),
+            body: JSON.stringify(requestData),
             credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             }
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error );
+        }
 
         const blob = await response.blob();
         saveAs(blob, filename);
@@ -65,7 +50,3 @@ const exportToExcel = async (
         throw error;
     }
 };
-
-export {
-    exportToExcel
-}
