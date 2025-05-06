@@ -9,6 +9,15 @@ const TopNavigation = ({ menuItems }) => {
     const [activeIndex, setActiveIndex] = useState(-1);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         const currentPath = location.pathname;
@@ -64,7 +73,7 @@ const TopNavigation = ({ menuItems }) => {
     };
 
     return (
-        <nav className="top-nav">
+        <nav className={`top-nav ${scrolled ? 'scrolled' : ''}`}>
             <div className="nav-container">
                 <div className="nav-left">
                     <div className="nav-logo">КорпПортал</div>
@@ -82,14 +91,16 @@ const TopNavigation = ({ menuItems }) => {
                         {menuItems.map((item, index) => (
                             <li key={index} className={`nav-list-item ${item.subItems ? 'has-dropdown' : ''}`}>
                                 <button
-                                    className={`nav-item ${isActive(index) ? 'active' : ''}`}
+                                    className={`nav-item ${isActive(index) ? 'active' : ''} ${item.icon ? 'with-icon' : ''}`}
                                     onClick={() => handleItemClick(index, item.link, item.isDropdown)}
                                 >
-                                    <span className="nav-icon-wrapper">
-                                        {item.icon && React.cloneElement(item.icon, {
-                                            className: `nav-icon ${isActive(index) ? 'active' : ''}`
-                                        })}
-                                    </span>
+                                    {item.icon && (
+                                        <span className="nav-icon-wrapper">
+                                            {React.cloneElement(item.icon, {
+                                                className: `nav-icon ${isActive(index) ? 'active' : ''}`
+                                            })}
+                                        </span>
+                                    )}
                                     <span className="nav-label">{item.label}</span>
                                     {item.subItems && (
                                         <span className="dropdown-arrow">
@@ -109,11 +120,13 @@ const TopNavigation = ({ menuItems }) => {
                                                         navigate(subItem.link);
                                                     }}
                                                 >
-                                                    <span className="nav-icon-wrapper">
-                                                        {React.cloneElement(subItem.icon, {
-                                                            className: `nav-icon ${location.pathname.startsWith(subItem.link) ? 'active' : ''}`
-                                                        })}
-                                                    </span>
+                                                    {subItem.icon && (
+                                                        <span className="nav-icon-wrapper">
+                                                            {React.cloneElement(subItem.icon, {
+                                                                className: `nav-icon ${location.pathname.startsWith(subItem.link) ? 'active' : ''}`
+                                                            })}
+                                                        </span>
+                                                    )}
                                                     <span className="nav-label">{subItem.label}</span>
                                                 </button>
                                             </li>
