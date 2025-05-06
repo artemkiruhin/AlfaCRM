@@ -5,7 +5,6 @@ const NewsSearchPanel = ({searchQuery, handleSearchChange, filters, handleFilter
     return (
         <div className="filters-container">
             <div className="search-bar">
-                <Search size={18} className="search-icon"/>
                 <input
                     type="text"
                     placeholder="Поиск по новостям..."
@@ -24,8 +23,6 @@ const NewsSearchPanel = ({searchQuery, handleSearchChange, filters, handleFilter
                     {departments.map(department => (
                         <option key={department.id} value={department.id}>{department.name}</option>
                     ))}
-                    {/*<option value="IT отдел">IT отдел</option>*/}
-                    {/*<option value="HR отдел">HR отдел</option>*/}
                 </select>
 
                 <label className="checkbox-filter">
