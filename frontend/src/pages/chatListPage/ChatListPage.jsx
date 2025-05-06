@@ -90,7 +90,8 @@ const ChatListPage = () => {
             <Header title={"Мои чаты"} info={`Всего: ${chats.length}`}/>
             <div className="chats-controls">
                 <button className="add-chat-button" onClick={handleAddChat}>
-                    <Plus size={18}/> Добавить чат
+                    <Plus size={18} className="button-icon"/>
+                    <span className="button-text">Добавить чат</span>
                 </button>
             </div>
             <div className="chat-list">
