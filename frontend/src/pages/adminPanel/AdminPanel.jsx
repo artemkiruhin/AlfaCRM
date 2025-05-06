@@ -144,25 +144,25 @@ const AdminPanel = () => {
                 </div>
             </div>
 
-            <div className="departments-section">
-                <div className="section-header">
-                    <h2 className="section-title">Быстрые действия</h2>
-                </div>
-                <div className="admin-grid">
-                    <div className="admin-card">
-                        <div className="admin-card-body">
-                            <h3 className="admin-card-title" style={{marginBottom: '16px'}}>Настройки системы</h3>
-                            <button
-                                className="admin-btn admin-btn-primary"
-                                style={{width: '100%'}}
-                                onClick={() => navigate('/admin/settings')}
-                            >
-                                <Settings size={18}/> Настройки
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/*<div className="departments-section">*/}
+            {/*    <div className="section-header">*/}
+            {/*        <h2 className="section-title">Быстрые действия</h2>*/}
+            {/*    </div>*/}
+            {/*    <div className="admin-grid">*/}
+            {/*        <div className="admin-card">*/}
+            {/*            <div className="admin-card-body">*/}
+            {/*                <h3 className="admin-card-title" style={{marginBottom: '16px'}}>Настройки системы</h3>*/}
+            {/*                <button*/}
+            {/*                    className="admin-btn admin-btn-primary"*/}
+            {/*                    style={{width: '100%'}}*/}
+            {/*                    onClick={() => navigate('/admin/settings')}*/}
+            {/*                >*/}
+            {/*                    <Settings size={18}/> Настройки*/}
+            {/*                </button>*/}
+            {/*            </div>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
         </div>
     );
 };
