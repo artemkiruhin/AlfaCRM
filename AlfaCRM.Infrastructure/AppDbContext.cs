@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<TicketEntity> Tickets { get; set; }
     public DbSet<MessageEntity> Messages { get; set; }
     public DbSet<ChatEntity> Chats { get; set; }
+    public DbSet<LogEntity> Logs { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -29,5 +30,6 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TicketConfiguration());
         modelBuilder.ApplyConfiguration(new ChatConfiguration());
         modelBuilder.ApplyConfiguration(new MessageConfiguration());
+        modelBuilder.ApplyConfiguration(new LogConfiguration());
     }
 }
