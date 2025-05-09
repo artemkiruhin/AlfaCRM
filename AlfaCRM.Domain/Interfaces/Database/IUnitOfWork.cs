@@ -12,6 +12,7 @@ public interface IUnitOfWork
     public ITicketRepository TicketRepository { get; }
     public IChatRepository ChatRepository { get; }
     public IMessageRepository MessageRepository { get; }
+    public ILogRepository LogRepository { get; }
     
     Task<int> SaveChangesAsync(CancellationToken ct);
     Task BeginTransactionAsync(CancellationToken ct);
