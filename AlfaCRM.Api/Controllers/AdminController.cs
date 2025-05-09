@@ -1,3 +1,4 @@
+using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.DTOs;
 using AlfaCRM.Domain.Models.Entities;
@@ -14,12 +15,14 @@ namespace AlfaCRM.Api.Controllers
         private readonly IUserService _userService;
         private readonly IDepartmentService _departmentService;
         private readonly ITicketService _ticketService;
+        private readonly IUnitOfWork _database;
 
-        public AdminController(IUserService userService, IDepartmentService departmentService, ITicketService ticketService)
+        public AdminController(IUserService userService, IDepartmentService departmentService, ITicketService ticketService, IUnitOfWork database)
         {
             _userService = userService;
             _departmentService = departmentService;
             _ticketService = ticketService;
+            _database = database;
         }
         
         [HttpGet("stats")]
@@ -52,6 +55,42 @@ namespace AlfaCRM.Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("logs")]
+        public async Task<IActionResult> GetLogs(CancellationToken ct)
+        {
+            try
+            {
+                var logs = await _database.LogRepository.GetAllAsync(ct);
+
+                var dtos = logs.Select(x => new LogDTO(
+                    Id: x.Id,
+                    Message: x.Message,
+                    Type: GetLogTypeString(x.Type),
+                    UserIdString: x.UserId.HasValue ? x.UserId.Value.ToString() : "",
+                    Username: x.User.Username ?? "",
+                    CreatedAt: x.CreatedAt
+                ));
+                
+
+                return Ok(new { data = dtos });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        private string GetLogTypeString(LogType logType)
+        {
+            return logType switch
+            {
+                LogType.Info => "Info",
+                LogType.Error => "Error",
+                LogType.Warning => "Warning",
+                _ => throw new ArgumentOutOfRangeException(nameof(logType), logType, null)
+            };
         }
     }
 }
