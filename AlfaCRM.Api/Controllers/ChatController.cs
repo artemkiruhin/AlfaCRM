@@ -1,4 +1,5 @@
 using System.Globalization;
+using AlfaCRM.Api.Contracts.Request;
 using AlfaCRM.Api.Contracts.Response;
 using AlfaCRM.Api.Extensions;
 using AlfaCRM.Api.Hubs;
@@ -104,6 +105,22 @@ namespace AlfaCRM.Api.Controllers
             var result = await _messageService.GetAll(chatId, ct);
             if (!result.IsSuccess) return BadRequest();
             
+            return Ok(new {data = result.Data});
+        }
+        
+        [HttpPost("pin-message")]
+        public async Task<IActionResult> PinMessage([FromBody] PinMessageApiRequest request, CancellationToken ct)
+        {
+            var userId = await _userValidator.GetUserId(User, ct);
+            if (!userId.IsSuccess) return Unauthorized();
+    
+            var message = await _messageService.GetById(request.MessageId, ct);
+            if (!message.IsSuccess) return BadRequest("Message not found");
+    
+           
+            var result = await _messageService.PinMessage(request.MessageId, request.IsPinned, ct);
+            if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+    
             return Ok(new {data = result.Data});
         }
     }

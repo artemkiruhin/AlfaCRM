@@ -108,11 +108,39 @@ const getAllMessages = async (chatId) => {
     }
 };
 
+const pinMessage = async (messageId, isPinned) => {
+    try {
+        const response = await fetch(`${API_URL}/chat/pin-message`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messageId,
+                isPinned
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            console.error(`Pinning message error: ${response.statusText} | ${response.status}`);
+            return undefined;
+        }
+
+        const data = await response.json();
+        return data.data;
+    } catch (e) {
+        console.error('Pinning message error: ', e);
+        return undefined;
+    }
+};
+
 
 export {
     getAllChats,
     getChatById,
     createChat,
     sendMessage,
-    getAllMessages
+    getAllMessages,
+    pinMessage
 };

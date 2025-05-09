@@ -14,7 +14,7 @@ public class MessageService : IMessageService
     {
         _database = database;
     }
-    
+
     public async Task<Result<Guid>> Create(MessageCreateRequest request, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -44,11 +44,11 @@ public class MessageService : IMessageService
                     request.SenderId), ct);
                 return Result<Guid>.Failure("Chat does not exist!");
             }
-            
+
             var isMember = await _database.ChatRepository.FindAsync(
                 c => c.Id == request.ChatId && c.Members.Any(m => m.Id == request.SenderId),
                 ct);
-            
+
             if (isMember == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
@@ -70,7 +70,7 @@ public class MessageService : IMessageService
                         request.SenderId), ct);
                     return Result<Guid>.Failure("Replied message does not exist!");
                 }
-                
+
                 if (repliedMessage.ChatId != request.ChatId)
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
@@ -146,7 +146,7 @@ public class MessageService : IMessageService
                     null), ct);
                 return Result<Guid>.Failure("Cannot update deleted message");
             }
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
                 $"Updating message {request.Id} content from '{message.Content}' to '{request.Content}'",
@@ -218,7 +218,7 @@ public class MessageService : IMessageService
 
                 _database.MessageRepository.Delete(message, ct);
             }
-            
+
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
 
@@ -261,7 +261,7 @@ public class MessageService : IMessageService
 
             var messages = await _database.MessageRepository.GetMessagesAsync(chatId, ct);
             var filteredMessages = messages.Where(m => m.IsDeleted == false).ToList();
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
                 $"Found {filteredMessages.Count} active messages in chat {chatId}",
@@ -269,9 +269,9 @@ public class MessageService : IMessageService
 
             var senderIds = filteredMessages.Select(m => m.SenderId).Distinct();
             var senders = await _database.UserRepository.FindRangeAsync(
-                u => senderIds.Contains(u.Id), 
+                u => senderIds.Contains(u.Id),
                 ct);
-            
+
             var repliedMessageIds = filteredMessages
                 .Where(m => m.RepliedMessageId.HasValue)
                 .Select(m => m.RepliedMessageId.Value)
@@ -280,11 +280,11 @@ public class MessageService : IMessageService
             var messageIds = repliedMessageIds as Guid[] ?? repliedMessageIds.ToArray();
             var repliedMessages = messageIds.Any()
                 ? await _database.MessageRepository.FindRangeAsync(
-                    m => messageIds.Contains(m.Id), 
+                    m => messageIds.Contains(m.Id),
                     ct)
                 : new List<MessageEntity>();
 
-            var dtos = filteredMessages.Select(message => 
+            var dtos = filteredMessages.Select(message =>
             {
                 var sender = senders.FirstOrDefault(s => s.Id == message.SenderId);
                 var repliedMessage = repliedMessages.FirstOrDefault(rm => rm.Id == message.RepliedMessageId);
@@ -297,30 +297,34 @@ public class MessageService : IMessageService
                     DeletedAt: message.DeletedAt,
                     IsDeleted: message.IsDeleted,
                     IsPinned: message.IsPinned,
-                    Sender: sender == null ? null : new UserShortDTO(
-                        Id: sender.Id,
-                        FullName: sender.FullName,
-                        Username: sender.Username,
-                        Email: sender.Email,
-                        DepartmentName: sender.Department?.Name ?? "No department",
-                        IsAdmin: sender?.IsAdmin ?? false,
-                        IsBlocked: sender?.IsBlocked ?? false),
-                    RepliedMessage: repliedMessage == null ? null : new MessageDTO(
-                        Id: repliedMessage.Id,
-                        Content: repliedMessage.Content,
-                        CreatedAt: repliedMessage.CreatedAt,
-                        UpdatedAt: repliedMessage.UpdatedAt,
-                        DeletedAt: repliedMessage.DeletedAt,
-                        IsDeleted: repliedMessage.IsDeleted,
-                        IsPinned: repliedMessage.IsPinned,
-                        Sender: null,
-                        RepliedMessage: null,
-                        Replies: new List<MessageDTO>(),
-                        IsOwn: sender?.Id == message.SenderId
+                    Sender: sender == null
+                        ? null
+                        : new UserShortDTO(
+                            Id: sender.Id,
+                            FullName: sender.FullName,
+                            Username: sender.Username,
+                            Email: sender.Email,
+                            DepartmentName: sender.Department?.Name ?? "No department",
+                            IsAdmin: sender?.IsAdmin ?? false,
+                            IsBlocked: sender?.IsBlocked ?? false),
+                    RepliedMessage: repliedMessage == null
+                        ? null
+                        : new MessageDTO(
+                            Id: repliedMessage.Id,
+                            Content: repliedMessage.Content,
+                            CreatedAt: repliedMessage.CreatedAt,
+                            UpdatedAt: repliedMessage.UpdatedAt,
+                            DeletedAt: repliedMessage.DeletedAt,
+                            IsDeleted: repliedMessage.IsDeleted,
+                            IsPinned: repliedMessage.IsPinned,
+                            Sender: null,
+                            RepliedMessage: null,
+                            Replies: new List<MessageDTO>(),
+                            IsOwn: sender?.Id == message.SenderId
                         ),
                     Replies: new List<MessageDTO>(),
                     IsOwn: sender?.Id == message.SenderId
-                    );
+                );
             }).ToList();
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
@@ -367,9 +371,9 @@ public class MessageService : IMessageService
                     null), ct);
                 return Result<MessageDTO>.Failure("Message is deleted");
             }
-            
+
             var sender = await _database.UserRepository.GetByIdAsync(message.SenderId, ct);
-            
+
             MessageDTO? repliedMessageDto = null;
             if (message.RepliedMessageId.HasValue)
             {
@@ -377,7 +381,7 @@ public class MessageService : IMessageService
                 if (repliedMessage != null && !repliedMessage.IsDeleted)
                 {
                     var repliedMessageSender = await _database.UserRepository.GetByIdAsync(repliedMessage.SenderId, ct);
-                    
+
                     repliedMessageDto = new MessageDTO(
                         Id: repliedMessage.Id,
                         Content: repliedMessage.Content,
@@ -386,18 +390,20 @@ public class MessageService : IMessageService
                         DeletedAt: repliedMessage.DeletedAt,
                         IsDeleted: repliedMessage.IsDeleted,
                         IsPinned: repliedMessage.IsPinned,
-                        Sender: repliedMessageSender == null ? null : new UserShortDTO(
-                            Id: repliedMessageSender.Id,
-                            FullName: repliedMessageSender.FullName,
-                            Username: repliedMessageSender.Username,
-                            Email: repliedMessageSender.Email,
-                            DepartmentName: repliedMessageSender.Department?.Name ?? "No department",
-                            IsAdmin: repliedMessageSender?.IsAdmin ?? false,
-                            IsBlocked: repliedMessageSender?.IsBlocked ?? false),
+                        Sender: repliedMessageSender == null
+                            ? null
+                            : new UserShortDTO(
+                                Id: repliedMessageSender.Id,
+                                FullName: repliedMessageSender.FullName,
+                                Username: repliedMessageSender.Username,
+                                Email: repliedMessageSender.Email,
+                                DepartmentName: repliedMessageSender.Department?.Name ?? "No department",
+                                IsAdmin: repliedMessageSender?.IsAdmin ?? false,
+                                IsBlocked: repliedMessageSender?.IsBlocked ?? false),
                         RepliedMessage: null,
                         Replies: new List<MessageDTO>(),
                         IsOwn: sender?.Id == message.SenderId
-                        );
+                    );
                 }
             }
 
@@ -409,18 +415,20 @@ public class MessageService : IMessageService
                 DeletedAt: message.DeletedAt,
                 IsDeleted: message.IsDeleted,
                 IsPinned: message.IsPinned,
-                Sender: sender == null ? null : new UserShortDTO(
-                    Id: sender.Id,
-                    FullName: sender.FullName,
-                    Username: sender.Username,
-                    Email: sender.Email,
-                    DepartmentName: sender.Department?.Name ?? "No department",
-                    IsAdmin: sender?.IsAdmin ?? false,
-                    IsBlocked: sender?.IsBlocked ?? false),
+                Sender: sender == null
+                    ? null
+                    : new UserShortDTO(
+                        Id: sender.Id,
+                        FullName: sender.FullName,
+                        Username: sender.Username,
+                        Email: sender.Email,
+                        DepartmentName: sender.Department?.Name ?? "No department",
+                        IsAdmin: sender?.IsAdmin ?? false,
+                        IsBlocked: sender?.IsBlocked ?? false),
                 RepliedMessage: repliedMessageDto,
                 Replies: new List<MessageDTO>(),
                 IsOwn: sender?.Id == message.SenderId
-                );
+            );
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
@@ -436,6 +444,60 @@ public class MessageService : IMessageService
                 $"Error while getting message {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
             return Result<MessageDTO>.Failure($"Failed to get message: {e.Message}");
+        }
+    }
+
+    public async Task<Result<MessageDTO>> PinMessage(Guid messageId, bool isPinned, CancellationToken ct)
+    {
+        await _database.BeginTransactionAsync(ct);
+        try
+        {
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Info,
+                $"Starting to {(isPinned ? "pin" : "unpin")} message {messageId}",
+                null), ct);
+
+            var message = await _database.MessageRepository.GetByIdAsync(messageId, ct);
+            if (message == null)
+            {
+                await _database.LogRepository.CreateAsync(LogEntity.Create(
+                    LogType.Warning,
+                    $"Failed to pin message: message with ID {messageId} not found",
+                    null), ct);
+                return Result<MessageDTO>.Failure("Message not found");
+            }
+
+            if (message.IsDeleted)
+            {
+                await _database.LogRepository.CreateAsync(LogEntity.Create(
+                    LogType.Warning,
+                    $"Failed to pin message {messageId}: message is deleted",
+                    null), ct);
+                return Result<MessageDTO>.Failure("Cannot pin deleted message");
+            }
+
+            message.IsPinned = isPinned;
+            message.UpdatedAt = DateTime.UtcNow;
+
+            _database.MessageRepository.Update(message, ct);
+            await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
+
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Info,
+                $"Message {messageId} {(isPinned ? "pinned" : "unpinned")} successfully",
+                null), ct);
+            
+            return await GetById(messageId, ct);
+        }
+        catch (Exception e)
+        {
+            await _database.RollbackTransactionAsync(ct);
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Error,
+                $"Error while pinning message {messageId}: {e.Message}. StackTrace: {e.StackTrace}",
+                null), ct);
+            return Result<MessageDTO>.Failure($"Failed to pin message: {e.Message}");
         }
     }
 }

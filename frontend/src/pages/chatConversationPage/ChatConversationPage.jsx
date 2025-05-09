@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import * as signalR from '@microsoft/signalr';
 import "./ChatConversationPage.css";
 import Header from "../../components/layout/header/Header";
-import {getAllMessages, getChatById, sendMessage} from '../../api-handlers/chatHandler';
+import {getAllMessages, getChatById, sendMessage, pinMessage} from '../../api-handlers/chatHandler';
 import {getUserById} from '../../api-handlers/usersHandler';
 import {CHAT_URL} from '../../api-handlers/baseHandler';
 import {formatDate} from "../../extensions/utils";
@@ -13,6 +13,7 @@ const ChatConversationPage = () => {
     const chatId = id;
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
+    const [pinnedMessages, setPinnedMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [chatPartner, setChatPartner] = useState({ name: 'Loading...', id: null });
     const [currentUser, setCurrentUser] = useState(null);
@@ -22,7 +23,6 @@ const ChatConversationPage = () => {
     const connectionRef = useRef(null);
     const [currentChat, setCurrentChat] = useState(null);
 
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -30,23 +30,22 @@ const ChatConversationPage = () => {
     useEffect(() => {
         const fetchChat = async () => {
             const response = await getChatById(id, false);
-            console.log(response.data);
             const c = {
                 id: response.data.id,
                 name: response.data.name
             }
             setCurrentChat(c);
-
         }
         fetchChat();
-        console.log(currentChat);
     }, [chatId]);
 
     useEffect(() => {
         const fetchMessages = async () => {
             const result = await getAllMessages(chatId);
-            console.log(result);
-            setMessages(result);
+            const pinned = result.filter(msg => msg.isPinned);
+            const regular = result.filter(msg => !msg.isPinned);
+            setPinnedMessages(pinned);
+            setMessages(regular);
         }
         fetchMessages();
     }, [chatId]);
@@ -97,12 +96,10 @@ const ChatConversationPage = () => {
                 if (currentUser) {
                     try {
                         const chatInfo = await getChatById(chatId);
-                        console.log(chatInfo);
-                        connectionRef.current.invoke("JoinChat", currentUser.username, chatInfo.data.name)
+                        await connectionRef.current.invoke("JoinChat", currentUser.username, chatInfo.data.name)
                     } catch (err) {
                         console.error("Error rejoining chat:", err);
                     }
-
                 }
             });
 
@@ -116,7 +113,8 @@ const ChatConversationPage = () => {
                         content: text,
                         isMyMessage: isCurrentUser,
                         createdAt: parsedDate,
-                        senderName: isCurrentUser ? 'You' : senderUsername
+                        senderName: isCurrentUser ? 'You' : senderUsername,
+                        isPinned: false
                     };
 
                     return [...prevMessages, newMessage];
@@ -130,9 +128,7 @@ const ChatConversationPage = () => {
 
                 if (currentUser) {
                     const chatInfo = await getChatById(chatId, false);
-                    console.log(chatInfo);
                     const chatName = chatInfo.data.name;
-                    console.log(chatName);
                     await connectionRef.current.invoke("JoinChat", currentUser.username, chatName);
                 }
             } catch (err) {
@@ -187,15 +183,29 @@ const ChatConversationPage = () => {
                 }
 
                 if (messagesData) {
-                    const formattedMessages = messagesData.map(msg => ({
+                    const pinned = messagesData.filter(msg => msg.isPinned);
+                    const regular = messagesData.filter(msg => !msg.isPinned);
+
+                    const formattedMessages = regular.map(msg => ({
                         id: msg.id,
                         content: msg.content,
                         createdAt: msg.createdAt,
                         isMyMessage: msg.sender?.id === currentUser.id,
-                        senderName: msg.sender?.id === currentUser.id ? 'You' : msg.sender?.username
+                        senderName: msg.sender?.id === currentUser.id ? 'You' : msg.sender?.username,
+                        isPinned: msg.isPinned
+                    }));
+
+                    const formattedPinned = pinned.map(msg => ({
+                        id: msg.id,
+                        content: msg.content,
+                        createdAt: msg.createdAt,
+                        isMyMessage: msg.sender?.id === currentUser.id,
+                        senderName: msg.sender?.id === currentUser.id ? 'You' : msg.sender?.username,
+                        isPinned: msg.isPinned
                     }));
 
                     setMessages(formattedMessages);
+                    setPinnedMessages(formattedPinned);
                 }
             } catch (error) {
                 console.error('Error loading initial data:', error);
@@ -234,6 +244,23 @@ const ChatConversationPage = () => {
         }
     };
 
+    const handlePinMessage = async (messageId, isCurrentlyPinned) => {
+        try {
+            const result = await pinMessage(messageId, !isCurrentlyPinned);
+            if (result) {
+                if (isCurrentlyPinned) {
+                    setPinnedMessages(prev => prev.filter(msg => msg.id !== messageId));
+                    setMessages(prev => [...prev, {...result, isPinned: false}]);
+                } else {
+                    setPinnedMessages(prev => [...prev, {...result, isPinned: true}]);
+                    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+                }
+            }
+        } catch (error) {
+            console.error("Error pinning message:", error);
+        }
+    };
+
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -254,6 +281,27 @@ const ChatConversationPage = () => {
             navigate("/messages");
         }
     };
+
+    const renderMessage = (message) => (
+        <div key={message.id}
+             className={`message ${message.isMyMessage ? 'my-message' : 'partner-message'}`}>
+            <div className="message-header">
+                {!message.isMyMessage && (
+                    <div className="message-sender">{message.senderName}</div>
+                )}
+                <button
+                    className="pin-message-button"
+                    onClick={() => handlePinMessage(message.id, message.isPinned)}
+                    title={message.isPinned ? "Открепить сообщение" : "Закрепить сообщение"}
+                >
+                    {message.isPinned ? '📌' : '📍'}
+                </button>
+            </div>
+            <p className="message-text">{message.content}</p>
+            <span className="message-time">{formatDate(message.createdAt)}</span>
+            {message.isPinned && <span className="pinned-badge">Закреплено</span>}
+        </div>
+    );
 
     if (loading || !currentUser) {
         return (
@@ -277,30 +325,25 @@ const ChatConversationPage = () => {
                     </div>
                     <div className="chat-partner">
                         <h2 className="chat-partner-name">{currentChat?.name || 'Загрузка...'}</h2>
-                        {/*<div className={`connection-status ${connectionStatus}`}>*/}
-                        {/*    {connectionStatus === 'connected' ? 'Online' :*/}
-                        {/*        connectionStatus === 'reconnecting' ? 'Reconnecting...' : 'Offline'}*/}
-                        {/*</div>*/}
                     </div>
-                    {/*<button className="leave-chat-button" onClick={handleLeaveChat}>*/}
-                    {/*    Leave Chat*/}
-                    {/*</button>*/}
                 </div>
 
+                {pinnedMessages.length > 0 && (
+                    <div className="pinned-messages-section">
+                        <div className="pinned-messages-header">
+                            <span>📌 Закрепленные сообщения</span>
+                        </div>
+                        <div className="pinned-messages-list">
+                            {pinnedMessages.map(renderMessage)}
+                        </div>
+                    </div>
+                )}
+
                 <div className="chat-messages">
-                    {messages.length === 0 ? (
+                    {messages.length === 0 && pinnedMessages.length === 0 ? (
                         <div className="no-messages">Сообщений еще нет. Начните беседу!</div>
                     ) : (
-                        messages.map((message) => (
-                            <div key={message.id}
-                                 className={`message ${message.isMyMessage ? 'my-message' : 'partner-message'}`}>
-                                {!message.isMyMessage && (
-                                    <div className="message-sender">{message.senderName}</div>
-                                )}
-                                <p className="message-text">{message.content}</p>
-                                <span className="message-time">{formatDate(message.createdAt)}</span>
-                            </div>
-                        ))
+                        messages.map(renderMessage)
                     )}
                     <div ref={messagesEndRef} />
                 </div>

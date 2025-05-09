@@ -11,4 +11,5 @@ public interface IMessageService
     
     Task<Result<List<MessageDTO>>> GetAll(Guid chatId, CancellationToken ct);
     Task<Result<MessageDTO>> GetById(Guid id, CancellationToken ct);
+    Task<Result<MessageDTO>> PinMessage(Guid messageId, bool isPinned, CancellationToken ct);
 }
