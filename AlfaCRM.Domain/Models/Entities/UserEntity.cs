@@ -27,6 +27,7 @@ public class UserEntity
     public virtual ICollection<ChatEntity> ChatsAsAdmin { get; set; } = [];
     public virtual ICollection<ChatEntity> ChatsAsMember { get; set; } = [];
     public virtual ICollection<MessageEntity> Messages { get; set; } = [];
+    public virtual ICollection<LogEntity> Logs { get; set; } = [];
 
     public static UserEntity Create(
         string fullName,
