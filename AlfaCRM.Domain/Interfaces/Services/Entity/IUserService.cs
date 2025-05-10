@@ -17,6 +17,7 @@ public interface IUserService
     Task<Result<UserShortDTO>> GetByIdShort(Guid id, CancellationToken ct);
 
     Task<Result<Guid>> Block(Guid id, CancellationToken ct);
+    Task<Result<Guid>> Fire(Guid id, CancellationToken ct);
     Task<Result<Guid>> ResetPassword(Guid id, string oldPassword, string newPassword, CancellationToken ct);
     Task<Result<Guid>> ResetPasswordAsAdmin(Guid id, string newPassword, CancellationToken ct);
     Task<Result<int>> GetUserCount(CancellationToken ct);

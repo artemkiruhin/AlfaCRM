@@ -555,6 +555,71 @@ public class UserService : IUserService
             return Result<Guid>.Failure($"Error while blocking user: {e.Message}");
         }
     }
+    
+    public async Task<Result<Guid>> Fire(Guid id, CancellationToken ct)
+    {
+        await _database.BeginTransactionAsync(ct);
+        try
+        {
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Info,
+                $"Starting to firing user with ID {id}",
+                null), ct);
+
+            var user = await _database.UserRepository.GetByIdAsync(id, ct);
+            if (user == null)
+            {
+                await _database.LogRepository.CreateAsync(LogEntity.Create(
+                    LogType.Warning,
+                    $"Failed to fire user: user with ID {id} not found",
+                    null), ct);
+                return Result<Guid>.Failure("User not found");
+            }
+
+            if (user.FiredAt.HasValue)
+            {
+                await _database.LogRepository.CreateAsync(LogEntity.Create(
+                    LogType.Warning,
+                    $"User {id} is already fired",
+                    null), ct);
+                return Result<Guid>.Failure("User is already fired");
+            }
+
+            user.IsBlocked = true;
+            user.IsActive = false;
+            user.FiredAt = DateTime.UtcNow;
+
+            _database.UserRepository.Update(user, ct);
+            var result = await _database.SaveChangesAsync(ct);
+            await _database.CommitTransactionAsync(ct);
+            
+            Console.WriteLine($"{result}");
+
+            if (result > 0)
+            {
+                await _database.LogRepository.CreateAsync(LogEntity.Create(
+                    LogType.Info,
+                    $"User {id} fired successfully",
+                    null), ct);
+                return Result<Guid>.Success(user.Id);
+            }
+
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Warning,
+                $"No changes were made when firing user {id}",
+                null), ct);
+            return Result<Guid>.Failure("Failed to fire user");
+        }
+        catch (Exception e)
+        {
+            await _database.RollbackTransactionAsync(ct);
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Error,
+                $"Error while firing user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                null), ct);
+            return Result<Guid>.Failure($"Error while firing user: {e.Message}");
+        }
+    }
 
     public async Task<Result<Guid>> ResetPassword(Guid id, string oldPassword, string newPassword, CancellationToken ct)
     {

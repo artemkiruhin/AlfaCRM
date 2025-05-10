@@ -142,6 +142,25 @@ namespace AlfaCRM.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPatch("fire/{id:guid}")]
+        public async Task<ActionResult> Fire(Guid id, CancellationToken ct)
+        {
+            try
+            {
+                var result = await _userService.Fire(id, ct);
+                if (!result.IsSuccess)
+                {
+                    Console.WriteLine(result.ErrorMessage);
+                    return BadRequest(result.ErrorMessage);
+                }
+                return Ok(new {id = result.Data});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         
         [HttpDelete("delete/{id:guid}")]
         public async Task<ActionResult> Delete(Guid id, CancellationToken ct)

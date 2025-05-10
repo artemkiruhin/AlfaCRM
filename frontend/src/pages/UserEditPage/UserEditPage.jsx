@@ -4,7 +4,7 @@ import './UserEditPage.css';
 import { ArrowLeft } from "lucide-react";
 import Header from "../../components/layout/header/Header";
 import { getAllDepartmentsShort } from "../../api-handlers/departmentsHandler";
-import {blockUser, editUser, getUserById} from "../../api-handlers/usersHandler";
+import {blockUser, editUser, fireUser, getUserById} from "../../api-handlers/usersHandler";
 import { setDateToInputFormat } from "../../extensions/utils";
 
 const UserEditPage = () => {
@@ -142,6 +142,13 @@ const UserEditPage = () => {
 
     const handleBack = () => {
         navigate('/users');
+    };
+
+    const handleFireEmployee = async () => {
+        if (window.confirm('Вы уверены, что хотите уволить этого сотрудника?')) {
+            await fireUser(id);
+            navigate('/users');
+        }
     };
 
     const handleBlockUser =  async () => {
@@ -337,6 +344,13 @@ const UserEditPage = () => {
 
                 <div className="form-actions">
                     <div className="danger-actions">
+                        <button
+                            type="button"
+                            className="danger-button fire-button"
+                            onClick={handleFireEmployee}
+                        >
+                            Уволить сотрудника
+                        </button>
                         <button
                             type="button"
                             className="danger-button block-button"

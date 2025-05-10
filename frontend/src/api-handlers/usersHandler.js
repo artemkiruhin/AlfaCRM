@@ -151,6 +151,23 @@ const deleteUser = async (id) => {
         console.error('Deleting user error: ', e);
     }
 }
+const fireUser = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/users/fire/${id}`, {
+            method: 'PATCH',
+            credentials: 'include'
+        })
+        if (!response.ok) {
+            console.error(`Firing user error: ${response.statusText} | ${response.status}`)
+        }
+
+        const data = await response.json()
+        return data.id
+
+    } catch (e) {
+        console.error('Firing user error: ', e);
+    }
+}
 const getAllUsers = async (isShort, includeMe) => {
     try {
         const include = includeMe !== 'undefined' && includeMe === true;
@@ -221,5 +238,6 @@ export {
     deleteUser,
     getAllUsers,
     getUserById,
-    getProfile
+    getProfile,
+    fireUser
 }
