@@ -258,3 +258,62 @@
 .ticket-action-button.delete:hover {
     background-color: #cc0000;
 }
+
+.export-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    justify-content: flex-end;
+}
+
+.export-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    color: white;
+    background: linear-gradient(135deg, #4f6bff 0%, #3a56e8 100%);
+    box-shadow: 0 2px 6px rgba(74, 108, 247, 0.25);
+}
+
+.export-button:hover {
+    background: linear-gradient(135deg, #3a56e8 0%, #2a45d4 100%);
+    box-shadow: 0 4px 8px rgba(74, 108, 247, 0.3);
+    transform: translateY(-1px);
+}
+
+.export-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(74, 108, 247, 0.25);
+}
+
+.export-button:disabled {
+    background: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.export-button-detailed {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    box-shadow: 0 2px 6px rgba(0, 114, 255, 0.25);
+}
+
+.export-button-detailed:hover {
+    background: linear-gradient(135deg, #0072ff 0%, #005bd1 100%);
+    box-shadow: 0 4px 8px rgba(0, 114, 255, 0.3);
+}
+
+/* Иконка внутри кнопки */
+.export-button svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5px;
+}
