@@ -30,9 +30,18 @@ const ChatConversationPage = () => {
     useEffect(() => {
         const fetchChat = async () => {
             const response = await getChatById(id, false);
+            let chatName = response.data.name;
+            if (response.data.members.length === 2) {
+                response.data.members.forEach(member => {
+                    if (member.id !== localStorage.getItem('uid')) {
+                        chatName = member.username;
+                    }
+                })
+            }
+
             const c = {
                 id: response.data.id,
-                name: response.data.name
+                name: chatName
             }
             setCurrentChat(c);
         }
@@ -171,7 +180,7 @@ const ChatConversationPage = () => {
                     getAllMessages(chatId),
                     getChatById(chatId)
                 ]);
-
+                
                 if (chatInfo.participants) {
                     const partner = chatInfo.participants.find(p => p.id !== currentUser.id);
                     if (partner) {
