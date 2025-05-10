@@ -4,7 +4,7 @@ import './UserEditPage.css';
 import { ArrowLeft } from "lucide-react";
 import Header from "../../components/layout/header/Header";
 import { getAllDepartmentsShort } from "../../api-handlers/departmentsHandler";
-import { editUser, getUserById } from "../../api-handlers/usersHandler";
+import {blockUser, editUser, getUserById} from "../../api-handlers/usersHandler";
 import { setDateToInputFormat } from "../../extensions/utils";
 
 const UserEditPage = () => {
@@ -92,7 +92,6 @@ const UserEditPage = () => {
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
-        // Исправленная логика: позволяем как устанавливать, так и снимать флажки
         if (type === 'checkbox') {
             setFormData(prev => ({ ...prev, [name]: checked }));
         } else {
@@ -143,6 +142,13 @@ const UserEditPage = () => {
 
     const handleBack = () => {
         navigate('/users');
+    };
+
+    const handleBlockUser =  async () => {
+        if (window.confirm('Вы уверены, что хотите заблокировать эту учетную запись?')) {
+            await blockUser(id);
+            navigate('/users');
+        }
     };
 
     if (loading) {
@@ -330,16 +336,28 @@ const UserEditPage = () => {
                 </div>
 
                 <div className="form-actions">
-                    <button type="button" className="cancel-button" onClick={handleBack}>
-                        Отмена
-                    </button>
-                    <button
-                        type="submit"
-                        className="submit-button"
-                        disabled={!hasChanges}
-                    >
-                        Сохранить изменения
-                    </button>
+                    <div className="danger-actions">
+                        <button
+                            type="button"
+                            className="danger-button block-button"
+                            onClick={handleBlockUser}
+                        >
+                            Заблокировать учетную запись
+                        </button>
+                    </div>
+
+                    <div className="main-actions">
+                        <button type="button" className="cancel-button" onClick={handleBack}>
+                            Отмена
+                        </button>
+                        <button
+                            type="submit"
+                            className="submit-button"
+                            disabled={!hasChanges}
+                        >
+                            Сохранить изменения
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

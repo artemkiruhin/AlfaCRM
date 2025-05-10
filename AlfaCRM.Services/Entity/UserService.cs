@@ -524,6 +524,7 @@ public class UserService : IUserService
             }
 
             user.IsBlocked = true;
+            user.IsActive = false;
 
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
