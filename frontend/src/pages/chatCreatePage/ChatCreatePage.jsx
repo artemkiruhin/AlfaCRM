@@ -20,7 +20,7 @@ const ChatCreatePage = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const usersData = await getAllUsers(true);
+                const usersData = await getAllUsers(true, false);
                 if (usersData) {
                     setUsers(usersData);
                 }

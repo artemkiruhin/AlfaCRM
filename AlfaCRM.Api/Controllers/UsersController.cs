@@ -2,6 +2,7 @@ using AlfaCRM.Api.Contracts.Request;
 using AlfaCRM.Api.Extensions;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
 using AlfaCRM.Domain.Models.Contracts;
+using AlfaCRM.Domain.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlfaCRM.Api.Controllers
@@ -150,23 +151,29 @@ namespace AlfaCRM.Api.Controllers
         }
         
         [HttpGet("")]
-        public async Task<ActionResult> GetAll(bool? isShort, CancellationToken ct)
+        public async Task<ActionResult> GetAll(bool? isShort, bool includeMe, CancellationToken ct)
         {
             try
             {
-                // var isUserValid = await _userValidator.IsAdmin(User, ct);
-                // if (!isUserValid.IsSuccess) return Unauthorized();
+                var userId = await _userValidator.GetUserId(User, ct);
+                if (!userId.IsSuccess) return Unauthorized();
                 
                 if (isShort is true)
                 {
                     var shortResult = await _userService.GetAllShort(ct);
                     if (!shortResult.IsSuccess) return BadRequest(shortResult.ErrorMessage);
-                    return Ok(new {users = shortResult.Data});
+                    var users = includeMe
+                        ? shortResult.Data.ToList()
+                        : shortResult.Data.Where(x => x.Id != userId.Data).ToList();
+                    return Ok(new {users = users});
                 }
                 
                 var detailedResult = await _userService.GetAll(ct);
                 if (!detailedResult.IsSuccess) return BadRequest(detailedResult.ErrorMessage);
-                return Ok(new {users = detailedResult.Data});
+                var usersDetailed = includeMe
+                    ? detailedResult.Data.ToList()
+                    : detailedResult.Data.Where(x => x.Id != userId.Data).ToList();
+                return Ok(new {users = usersDetailed});
             }
             catch (Exception ex)
             {

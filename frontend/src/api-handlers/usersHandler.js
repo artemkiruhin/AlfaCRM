@@ -151,9 +151,12 @@ const deleteUser = async (id) => {
         console.error('Deleting user error: ', e);
     }
 }
-const getAllUsers = async (isShort) => {
+const getAllUsers = async (isShort, includeMe) => {
     try {
-        let url = isShort === true ? `${API_URL}/users?isShort=true` : `${API_URL}/users`
+        const include = includeMe !== 'undefined' && includeMe === true;
+        console.log(include);
+        let url = isShort === true ? `${API_URL}/users?isShort=true&includeMe=${include}` : `${API_URL}/users`
+        console.log(`Fetching users from ${url}`);
 
         const response = await fetch(url, {
             method: 'GET',
