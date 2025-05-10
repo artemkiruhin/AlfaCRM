@@ -270,3 +270,45 @@ button:disabled {
         width: 100%;
     }
 }
+
+.danger-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.danger-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ff4444;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.danger-button:hover {
+    background-color: #cc0000;
+}
+
+.fire-button {
+    background-color: #ff8800;
+}
+
+.fire-button:hover {
+    background-color: #cc6600;
+}
+
+.block-button {
+    background-color: #ff4444;
+}
+
+.block-button:hover {
+    background-color: #cc0000;
+}
+
+.main-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
