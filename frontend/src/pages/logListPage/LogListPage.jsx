@@ -59,7 +59,7 @@ const LogListPage = () => {
 
     const handleExportConfirm = async (filename, description) => {
         try {
-            await exportToExcel(0, filename || "Отчет_по_логам", description || "");
+            await exportToExcel(6, filename || "Отчет_по_логам", description || "");
             setIsExportModalOpen(false);
         } catch (error) {
             console.error('Ошибка при экспорте:', error);
