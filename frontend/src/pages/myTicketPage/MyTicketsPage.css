@@ -19,6 +19,7 @@
 
 .create-ticket-button:hover {
     background-color: var(--primary-dark);
+    cursor: pointer;
 }
 
 .ticket-list-container {

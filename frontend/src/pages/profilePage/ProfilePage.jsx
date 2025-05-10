@@ -107,46 +107,67 @@ const ProfilePage = () => {
             {showChangePasswordModal && (
                 <div className="modal-overlay">
                     <div className="password-modal">
-                        <button className="close-modal-btn" onClick={handleCloseModal}>×</button>
-                        <h2>Изменение пароля</h2>
-                        <form onSubmit={handlePasswordSubmit}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Изменение пароля</h2>
+                            <button className="close-modal-btn" onClick={handleCloseModal}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <form onSubmit={handlePasswordSubmit} className="password-form">
                             <div className="form-group">
-                                <label>Текущий пароль</label>
+                                <label className="input-label">Текущий пароль</label>
                                 <input
                                     type="password"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     placeholder="Введите текущий пароль"
                                     autoComplete="current-password"
+                                    className="password-input"
                                 />
                             </div>
+
                             <div className="form-group">
-                                <label>Новый пароль</label>
+                                <label className="input-label">Новый пароль</label>
                                 <input
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="Введите новый пароль"
                                     autoComplete="new-password"
+                                    className="password-input"
                                 />
                             </div>
+
                             <div className="form-group">
-                                <label>Подтвердите новый пароль</label>
+                                <label className="input-label">Подтвердите новый пароль</label>
                                 <input
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Повторите новый пароль"
                                     autoComplete="new-password"
+                                    className="password-input"
                                 />
                             </div>
-                            {passwordError && <div className="error-message">{passwordError}</div>}
+
+                            {passwordError && (
+                                <div className="error-message">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 6.66666V9.99999M10 13.3333H10.0083M18.3333 9.99999C18.3333 14.6024 14.6024 18.3333 9.99999 18.3333C5.39762 18.3333 1.66666 14.6024 1.66666 9.99999C1.66666 5.39762 5.39762 1.66666 9.99999 1.66666C14.6024 1.66666 18.3333 5.39762 18.3333 9.99999Z" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    <span>{passwordError}</span>
+                                </div>
+                            )}
+
                             <div className="modal-actions">
                                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>
                                     Отмена
                                 </button>
                                 <button type="submit" className="submit-btn">
-                                    Изменить пароль
+                                    Сохранить изменения
                                 </button>
                             </div>
                         </form>
