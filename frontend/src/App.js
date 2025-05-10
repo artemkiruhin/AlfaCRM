@@ -21,6 +21,7 @@ import React from "react";
 import ChatCreatePage from "./pages/chatCreatePage/ChatCreatePage";
 import AdminPanel from "./pages/adminPanel/AdminPanel";
 import ProfilePage from "./pages/profilePage/ProfilePage";
+import LogListPage from "./pages/logListPage/LogListPage";
 
 function App() {
   return (
@@ -50,6 +51,8 @@ function App() {
                 <Route path="/users" element={<AuthLayout><RootLayout page={<UserListPage />}/></AuthLayout>} />
                 <Route path="/users/edit/:id" element={<AuthLayout><RootLayout page={<UserEditPage />}/></AuthLayout>} />
                 <Route path="/users/create" element={<AuthLayout><RootLayout page={<UserCreatePage />}/></AuthLayout>} />
+
+                <Route path="/logs" element={<AuthLayout><RootLayout page={<LogListPage />}/></AuthLayout>} />
 
                 <Route path="/departments" element={<AuthLayout><RootLayout page={<DepartmentListPage />}/></AuthLayout>} />
 
