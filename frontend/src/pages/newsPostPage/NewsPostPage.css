@@ -192,3 +192,66 @@
 .edit-news-button:active {
     transform: translateY(0);
 }
+
+.reaction-section {
+    margin: 24px 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 0;
+}
+
+.reaction-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.reaction-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+}
+
+.reaction-button:hover {
+    background-color: var(--bg-light);
+}
+
+.reaction-button.active {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.reaction-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.like-button.active {
+    border-color: var(--green);
+    background-color: var(--green-light);
+    color: var(--green-dark);
+}
+
+.dislike-button.active {
+    border-color: var(--red);
+    background-color: var(--red-light);
+    color: var(--red-dark);
+}
+
+.reaction-count {
+    font-weight: 600;
+}
+
+.reaction-summary {
+    font-size: 13px;
+    color: var(--text-light);
+}

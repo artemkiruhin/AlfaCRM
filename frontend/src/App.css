@@ -58,6 +58,14 @@
     --accent-pink: #ec4899;
     --accent-yellow: #fbbf24;
     --accent-teal: #14b8a6;
+
+    --green: #4CAF50;
+    --green-light: #E8F5E9;
+    --green-dark: #2E7D32;
+    --red: #F44336;
+    --red-light: #FFEBEE;
+    --red-dark: #C62828;
+    --primary-light: #E3F2FD;
 }
 
 * {

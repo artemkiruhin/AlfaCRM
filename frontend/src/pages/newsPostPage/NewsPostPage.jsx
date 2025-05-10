@@ -45,7 +45,7 @@ const NewsPostPage = () => {
         const fetchData = async () => {
             try {
                 const isAuthorized = await validateAdminOrPublisher();
-                const isAdminOrPublisher = localStorage.getItem('adm') === true || localStorage.getItem('spec') === true;
+                const isAdminOrPublisher = localStorage.getItem('adm') === 'true' || localStorage.getItem('spec') === 'true';
                 setIsAdminOrAuthor(isAdminOrPublisher);
 
                 const response = await getPostById(id);
@@ -65,9 +65,11 @@ const NewsPostPage = () => {
                     setComments(response.comments || []);
 
                     if (currentUserId && response.reactions) {
-                        const userReact = response.reactions.find(r => r.senderId === currentUserId);
+                        const userReact = response.reactions.find(r => r.sender.id === currentUserId);
                         if (userReact) {
-                            setUserReaction(userReact.type);
+                            setUserReaction(userReact.type === 'Like' ? 0 : 1);
+                        } else {
+                            setUserReaction(null);
                         }
                     }
                 }
@@ -119,42 +121,60 @@ const NewsPostPage = () => {
     };
 
     const handleReaction = async (type) => {
+        if (!isAuthenticated) return;
+
+        const isSameReaction = userReaction === type;
+
         try {
-            if (userReaction === type) {
-                const result = await deleteAllReactsByPost(id, type);
-                if (result) {
+            setNewsItem(prev => {
+                const existingReactionIndex = prev.reactions.findIndex(r => r.sender.id === currentUserId);
+
+                let updatedReactions;
+                if (isSameReaction) {
+                    updatedReactions = prev.reactions.filter(r => r.sender.id !== currentUserId);
                     setUserReaction(null);
-                    setNewsItem(prev => ({
-                        ...prev,
-                        reactions: prev.reactions.filter(r => r.senderId !== currentUserId)
-                    }));
-                }
-            } else {
-                const result = await reactPost(id, type);
-                if (result) {
+                } else {
+                    const newReaction = {
+                        id: Date.now().toString(),
+                        type: type === 0 ? 'Like' : 'Dislike',
+                        sender: {
+                            id: currentUserId,
+                            username: currentUsername
+                        },
+                        createdAt: new Date().toISOString()
+                    };
+
+                    if (existingReactionIndex >= 0) {
+                        updatedReactions = [...prev.reactions];
+                        updatedReactions[existingReactionIndex] = newReaction;
+                    } else {
+                        updatedReactions = [...prev.reactions, newReaction];
+                    }
                     setUserReaction(type);
-                    setNewsItem(prev => {
-                        const filtered = prev.reactions.filter(r => r.senderId !== currentUserId);
-                        return {
-                            ...prev,
-                            reactions: [
-                                ...filtered,
-                                {
-                                    id: result,
-                                    postId: id,
-                                    senderId: currentUserId,
-                                    type: type,
-                                    sender: {
-                                        username: currentUsername
-                                    }
-                                }
-                            ]
-                        };
-                    });
                 }
+
+                return {
+                    ...prev,
+                    reactions: updatedReactions
+                };
+            });
+            if (isSameReaction) {
+                await deleteAllReactsByPost(id, type === 0 ? 'Like' : 'Dislike');
+            } else {
+                await reactPost(id, type);
             }
+
         } catch (err) {
             console.error('Error updating reaction:', err);
+            const response = await getPostById(id);
+            if (response) {
+                setNewsItem(prev => ({
+                    ...prev,
+                    reactions: response.reactions || []
+                }));
+                const userReact = response.reactions?.find(r => r.sender.id === currentUserId);
+                setUserReaction(userReact ? (userReact.type === 'Like' ? 0 : 1) : null);
+            }
         }
     };
 
@@ -170,7 +190,16 @@ const NewsPostPage = () => {
     };
 
     const countReactions = (type) => {
-        return newsItem.reactions.filter(r => r.type === type).length;
+        const typeString = type === 0 ? 'Like' : 'Dislike';
+        return newsItem.reactions.filter(r => r.type === typeString).length;
+    };
+
+    const getReactionUsers = (type) => {
+        const typeString = type === 0 ? 'Like' : 'Dislike';
+        return newsItem.reactions
+            .filter(r => r.type === typeString)
+            .map(r => r.sender.fullName || r.sender.username)
+            .join(', ');
     };
 
     if (isLoading) {
@@ -223,23 +252,32 @@ const NewsPostPage = () => {
                     <ReactMarkdown>{newsItem.content}</ReactMarkdown>
                 </div>
 
-                <div className="reaction-buttons">
-                    <button
-                        onClick={() => handleReaction(0)}
-                        className={`like-button ${userReaction === 0 ? 'active' : ''}`}
-                        disabled={!isAuthenticated}
-                    >
-                        <ThumbsUp size={18}/>
-                        Лайк ({countReactions(0)})
-                    </button>
-                    <button
-                        onClick={() => handleReaction(1)}
-                        className={`dislike-button ${userReaction === 1 ? 'active' : ''}`}
-                        disabled={!isAuthenticated}
-                    >
-                        <ThumbsDown size={18}/>
-                        Дизлайк ({countReactions(1)})
-                    </button>
+                <div className="reaction-section">
+                    <div className="reaction-buttons">
+                        <button
+                            onClick={() => handleReaction(0)}
+                            className={`reaction-button like-button ${userReaction === 0 ? 'active' : ''}`}
+                            disabled={!isAuthenticated}
+                            title={getReactionUsers(0)}
+                        >
+                            <ThumbsUp size={18}/>
+                            <span className="reaction-count">{countReactions(0)}</span>
+                        </button>
+                        <button
+                            onClick={() => handleReaction(1)}
+                            className={`reaction-button dislike-button ${userReaction === 1 ? 'active' : ''}`}
+                            disabled={!isAuthenticated}
+                            title={getReactionUsers(1)}
+                        >
+                            <ThumbsDown size={18}/>
+                            <span className="reaction-count">{countReactions(1)}</span>
+                        </button>
+                    </div>
+                    {newsItem.reactions.length > 0 && (
+                        <div className="reaction-summary">
+                            Всего реакций: {newsItem.reactions.length}
+                        </div>
+                    )}
                 </div>
 
                 <div className="comments-section">
