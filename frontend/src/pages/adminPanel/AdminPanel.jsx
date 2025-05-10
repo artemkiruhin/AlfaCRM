@@ -13,7 +13,8 @@ const AdminPanel = () => {
         problemCasesCount: '',
         solvedProblemCasesCount: '',
         suggestionsCount: '',
-        solvedSuggestionsCount: ''
+        solvedSuggestionsCount: '',
+        logsCount: ''
     });
 
     useEffect(() => {
@@ -136,6 +137,32 @@ const AdminPanel = () => {
                             <button
                                 className="admin-btn admin-btn-primary"
                                 onClick={() => navigate('/suggestions/sent')}
+                            >
+                                <ArrowRight size={18}/> Перейти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="admin-card">
+                    <div className="admin-card-header">
+                        <h2 className="admin-card-title">Логи</h2>
+                        <p className="admin-card-subtitle">Статистика по логам</p>
+                    </div>
+                    <div className="admin-card-body">
+                        <div className="admin-card-stats">
+                            <div className="stat-item">
+                                <div className="stat-value">{statsData.logsCount}</div>
+                                <div className="stat-label">Всего</div>
+                            </div>
+                            {/*<div className="stat-item">*/}
+                            {/*    <div className="stat-value">{statsData.solvedSuggestionsCount}</div>*/}
+                            {/*    <div className="stat-label">Решённых</div>*/}
+                            {/*</div>*/}
+                        </div>
+                        <div className="admin-card-actions">
+                            <button
+                                className="admin-btn admin-btn-primary"
+                                onClick={() => navigate('/logs/')}
                             >
                                 <ArrowRight size={18}/> Перейти
                             </button>
