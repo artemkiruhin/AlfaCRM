@@ -6,5 +6,6 @@ public record AdminStatisticsDTO(
     int ProblemCasesCount,
     int SolvedProblemCasesCount,
     int SuggestionsCount,
-    int SolvedSuggestionsCount
+    int SolvedSuggestionsCount,
+    int LogsCount
     );

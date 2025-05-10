@@ -34,19 +34,21 @@ namespace AlfaCRM.Api.Controllers
                 var departmentsAmount = await _departmentService.GetDepartmentCount(ct);
                 var problemCasesCount = await _ticketService.GetTicketsCount(TicketType.ProblemCase, ct);
                 var suggestionsCount = await _ticketService.GetTicketsCount(TicketType.Suggestion, ct);
-
+                var logsCount = await _database.LogRepository.CountAsync(ct);
+                
                 if (!usersAmount.IsSuccess) return BadRequest(usersAmount.ErrorMessage);
                 if (!departmentsAmount.IsSuccess) return BadRequest(departmentsAmount.ErrorMessage);
                 if (!problemCasesCount.IsSuccess) return BadRequest(problemCasesCount.ErrorMessage);
                 if (!suggestionsCount.IsSuccess) return BadRequest(problemCasesCount.ErrorMessage);
-                
+
                 var result = new AdminStatisticsDTO(
                     DepartmentsAmount: departmentsAmount.Data,
                     ProblemCasesCount: problemCasesCount.Data.Item1,
                     SuggestionsCount: suggestionsCount.Data.Item1,
                     UsersAmount: usersAmount.Data,
                     SolvedProblemCasesCount: problemCasesCount.Data.Item2,
-                    SolvedSuggestionsCount: suggestionsCount.Data.Item2
+                    SolvedSuggestionsCount: suggestionsCount.Data.Item2,
+                    LogsCount: logsCount
                 );
 
                 return Ok(new { data = result });
