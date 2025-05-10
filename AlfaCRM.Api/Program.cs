@@ -122,6 +122,7 @@ builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<IHashService, SHA256Hasher>();
 builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettings(
     Audience: configuration["JWT:Audience"] ?? throw new ApplicationException("Missing JWT:Audience"),
