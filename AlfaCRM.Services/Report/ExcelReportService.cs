@@ -48,6 +48,42 @@ namespace AlfaCRM.Services.Report
 
             return GenerateExcelReport(request);
         }
+        
+        public byte[] GenerateLogsReport(IEnumerable<LogReportDTO> logs, string? description)
+        {
+            var table = new ReportTable
+            {
+                TableName = "Логи",
+                Columns = new List<ReportColumn>
+                {
+                    new ReportColumn { ColumnName = "ID", DataType = "string" },
+                    new ReportColumn { ColumnName = "Сообщение", DataType = "string" },
+                    new ReportColumn { ColumnName = "Тип", DataType = "string" },
+                    new ReportColumn { ColumnName = "Идентификатор пользователя", DataType = "string" },
+                    new ReportColumn { ColumnName = "Логин пользователя", DataType = "string" },
+                    new ReportColumn { ColumnName = "Дата создания", DataType = "date" }
+                },
+                Rows = logs.Select(log => new List<object>
+                {
+                    log.Id.ToString(),
+                    log.Message,
+                    log.Type,
+                    log.UserIdString,
+                    log.Username,
+                    log.CreatedAt
+                }).ToList()
+            };
+
+            var request = new ExcelReportRequest
+            {
+                DocumentTitle = description ?? "Отчет по логам",
+                Description = GenerateReportDescription(),
+                Tables = new List<ReportTable> { table },
+                AutoFitColumns = true
+            };
+
+            return GenerateExcelReport(request);
+        }
 
         public byte[] GeneratePostsReport(IEnumerable<PostReportDTO> posts, string? description)
         {

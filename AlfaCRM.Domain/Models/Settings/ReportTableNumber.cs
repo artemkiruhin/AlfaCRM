@@ -7,5 +7,6 @@ public enum ReportTableNumber
     Posts = 2,
     Tickets = 3,
     Suggestions = 4,
-    ProblemCases = 5
+    ProblemCases = 5,
+    Logs = 6
 }

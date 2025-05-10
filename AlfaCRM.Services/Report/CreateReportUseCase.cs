@@ -21,28 +21,49 @@ public class CreateReportUseCase
     {
         try
         {
-            var result = table switch
+            return table switch
             {
                 ReportTableNumber.Users => await CreateUsersReport(description, ct),
                 ReportTableNumber.Departments => await CreateDepartmentsReport(description, ct),
                 ReportTableNumber.Posts => await CreatePostsReport(description, ct),
                 ReportTableNumber.Tickets => await CreateTicketsReport(description, ct),
-                ReportTableNumber.Suggestions =>
-                    await CreateTicketsByTypeReport(TicketType.Suggestion, description, ct),
-                ReportTableNumber.ProblemCases => await CreateTicketsByTypeReport(TicketType.ProblemCase, description,
-                    ct),
-                _ => throw new ApplicationException("Unknown table type")
+                ReportTableNumber.Suggestions => await CreateTicketsByTypeReport(TicketType.Suggestion, description, ct),
+                ReportTableNumber.ProblemCases => await CreateTicketsByTypeReport(TicketType.ProblemCase, description, ct),
+                ReportTableNumber.Logs => await CreateLogsReport(description, ct),
+                _ => throw new ApplicationException($"Unknown table type: {table}")
             };
-
-            return result;
         }
         catch (Exception e)
         {
-            return Result<byte[]>.Failure("Error creating report." + e);
+            return Result<byte[]>.Failure($"Failed to create {table} report. Error: {e.Message}");
         }
-    } 
+    }
+
+    private async Task<Result<byte[]>> CreateLogsReport(string? description, CancellationToken ct)
+    {
+        try
+        {
+            var logs = await _database.LogRepository.GetAllAsync(ct);
+            var dtos = logs.Select(entity => new LogReportDTO(
+                Id: entity.Id,
+                Message: entity.Message,
+                Type: entity.Type.ToString(),
+                UserIdString: entity.UserId?.ToString() ?? "",
+                Username: entity.User?.Username ?? "System",
+                CreatedAt: entity.CreatedAt
+            )).OrderByDescending(x => x.CreatedAt).ToList();
+        
+            var fileContent = _excelReportService.GenerateLogsReport(dtos, description);
+            return Result<byte[]>.Success(fileContent);
+        }
+        catch (Exception e)
+        {
+            return Result<byte[]>.Failure($"Failed to generate logs report. Error: {e.Message}");
+        }
+    }
     
-    public async Task<Result<byte[]>> CreateDepartmentsReport(string? description, CancellationToken ct)
+
+    private async Task<Result<byte[]>> CreateDepartmentsReport(string? description, CancellationToken ct)
     {
         try
         {
@@ -59,11 +80,11 @@ public class CreateReportUseCase
         }
         catch (Exception e)
         {
-            return Result<byte[]>.Failure("Error during creating departments report: " + e.Message);
+            return Result<byte[]>.Failure($"Failed to generate departments report. Error: {e.Message}");
         }
     }
     
-    public async Task<Result<byte[]>> CreatePostsReport(string? description, CancellationToken ct)
+    private async Task<Result<byte[]>> CreatePostsReport(string? description, CancellationToken ct)
     {
         try
         {
@@ -79,11 +100,11 @@ public class CreateReportUseCase
                 IsActual: entity.IsActual,
                 PublisherUsername: entity.Publisher.Username,
                 PublisherFullName: entity.Publisher.FullName,
-                DepartmentGuid: entity.DepartmentId.HasValue ? entity.DepartmentId.Value.ToString() : "",
-                DepartmentName: entity.Department == null ? "" : entity.Department.Name,
+                DepartmentGuid: entity.DepartmentId?.ToString() ?? "",
+                DepartmentName: entity.Department?.Name ?? "",
                 LikesCount: entity.Reactions.Count(r => r.Type == ReactionType.Like),
                 DislikesCount: entity.Reactions.Count(r => r.Type == ReactionType.Dislike),
-                CommentsCount: entity.Comments.Count()
+                CommentsCount: entity.Comments.Count
             )).ToList();
             
             var fileContent = _excelReportService.GeneratePostsReport(dtos, description);
@@ -91,11 +112,11 @@ public class CreateReportUseCase
         }
         catch (Exception e)
         {
-            return Result<byte[]>.Failure("Error during creating posts report: " + e.Message);
+            return Result<byte[]>.Failure($"Failed to generate posts report. Error: {e.Message}");
         }
     }
     
-    public async Task<Result<byte[]>> CreateTicketsReport(string? description, CancellationToken ct)
+    private async Task<Result<byte[]>> CreateTicketsReport(string? description, CancellationToken ct)
     {
         try
         {
@@ -109,8 +130,8 @@ public class CreateReportUseCase
                 DepartmentName: entity.Department.Name,
                 CreatedAt: entity.CreatedAt,
                 Status: GetTicketStatus(entity.Status),
-                AssigneeUsername: entity.Assignee == null ? "" : entity.Assignee.Username,
-                AssigneeFullName: entity.Assignee == null ? "" : entity.Assignee.FullName,
+                AssigneeUsername: entity.Assignee?.Username ?? "",
+                AssigneeFullName: entity.Assignee?.FullName ?? "",
                 CreatorUsername: entity.Creator.Username,
                 CreatorFullName: entity.Creator.FullName,
                 ClosedAt: entity.ClosedAt,
@@ -122,11 +143,11 @@ public class CreateReportUseCase
         }
         catch (Exception e)
         {
-            return Result<byte[]>.Failure("Error during creating tickets report: " + e.Message);
+            return Result<byte[]>.Failure($"Failed to generate tickets report. Error: {e.Message}");
         }
     }
     
-    public async Task<Result<byte[]>> CreateTicketsByTypeReport(TicketType type, string? description, CancellationToken ct)
+    private async Task<Result<byte[]>> CreateTicketsByTypeReport(TicketType type, string? description, CancellationToken ct)
     {
         try
         {
@@ -140,8 +161,8 @@ public class CreateReportUseCase
                 DepartmentName: entity.Department.Name,
                 CreatedAt: entity.CreatedAt,
                 Status: GetTicketStatus(entity.Status),
-                AssigneeUsername: entity.Assignee == null ? "" : entity.Assignee.Username,
-                AssigneeFullName: entity.Assignee == null ? "" : entity.Assignee.FullName,
+                AssigneeUsername: entity.Assignee?.Username ?? "",
+                AssigneeFullName: entity.Assignee?.FullName ?? "",
                 CreatorUsername: entity.Creator.Username,
                 CreatorFullName: entity.Creator.FullName,
                 ClosedAt: entity.ClosedAt,
@@ -153,11 +174,11 @@ public class CreateReportUseCase
         }
         catch (Exception e)
         {
-            return Result<byte[]>.Failure("Error during creating tickets report: " + e.Message);
+            return Result<byte[]>.Failure($"Failed to generate {type} tickets report. Error: {e.Message}");
         }
     }
 
-    public async Task<Result<byte[]>> CreateUsersReport(string? description, CancellationToken ct)
+    private async Task<Result<byte[]>> CreateUsersReport(string? description, CancellationToken ct)
     {
         try
         {
@@ -170,12 +191,12 @@ public class CreateReportUseCase
                 HiredAt: entity.HiredAt,
                 FiredAt: entity.FiredAt,
                 Birthday: entity.Birthday,
-                Sex:GetUserSex(entity.IsMale),
+                Sex: GetUserSex(entity.IsMale),
                 IsAdmin: entity.IsAdmin,
                 HasPublishedRights: entity.HasPublishedRights,
                 IsBlocked: entity.IsBlocked,
-                DepartmentGuid: entity.DepartmentId.HasValue ? entity.DepartmentId.Value.ToString() : "",
-                DepartmentName: entity.Department == null ? "" : entity.Department.Name,
+                DepartmentGuid: entity.DepartmentId?.ToString() ?? "",
+                DepartmentName: entity.Department?.Name ?? "",
                 PublishedPostsCount: entity.Posts.Count
             )).ToList();
             
@@ -184,12 +205,11 @@ public class CreateReportUseCase
         }
         catch (Exception e)
         {
-            return Result<byte[]>.Failure("Error during creating users report: " + e.Message);
+            return Result<byte[]>.Failure($"Failed to generate users report. Error: {e.Message}");
         }
     }
     
-    
-    private string GetTicketStatus(TicketStatus status)
+    private static string GetTicketStatus(TicketStatus status)
     {
         return status switch
         {
@@ -200,7 +220,8 @@ public class CreateReportUseCase
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
         };
     }
-    private string GetTicketType(TicketType type)
+    
+    private static string GetTicketType(TicketType type)
     {
         return type switch
         {
@@ -209,7 +230,8 @@ public class CreateReportUseCase
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
-    private string GetUserSex(bool isMale)
+    
+    private static string GetUserSex(bool isMale)
     {
         return isMale ? "Мужчина" : "Женщина";
     }
