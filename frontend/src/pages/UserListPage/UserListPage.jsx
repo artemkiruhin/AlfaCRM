@@ -46,7 +46,7 @@ const UserListPage = () => {
     const fetchUsers = async () => {
         try {
             setIsLoading(true);
-            const response = await getAllUsers(true);
+            const response = await getAllUsers(true, true);
             setUsers(response);
         } catch (error) {
             console.error("Ошибка при загрузке пользователей:", error);
