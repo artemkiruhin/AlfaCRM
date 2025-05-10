@@ -45,7 +45,8 @@ const NewsPostPage = () => {
         const fetchData = async () => {
             try {
                 const isAuthorized = await validateAdminOrPublisher();
-                setIsAdminOrAuthor(isAuthorized);
+                const isAdminOrPublisher = localStorage.getItem('adm') === true || localStorage.getItem('spec') === true;
+                setIsAdminOrAuthor(isAdminOrPublisher);
 
                 const response = await getPostById(id);
                 if (response) {
@@ -211,7 +212,7 @@ const NewsPostPage = () => {
                         <span className="badge important-badge">Важно</span>
                     )}
                     <span className="meta-item">
-                        Отдел: {newsItem.department}
+                        {newsItem.department ? `Отдел: ${newsItem.department}` : 'Общая новость'}
                     </span>
                     <span className="meta-item">
                         Автор: {newsItem.author}
