@@ -82,13 +82,15 @@ public class UserService : IUserService
         );
     }
 
-    public async Task<Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string token)>> Login(LoginRequest request, CancellationToken ct)
+    public async
+        Task<Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string token)>>
+        Login(LoginRequest request, CancellationToken ct)
     {
         try
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting login process for username: {request.Username}",
+                $"Начало процесса входа для пользователя: {request.Username}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByUsernameAndPasswordAsync(
@@ -101,37 +103,42 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Login failed for username: {request.Username} - user not found or invalid credentials",
+                    $"Ошибка входа для пользователя: {request.Username} - пользователь не найден или неверные учетные данные",
                     null), ct);
-                return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string token)>.Failure("Invalid username or password");
+                return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string
+                    token)>.Failure("Неверное имя пользователя или пароль");
             }
 
             if (user.IsBlocked)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Login blocked for user {user.Id} (username: {user.Username}) - account is blocked",
+                    $"Вход заблокирован для пользователя {user.Id} (имя: {user.Username}) - учетная запись заблокирована",
                     user.Id), ct);
-                return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string token)>.Failure("Account is blocked");
+                return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string
+                    token)>.Failure("Учетная запись заблокирована");
             }
 
             var token = _jwtService.GenerateToken(user.Id);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"User {user.Id} (username: {user.Username}) logged in successfully",
+                $"Пользователь {user.Id} (имя: {user.Username}) успешно вошел в систему",
                 user.Id), ct);
 
-            return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string token)>
-                .Success((user.Id, user.Username, user.DepartmentId ?? Guid.Empty, user.Department?.IsSpecific ?? false, user.IsAdmin, token));
+            return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string
+                    token)>
+                .Success((user.Id, user.Username, user.DepartmentId ?? Guid.Empty, user.Department?.IsSpecific ?? false,
+                    user.IsAdmin, token));
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error during login for username {request.Username}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при входе для пользователя {request.Username}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string token)>.Failure($"Error while logging in: {e.Message}");
+            return Result<(Guid id, string username, Guid departmentId, bool isSpecDepartment, bool isAdmin, string
+                token)>.Failure($"Ошибка при входе: {e.Message}");
         }
     }
 
@@ -142,7 +149,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting user creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания пользователя. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 null), ct);
 
             var existingUser = await _database.UserRepository.GetByUsernameAsync(request.Username, ct);
@@ -150,9 +157,9 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create user: username {request.Username} already exists",
+                    $"Ошибка создания пользователя: имя {request.Username} уже существует",
                     null), ct);
-                return Result<Guid>.Failure("Username already exists");
+                return Result<Guid>.Failure("Имя пользователя уже существует");
             }
 
             var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
@@ -160,9 +167,9 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create user: department with ID {request.DepartmentId} not found",
+                    $"Ошибка создания пользователя: отдел с ID {request.DepartmentId} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Department not found");
+                return Result<Guid>.Failure("Отдел не найден");
             }
 
             var newUser = UserEntity.Create(
@@ -186,25 +193,25 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"User created successfully with ID: {newUser.Id}",
+                    $"Пользователь успешно создан с ID: {newUser.Id}",
                     newUser.Id), ct);
                 return Result<Guid>.Success(newUser.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                "No changes were made when creating user",
+                "Не было изменений при создании пользователя",
                 null), ct);
-            return Result<Guid>.Failure("Failed to create user");
+            return Result<Guid>.Failure("Ошибка при создании пользователя");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating user: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при создании пользователя: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while creating user: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании пользователя: {e.Message}");
         }
     }
 
@@ -215,7 +222,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting user update process for ID {request.Id}. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса обновления пользователя с ID {request.Id}. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(request.Id, ct);
@@ -223,39 +230,41 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update user: user with ID {request.Id} not found",
+                    $"Ошибка обновления пользователя: пользователь с ID {request.Id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("User not found");
+                return Result<Guid>.Failure("Пользователь не найден");
             }
 
             if (!string.IsNullOrEmpty(request.Email))
             {
-                var userByEmail = await _database.UserRepository.FindAsync(u => u.Email == request.Email && u.Id != request.Id, ct);
+                var userByEmail =
+                    await _database.UserRepository.FindAsync(u => u.Email == request.Email && u.Id != request.Id, ct);
                 if (userByEmail != null)
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"Failed to update user: email {request.Email} already exists",
+                        $"Ошибка обновления пользователя: email {request.Email} уже существует",
                         null), ct);
-                    return Result<Guid>.Failure("Email already exists");
+                    return Result<Guid>.Failure("Email уже существует");
                 }
+
                 user.Email = request.Email;
             }
 
-            if (request.IsAdmin.HasValue) 
+            if (request.IsAdmin.HasValue)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating IsAdmin from {user.IsAdmin} to {request.IsAdmin.Value} for user {request.Id}",
+                    $"Обновление IsAdmin с {user.IsAdmin} на {request.IsAdmin.Value} для пользователя {request.Id}",
                     null), ct);
                 user.IsAdmin = request.IsAdmin.Value;
             }
 
-            if (request.HasPublishedRights.HasValue) 
+            if (request.HasPublishedRights.HasValue)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating HasPublishedRights from {user.HasPublishedRights} to {request.HasPublishedRights.Value} for user {request.Id}",
+                    $"Обновление HasPublishedRights с {user.HasPublishedRights} на {request.HasPublishedRights.Value} для пользователя {request.Id}",
                     null), ct);
                 user.HasPublishedRights = request.HasPublishedRights.Value;
             }
@@ -267,10 +276,11 @@ public class UserService : IUserService
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"Failed to update user: department with ID {request.DepartmentId} not found",
+                        $"Ошибка обновления пользователя: отдел с ID {request.DepartmentId} не найден",
                         null), ct);
-                    return Result<Guid>.Failure("Department not found");
+                    return Result<Guid>.Failure("Отдел не найден");
                 }
+
                 user.DepartmentId = request.DepartmentId.Value;
             }
 
@@ -282,25 +292,25 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"User {request.Id} updated successfully",
+                    $"Пользователь {request.Id} успешно обновлен",
                     request.Id), ct);
                 return Result<Guid>.Success(user.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when updating user {request.Id}",
+                $"Не было изменений при обновлении пользователя {request.Id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to update user");
+            return Result<Guid>.Failure("Ошибка при обновлении пользователя");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while updating user {request.Id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при обновлении пользователя {request.Id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while updating user: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении пользователя: {e.Message}");
         }
     }
 
@@ -311,7 +321,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting user deletion process for ID {id}",
+                $"Начало процесса удаления пользователя с ID {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -319,15 +329,15 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete user: user with ID {id} not found",
+                    $"Ошибка удаления пользователя: пользователь с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("User not found");
+                return Result<Guid>.Failure("Пользователь не найден");
             }
 
-            // Log related entities that will be affected
+            // Логирование связанных сущностей, которые будут затронуты
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Deleting user {id} with {user.Posts.Count} posts, {user.Comments.Count} comments, and {user.Messages.Count} messages",
+                $"Удаление пользователя {id} с {user.Posts.Count} постами, {user.Comments.Count} комментариями и {user.Messages.Count} сообщениями",
                 null), ct);
 
             _database.UserRepository.Delete(user, ct);
@@ -338,25 +348,25 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"User {id} deleted successfully",
+                    $"Пользователь {id} успешно удален",
                     null), ct);
                 return Result<Guid>.Success(user.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when deleting user {id}",
+                $"Не было изменений при удалении пользователя {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to delete user");
+            return Result<Guid>.Failure("Ошибка при удалении пользователя");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при удалении пользователя {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while deleting user: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении пользователя: {e.Message}");
         }
     }
 
@@ -366,7 +376,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                "Starting to retrieve all users (short version)",
+                "Начало получения списка пользователей (краткая версия)",
                 null), ct);
 
             var users = await _database.UserRepository.GetAllAsync(ct);
@@ -374,7 +384,7 @@ public class UserService : IUserService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} users (short version)",
+                $"Получено {dtos.Count} пользователей (краткая версия)",
                 null), ct);
 
             return Result<List<UserShortDTO>>.Success(dtos);
@@ -383,9 +393,9 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving users (short version): {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении пользователей (краткая версия): {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<UserShortDTO>>.Failure($"Error while retrieving users: {e.Message}");
+            return Result<List<UserShortDTO>>.Failure($"Ошибка при получении пользователей: {e.Message}");
         }
     }
 
@@ -395,7 +405,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                "Starting to retrieve all users (detailed version)",
+                "Начало получения списка пользователей (подробная версия)",
                 null), ct);
 
             var users = await _database.UserRepository.GetAllAsync(ct);
@@ -403,7 +413,7 @@ public class UserService : IUserService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} users (detailed version)",
+                $"Получено {dtos.Count} пользователей (подробная версия)",
                 null), ct);
 
             return Result<List<UserDetailedDTO>>.Success(dtos);
@@ -412,9 +422,9 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving users (detailed version): {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении пользователей (подробная версия): {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<UserDetailedDTO>>.Failure($"Error while retrieving users: {e.Message}");
+            return Result<List<UserDetailedDTO>>.Failure($"Ошибка при получении пользователей: {e.Message}");
         }
     }
 
@@ -424,7 +434,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve user (detailed) with ID {id}",
+                $"Начало получения пользователя (подробно) с ID {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -432,16 +442,16 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"User with ID {id} not found",
+                    $"Пользователь с ID {id} не найден",
                     null), ct);
-                return Result<UserDetailedDTO>.Failure("User not found");
+                return Result<UserDetailedDTO>.Failure("Пользователь не найден");
             }
 
             var dto = MapToDetailedDTO(user);
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved user (detailed) with ID {id}",
+                $"Пользователь (подробно) с ID {id} успешно получен",
                 null), ct);
 
             return Result<UserDetailedDTO>.Success(dto);
@@ -450,9 +460,9 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving user (detailed) {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении пользователя (подробно) {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<UserDetailedDTO>.Failure($"Error while retrieving user: {e.Message}");
+            return Result<UserDetailedDTO>.Failure($"Ошибка при получении пользователя: {e.Message}");
         }
     }
 
@@ -462,7 +472,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve user (short) with ID {id}",
+                $"Начало получения пользователя (кратко) с ID {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -470,16 +480,16 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"User with ID {id} not found",
+                    $"Пользователь с ID {id} не найден",
                     null), ct);
-                return Result<UserShortDTO>.Failure("User not found");
+                return Result<UserShortDTO>.Failure("Пользователь не найден");
             }
 
             var dto = MapToShortDTO(user);
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved user (short) with ID {id}",
+                $"Пользователь (кратко) с ID {id} успешно получен",
                 null), ct);
 
             return Result<UserShortDTO>.Success(dto);
@@ -488,9 +498,9 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving user (short) {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении пользователя (кратко) {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<UserShortDTO>.Failure($"Error while retrieving user: {e.Message}");
+            return Result<UserShortDTO>.Failure($"Ошибка при получении пользователя: {e.Message}");
         }
     }
 
@@ -501,7 +511,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to block user with ID {id}",
+                $"Начало блокировки пользователя с ID {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -509,18 +519,18 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to block user: user with ID {id} not found",
+                    $"Ошибка блокировки пользователя: пользователь с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("User not found");
+                return Result<Guid>.Failure("Пользователь не найден");
             }
 
             if (user.IsBlocked)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"User {id} is already blocked",
+                    $"Пользователь {id} уже заблокирован",
                     null), ct);
-                return Result<Guid>.Failure("User is already blocked");
+                return Result<Guid>.Failure("Пользователь уже заблокирован");
             }
 
             user.IsBlocked = true;
@@ -534,28 +544,28 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"User {id} blocked successfully",
+                    $"Пользователь {id} успешно заблокирован",
                     null), ct);
                 return Result<Guid>.Success(user.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when blocking user {id}",
+                $"Не было изменений при блокировке пользователя {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to block user");
+            return Result<Guid>.Failure("Ошибка при блокировке пользователя");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while blocking user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при блокировке пользователя {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while blocking user: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при блокировке пользователя: {e.Message}");
         }
     }
-    
+
     public async Task<Result<Guid>> Fire(Guid id, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -563,7 +573,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to firing user with ID {id}",
+                $"Начало увольнения пользователя с ID {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -571,18 +581,18 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to fire user: user with ID {id} not found",
+                    $"Ошибка увольнения пользователя: пользователь с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("User not found");
+                return Result<Guid>.Failure("Пользователь не найден");
             }
 
             if (user.FiredAt.HasValue)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"User {id} is already fired",
+                    $"Пользователь {id} уже уволен",
                     null), ct);
-                return Result<Guid>.Failure("User is already fired");
+                return Result<Guid>.Failure("Пользователь уже уволен");
             }
 
             user.IsBlocked = true;
@@ -592,32 +602,32 @@ public class UserService : IUserService
             _database.UserRepository.Update(user, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
+
             Console.WriteLine($"{result}");
 
             if (result > 0)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"User {id} fired successfully",
+                    $"Пользователь {id} успешно уволен",
                     null), ct);
                 return Result<Guid>.Success(user.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when firing user {id}",
+                $"Не было изменений при увольнении пользователя {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to fire user");
+            return Result<Guid>.Failure("Ошибка при увольнении пользователя");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while firing user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при увольнении пользователя {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while firing user: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при увольнении пользователя: {e.Message}");
         }
     }
 
@@ -628,16 +638,16 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting password reset process for user {id}",
+                $"Начало сброса пароля для пользователя {id}",
                 null), ct);
 
             if (oldPassword == newPassword)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    "New password must be different from the old one",
+                    "Новый пароль должен отличаться от старого",
                     null), ct);
-                return Result<Guid>.Failure("New password must be different from the old one");
+                return Result<Guid>.Failure("Новый пароль должен отличаться от старого");
             }
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -645,21 +655,21 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to reset password: user with ID {id} not found",
+                    $"Ошибка сброса пароля: пользователь с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("User not found");
+                return Result<Guid>.Failure("Пользователь не найден");
             }
 
             var oldPasswordHashed = _hasher.ComputeHash(oldPassword);
             var newPasswordHashed = _hasher.ComputeHash(newPassword);
-            
+
             if (user.PasswordHash != oldPasswordHashed)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    "Old password is incorrect",
+                    "Старый пароль неверный",
                     null), ct);
-                return Result<Guid>.Failure("Old password is incorrect");
+                return Result<Guid>.Failure("Старый пароль неверный");
             }
 
             user.PasswordHash = newPasswordHashed;
@@ -672,25 +682,25 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Password reset successfully for user {id}",
+                    $"Пароль успешно сброшен для пользователя {id}",
                     null), ct);
                 return Result<Guid>.Success(user.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when resetting password for user {id}",
+                $"Не было изменений при сбросе пароля для пользователя {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to reset password");
+            return Result<Guid>.Failure("Ошибка при сбросе пароля");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while resetting password for user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при сбросе пароля для пользователя {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while resetting password: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при сбросе пароля: {e.Message}");
         }
     }
 
@@ -701,7 +711,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting admin password reset process for user {id}",
+                $"Начало сброса пароля администратором для пользователя {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -709,9 +719,9 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to reset password: user with ID {id} not found",
+                    $"Ошибка сброса пароля: пользователь с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("User not found");
+                return Result<Guid>.Failure("Пользователь не найден");
             }
 
             user.PasswordHash = _hasher.ComputeHash(newPassword);
@@ -724,25 +734,25 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Password reset successfully by admin for user {id}",
+                    $"Пароль успешно сброшен администратором для пользователя {id}",
                     null), ct);
                 return Result<Guid>.Success(user.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when resetting password by admin for user {id}",
+                $"Не было изменений при сбросе пароля администратором для пользователя {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to reset password");
+            return Result<Guid>.Failure("Ошибка при сбросе пароля");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while resetting password by admin for user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при сбросе пароля администратором для пользователя {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while resetting password: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при сбросе пароля: {e.Message}");
         }
     }
 
@@ -752,14 +762,14 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                "Starting to count users",
+                "Начало подсчета пользователей",
                 null), ct);
 
             var usersCount = await _database.UserRepository.CountAsync(ct);
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Counted {usersCount} users",
+                $"Подсчитано {usersCount} пользователей",
                 null), ct);
 
             return Result<int>.Success(usersCount);
@@ -768,9 +778,9 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while counting users: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при подсчете пользователей: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<int>.Failure($"Error while counting users: {e.Message}");
+            return Result<int>.Failure($"Ошибка при подсчете пользователей: {e.Message}");
         }
     }
 
@@ -780,7 +790,7 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve profile for user {id}",
+                $"Начало получения профиля пользователя {id}",
                 null), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(id, ct);
@@ -788,9 +798,9 @@ public class UserService : IUserService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"User with ID {id} not found",
+                    $"Пользователь с ID {id} не найден",
                     null), ct);
-                return Result<UserProfileDTO>.Failure("User not found");
+                return Result<UserProfileDTO>.Failure("Пользователь не найден");
             }
 
             var dto = new UserProfileDTO(
@@ -809,10 +819,10 @@ public class UserService : IUserService
                 CommentsAmount: user.Comments.Count,
                 MessagesAmount: user.Messages.Count
             );
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved profile for user {id}",
+                $"Профиль пользователя {id} успешно получен",
                 null), ct);
 
             return Result<UserProfileDTO>.Success(dto);
@@ -821,9 +831,9 @@ public class UserService : IUserService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting profile for user {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении профиля пользователя {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<UserProfileDTO>.Failure($"Error while getting info: {e.Message}");
+            return Result<UserProfileDTO>.Failure($"Ошибка при получении информации: {e.Message}");
         }
     }
 }

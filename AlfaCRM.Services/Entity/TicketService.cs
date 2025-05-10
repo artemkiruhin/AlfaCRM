@@ -14,7 +14,7 @@ public class TicketService : ITicketService
     {
         _database = database;
     }
-    
+
     public async Task<Result<Guid>> Create(TicketCreateRequest request, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -22,41 +22,39 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting ticket creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания тикета. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.CreatorId), ct);
 
-            // Validate creator exists
+            // Проверка существования создателя
             var creator = await _database.UserRepository.GetByIdAsync(request.CreatorId, ct);
             if (creator == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create ticket: creator with ID {request.CreatorId} not found",
+                    $"Не удалось создать тикет: создатель с ID {request.CreatorId} не найден",
                     request.CreatorId), ct);
-                return Result<Guid>.Failure("Creator not found");
+                return Result<Guid>.Failure("Создатель не найден");
             }
 
-            // Validate department exists if specified
-            
+            // Проверка существования отдела
             var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
             if (department == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create ticket: department with ID {request.DepartmentId} not found",
+                    $"Не удалось создать тикет: отдел с ID {request.DepartmentId} не найден",
                     request.CreatorId), ct);
-                return Result<Guid>.Failure("Department not found");
+                return Result<Guid>.Failure("Отдел не найден");
             }
-            
 
             var ticket = TicketEntity.Create(
-                request.Title, 
-                request.Text, 
-                request.DepartmentId, 
-                TicketStatus.Created, 
-                null, 
-                null, 
-                request.CreatorId, 
+                request.Title,
+                request.Text,
+                request.DepartmentId,
+                TicketStatus.Created,
+                null,
+                null,
+                request.CreatorId,
                 request.Type);
 
             await _database.TicketRepository.CreateAsync(ticket, ct);
@@ -67,25 +65,25 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Ticket created successfully with ID: {ticket.Id}",
+                    $"Тикет успешно создан с ID: {ticket.Id}",
                     request.CreatorId), ct);
                 return Result<Guid>.Success(ticket.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                "No changes were made when creating ticket",
+                "Не было внесено изменений при создании тикета",
                 request.CreatorId), ct);
-            return Result<Guid>.Failure("Failed to create ticket");
+            return Result<Guid>.Failure("Не удалось создать тикет");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating ticket: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при создании тикета: {e.Message}. StackTrace: {e.StackTrace}",
                 request?.CreatorId), ct);
-            return Result<Guid>.Failure($"Error while creating ticket: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании тикета: {e.Message}");
         }
     }
 
@@ -96,7 +94,7 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting ticket update process for ID {request.Id}. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало обновления тикета с ID {request.Id}. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.SenderId), ct);
 
             var ticket = await _database.TicketRepository.GetByIdAsync(request.Id, ct);
@@ -104,9 +102,9 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update ticket: ticket with ID {request.Id} not found",
+                    $"Не удалось обновить тикет: тикет с ID {request.Id} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure($"Ticket not found: {request.Id}");
+                return Result<Guid>.Failure($"Тикет не найден: {request.Id}");
             }
 
             var sender = await _database.UserRepository.GetByIdAsync(request.SenderId, ct);
@@ -114,26 +112,26 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update ticket: sender with ID {request.SenderId} not found",
+                    $"Не удалось обновить тикет: отправитель с ID {request.SenderId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure($"Sender not found: {request.SenderId}");
+                return Result<Guid>.Failure($"Отправитель не найден: {request.SenderId}");
             }
-            
+
             if (sender is { IsAdmin: false, DepartmentId: null })
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update ticket: sender {request.SenderId} does not have admin role",
+                    $"Не удалось обновить тикет: отправитель {request.SenderId} не имеет прав администратора",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Sender does not have an admin role");
+                return Result<Guid>.Failure("Отправитель не имеет прав администратора");
             }
-            
-            // if sender is creator
+
+            // Если отправитель - создатель
             if (ticket.CreatorId == request.SenderId && ticket.Status == TicketStatus.Created)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating ticket {request.Id} as creator",
+                    $"Обновление тикета {request.Id} как создатель",
                     request.SenderId), ct);
 
                 if (!string.IsNullOrEmpty(request.Title)) ticket.Title = request.Title;
@@ -141,12 +139,12 @@ public class TicketService : ITicketService
                 if (request.DepartmentId.HasValue) ticket.DepartmentId = request.DepartmentId.Value;
             }
 
-            // if sender is department expert
+            // Если отправитель - эксперт отдела
             if (sender.DepartmentId.HasValue && ticket.DepartmentId == sender.DepartmentId)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating ticket {request.Id} as department expert",
+                    $"Обновление тикета {request.Id} как эксперт отдела",
                     request.SenderId), ct);
 
                 if (ticket.Status is TicketStatus.Completed or TicketStatus.Rejected)
@@ -159,7 +157,7 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating ticket {request.Id} as admin",
+                    $"Обновление тикета {request.Id} как администратор",
                     request.SenderId), ct);
 
                 if (!string.IsNullOrEmpty(request.Title)) ticket.Title = request.Title;
@@ -177,25 +175,25 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Ticket {request.Id} updated successfully",
+                    $"Тикет {request.Id} успешно обновлен",
                     request.SenderId), ct);
                 return Result<Guid>.Success(ticket.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when updating ticket {request.Id}",
+                $"Не было внесено изменений при обновлении тикета {request.Id}",
                 request.SenderId), ct);
-            return Result<Guid>.Failure("Failed to update ticket");
+            return Result<Guid>.Failure("Не удалось обновить тикет");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while updating ticket {request?.Id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при обновлении тикета {request?.Id}: {e.Message}. StackTrace: {e.StackTrace}",
                 request?.SenderId), ct);
-            return Result<Guid>.Failure($"Error while updating ticket: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении тикета: {e.Message}");
         }
     }
 
@@ -206,7 +204,7 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting ticket deletion process for ID {id} by user {userId}",
+                $"Начало удаления тикета с ID {id} пользователем {userId}",
                 userId), ct);
 
             var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
@@ -214,42 +212,42 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete ticket: ticket with ID {id} not found",
+                    $"Не удалось удалить тикет: тикет с ID {id} не найден",
                     userId), ct);
-                return Result<Guid>.Failure($"Ticket not found: {id}");
+                return Result<Guid>.Failure($"Тикет не найден: {id}");
             }
-        
+
             var user = await _database.UserRepository.GetByIdAsync(userId, ct);
             if (user == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete ticket: user with ID {userId} not found",
+                    $"Не удалось удалить тикет: пользователь с ID {userId} не найден",
                     userId), ct);
-                return Result<Guid>.Failure($"User not found: {userId}");
+                return Result<Guid>.Failure($"Пользователь не найден: {userId}");
             }
-        
+
             if (!user.IsAdmin)
             {
                 if (ticket.CreatorId != userId)
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"User {userId} is not admin or ticket creator",
+                        $"Пользователь {userId} не является администратором или создателем тикета",
                         userId), ct);
-                    return Result<Guid>.Failure("Only admin or ticket creator can delete ticket");
+                    return Result<Guid>.Failure("Только администратор или создатель может удалить тикет");
                 }
-            
+
                 if (ticket.Status != TicketStatus.Created)
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"Ticket {id} is not in 'Created' status (current status: {ticket.Status})",
+                        $"Тикет {id} не в статусе 'Создано' (текущий статус: {ticket.Status})",
                         userId), ct);
-                    return Result<Guid>.Failure("Creator can only delete tickets in 'Created' status");
+                    return Result<Guid>.Failure("Создатель может удалять только тикеты в статусе 'Создано'");
                 }
             }
-        
+
             _database.TicketRepository.Delete(ticket, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -258,39 +256,40 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Ticket {id} deleted successfully by user {userId}",
+                    $"Тикет {id} успешно удален пользователем {userId}",
                     userId), ct);
                 return Result<Guid>.Success(ticket.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when deleting ticket {id}",
+                $"Не было внесено изменений при удалении тикета {id}",
                 userId), ct);
-            return Result<Guid>.Failure("Failed to delete ticket");
+            return Result<Guid>.Failure("Не удалось удалить тикет");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting ticket {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при удалении тикета {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<Guid>.Failure($"Error while deleting ticket: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении тикета: {e.Message}");
         }
     }
 
-    public async Task<Result<List<TicketShortDTO>>> GetAllShort(Guid? departmentId, Guid? senderId, TicketType? type, CancellationToken ct)
+    public async Task<Result<List<TicketShortDTO>>> GetAllShort(Guid? departmentId, Guid? senderId, TicketType? type,
+        CancellationToken ct)
     {
         try
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve all short tickets (Department: {departmentId}, Sender: {senderId}, Type: {type})",
+                $"Начало получения краткой информации о тикетах (Отдел: {departmentId}, Отправитель: {senderId}, Тип: {type})",
                 null), ct);
 
             var tickets = await _database.TicketRepository.GetAllAsync(ct);
-            
+
             if (departmentId.HasValue) tickets = tickets.Where(ticket => ticket.DepartmentId == departmentId);
             if (senderId.HasValue) tickets = tickets.Where(ticket => ticket.CreatorId == senderId);
             if (type.HasValue) tickets = tickets.Where(ticket => ticket.Type == type);
@@ -300,7 +299,7 @@ public class TicketService : ITicketService
                 Title: ticket.Title,
                 Feedback: ticket.Feedback,
                 DepartmentId: ticket.DepartmentId,
-                DepartmentName: ticket.Department?.Name ?? "No department",
+                DepartmentName: ticket.Department?.Name ?? "Без отдела",
                 CreatedAt: ticket.CreatedAt,
                 Status: ticket.Status switch
                 {
@@ -325,130 +324,50 @@ public class TicketService : ITicketService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} short tickets",
+                $"Получено {dtos.Count} кратких описаний тикетов",
                 null), ct);
-            
+
             return Result<List<TicketShortDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving short tickets: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении краткой информации о тикетах: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<TicketShortDTO>>.Failure($"Error while retrieving tickets: {e.Message}");
+            return Result<List<TicketShortDTO>>.Failure($"Ошибка при получении тикетов: {e.Message}");
         }
     }
 
-    public async Task<Result<List<TicketDetailedDTO>>> GetAll(Guid? departmentId, Guid? senderId, TicketType? type, CancellationToken ct)
+    public async Task<Result<List<TicketDetailedDTO>>> GetAll(Guid? departmentId, Guid? senderId, TicketType? type,
+        CancellationToken ct)
     {
         try
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve all detailed tickets (Department: {departmentId}, Sender: {senderId}, Type: {type})",
+                $"Начало получения подробной информации о тикетах (Отдел: {departmentId}, Отправитель: {senderId}, Тип: {type})",
                 null), ct);
 
             var tickets = await _database.TicketRepository.GetAllAsync(ct);
-            
+
             if (departmentId.HasValue) tickets = tickets.Where(ticket => ticket.DepartmentId == departmentId);
             if (senderId.HasValue) tickets = tickets.Where(ticket => ticket.CreatorId == senderId);
             if (type.HasValue) tickets = tickets.Where(ticket => ticket.Type == type);
-            
+
             var dtos = tickets.Select(ticket => new TicketDetailedDTO(
                 Id: ticket.Id,
                 Title: ticket.Title,
                 Text: ticket.Text,
                 Feedback: ticket.Feedback,
-                Department: ticket.DepartmentId != null ? new DepartmentShortDTO(
-                    Id: ticket.DepartmentId,
-                    Name: ticket.Department?.Name ?? string.Empty,
-                    MembersCount: ticket.Department?.Users.Count ?? 0,
-                    IsSpecific: ticket.Department?.IsSpecific ?? false
-                ) : null,
-                CreatedAt: ticket.CreatedAt,
-                Status: ticket.Status switch
-                {
-                    TicketStatus.Created => "Создано",
-                    TicketStatus.InWork => "В работе",
-                    TicketStatus.Completed => "Выполнено",
-                    TicketStatus.Rejected => "Отменено",
-                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Status))
-                },
-                Assignee: ticket.Assignee == null ? null : new UserShortDTO(
-                    Id: ticket.Assignee.Id,
-                    FullName: ticket.Assignee.FullName,
-                    Username: ticket.Assignee.Username,
-                    Email: ticket.Assignee.Email,
-                    DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела",
-                    IsAdmin: ticket.Assignee?.IsAdmin ?? false,
-                    IsBlocked: ticket.Assignee?.IsBlocked ?? false
-                ),
-                Creator: new UserShortDTO(
-                    Id: ticket.Creator.Id,
-                    FullName: ticket.Creator.FullName,
-                    Username: ticket.Creator.Username,
-                    Email: ticket.Creator.Email,
-                    DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела",
-                    IsAdmin: ticket.Creator?.IsAdmin ?? false,
-                    IsBlocked: ticket.Creator?.IsBlocked ?? false
-                ),
-                ClosedAt: ticket.ClosedAt,
-                Type: ticket.Type switch
-                {
-                    TicketType.ProblemCase => "Заявка",
-                    TicketType.Suggestion => "Предложение",
-                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Type))
-                }
-            )).ToList();
-
-            await _database.LogRepository.CreateAsync(LogEntity.Create(
-                LogType.Info,
-                $"Retrieved {dtos.Count} detailed tickets",
-                null), ct);
-            
-            return Result<List<TicketDetailedDTO>>.Success(dtos);
-        }
-        catch (Exception e)
-        {
-            await _database.LogRepository.CreateAsync(LogEntity.Create(
-                LogType.Error,
-                $"Error while retrieving detailed tickets: {e.Message}. StackTrace: {e.StackTrace}",
-                null), ct);
-            return Result<List<TicketDetailedDTO>>.Failure($"Error while retrieving tickets: {e.Message}");
-        }
-    }
-
-    public async Task<Result<TicketDetailedDTO>> GetById(Guid id, CancellationToken ct)
-    {
-        try
-        {
-            await _database.LogRepository.CreateAsync(LogEntity.Create(
-                LogType.Info,
-                $"Starting to retrieve ticket with ID {id}",
-                null), ct);
-
-            var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
-            if (ticket == null)
-            {
-                await _database.LogRepository.CreateAsync(LogEntity.Create(
-                    LogType.Warning,
-                    $"Ticket with ID {id} not found",
-                    null), ct);
-                return Result<TicketDetailedDTO>.Failure($"Ticket not found: {id}");
-            }
-
-            var dto = new TicketDetailedDTO(
-                Id: ticket.Id,
-                Title: ticket.Title,
-                Text: ticket.Text,
-                Feedback: ticket.Feedback,
-                Department: ticket.DepartmentId != null ? new DepartmentShortDTO(
-                    Id: ticket.DepartmentId,
-                    Name: ticket.Department?.Name ?? string.Empty,
-                    MembersCount: ticket.Department?.Users.Count ?? 0,
-                    IsSpecific: ticket.Department?.IsSpecific ?? false
-                ) : null,
+                Department: ticket.DepartmentId != null
+                    ? new DepartmentShortDTO(
+                        Id: ticket.DepartmentId,
+                        Name: ticket.Department?.Name ?? string.Empty,
+                        MembersCount: ticket.Department?.Users.Count ?? 0,
+                        IsSpecific: ticket.Department?.IsSpecific ?? false
+                    )
+                    : null,
                 CreatedAt: ticket.CreatedAt,
                 Status: ticket.Status switch
                 {
@@ -465,7 +384,7 @@ public class TicketService : ITicketService
                         FullName: ticket.Assignee.FullName,
                         Username: ticket.Assignee.Username,
                         Email: ticket.Assignee.Email,
-                        DepartmentName: ticket.Assignee?.Department?.Name ?? "Нет отдела",
+                        DepartmentName: ticket.Assignee?.Department?.Name ?? "Без отдела",
                         IsAdmin: ticket.Assignee?.IsAdmin ?? false,
                         IsBlocked: ticket.Assignee?.IsBlocked ?? false
                     ),
@@ -474,7 +393,94 @@ public class TicketService : ITicketService
                     FullName: ticket.Creator.FullName,
                     Username: ticket.Creator.Username,
                     Email: ticket.Creator.Email,
-                    DepartmentName: ticket.Creator?.Department?.Name ?? "Нет отдела",
+                    DepartmentName: ticket.Creator?.Department?.Name ?? "Без отдела",
+                    IsAdmin: ticket.Creator?.IsAdmin ?? false,
+                    IsBlocked: ticket.Creator?.IsBlocked ?? false
+                ),
+                ClosedAt: ticket.ClosedAt,
+                Type: ticket.Type switch
+                {
+                    TicketType.ProblemCase => "Заявка",
+                    TicketType.Suggestion => "Предложение",
+                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Type))
+                }
+            )).ToList();
+
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Info,
+                $"Получено {dtos.Count} подробных описаний тикетов",
+                null), ct);
+
+            return Result<List<TicketDetailedDTO>>.Success(dtos);
+        }
+        catch (Exception e)
+        {
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Error,
+                $"Ошибка при получении подробной информации о тикетах: {e.Message}. StackTrace: {e.StackTrace}",
+                null), ct);
+            return Result<List<TicketDetailedDTO>>.Failure($"Ошибка при получении тикетов: {e.Message}");
+        }
+    }
+
+    public async Task<Result<TicketDetailedDTO>> GetById(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Info,
+                $"Начало получения тикета с ID {id}",
+                null), ct);
+
+            var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
+            if (ticket == null)
+            {
+                await _database.LogRepository.CreateAsync(LogEntity.Create(
+                    LogType.Warning,
+                    $"Тикет с ID {id} не найден",
+                    null), ct);
+                return Result<TicketDetailedDTO>.Failure($"Тикет не найден: {id}");
+            }
+
+            var dto = new TicketDetailedDTO(
+                Id: ticket.Id,
+                Title: ticket.Title,
+                Text: ticket.Text,
+                Feedback: ticket.Feedback,
+                Department: ticket.DepartmentId != null
+                    ? new DepartmentShortDTO(
+                        Id: ticket.DepartmentId,
+                        Name: ticket.Department?.Name ?? string.Empty,
+                        MembersCount: ticket.Department?.Users.Count ?? 0,
+                        IsSpecific: ticket.Department?.IsSpecific ?? false
+                    )
+                    : null,
+                CreatedAt: ticket.CreatedAt,
+                Status: ticket.Status switch
+                {
+                    TicketStatus.Created => "Создано",
+                    TicketStatus.InWork => "В работе",
+                    TicketStatus.Completed => "Выполнено",
+                    TicketStatus.Rejected => "Отменено",
+                    _ => throw new ArgumentOutOfRangeException(nameof(ticket.Status))
+                },
+                Assignee: ticket.Assignee == null
+                    ? null
+                    : new UserShortDTO(
+                        Id: ticket.Assignee.Id,
+                        FullName: ticket.Assignee.FullName,
+                        Username: ticket.Assignee.Username,
+                        Email: ticket.Assignee.Email,
+                        DepartmentName: ticket.Assignee?.Department?.Name ?? "Без отдела",
+                        IsAdmin: ticket.Assignee?.IsAdmin ?? false,
+                        IsBlocked: ticket.Assignee?.IsBlocked ?? false
+                    ),
+                Creator: new UserShortDTO(
+                    Id: ticket.Creator.Id,
+                    FullName: ticket.Creator.FullName,
+                    Username: ticket.Creator.Username,
+                    Email: ticket.Creator.Email,
+                    DepartmentName: ticket.Creator?.Department?.Name ?? "Без отдела",
                     IsAdmin: ticket.Creator?.IsAdmin ?? false,
                     IsBlocked: ticket.Creator?.IsBlocked ?? false
                 ),
@@ -489,7 +495,7 @@ public class TicketService : ITicketService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved ticket with ID {id}",
+                $"Тикет с ID {id} успешно получен",
                 null), ct);
 
             return Result<TicketDetailedDTO>.Success(dto);
@@ -498,9 +504,9 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving ticket {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении тикета {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<TicketDetailedDTO>.Failure($"Error while retrieving ticket: {e.Message}");
+            return Result<TicketDetailedDTO>.Failure($"Ошибка при получении тикета: {e.Message}");
         }
     }
 
@@ -510,7 +516,7 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve short ticket with ID {id}",
+                $"Начало получения краткой информации о тикете с ID {id}",
                 null), ct);
 
             var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
@@ -518,9 +524,9 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Ticket with ID {id} not found",
+                    $"Тикет с ID {id} не найден",
                     null), ct);
-                return Result<TicketShortDTO>.Failure($"Ticket not found: {id}");
+                return Result<TicketShortDTO>.Failure($"Тикет не найден: {id}");
             }
 
             var dto = new TicketShortDTO(
@@ -528,7 +534,7 @@ public class TicketService : ITicketService
                 Title: ticket.Title,
                 Feedback: ticket.Feedback,
                 DepartmentId: ticket.DepartmentId,
-                DepartmentName: ticket.Department?.Name ?? "No department",
+                DepartmentName: ticket.Department?.Name ?? "Без отдела",
                 CreatedAt: ticket.CreatedAt,
                 Status: ticket.Status switch
                 {
@@ -553,7 +559,7 @@ public class TicketService : ITicketService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved short ticket with ID {id}",
+                $"Краткая информация о тикете с ID {id} успешно получена",
                 null), ct);
 
             return Result<TicketShortDTO>.Success(dto);
@@ -562,9 +568,9 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving short ticket {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении краткой информации о тикете {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<TicketShortDTO>.Failure($"Error while retrieving ticket: {e.Message}");
+            return Result<TicketShortDTO>.Failure($"Ошибка при получении тикета: {e.Message}");
         }
     }
 
@@ -575,7 +581,7 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to take ticket {id} to work by assignee {assigneeId}",
+                $"Начало взятия тикета {id} в работу исполнителем {assigneeId}",
                 assigneeId), ct);
 
             var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
@@ -583,42 +589,44 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to take ticket to work: ticket with ID {id} not found",
+                    $"Не удалось взять тикет в работу: тикет с ID {id} не найден",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Ticket not found: {id}");
+                return Result<Guid>.Failure($"Тикет не найден: {id}");
             }
-            
+
             var assignee = await _database.UserRepository.GetByIdAsync(assigneeId, ct);
             if (assignee == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to take ticket to work: assignee with ID {assigneeId} not found",
+                    $"Не удалось взять тикет в работу: исполнитель с ID {assigneeId} не найден",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Assignee not found: {assigneeId}");
+                return Result<Guid>.Failure($"Исполнитель не найден: {assigneeId}");
             }
-            
-            if (!assignee.IsAdmin && ((assignee.Department != null && assignee.DepartmentId != ticket.DepartmentId) || assignee.Department == null))
+
+            if (!assignee.IsAdmin && ((assignee.Department != null && assignee.DepartmentId != ticket.DepartmentId) ||
+                                      assignee.Department == null))
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Assignee {assigneeId} is not admin or from different department",
+                    $"Исполнитель {assigneeId} не является администратором или из другого отдела",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Assignee is not an admin: {assignee.Username} and its department: {assignee.Department?.Name}");
+                return Result<Guid>.Failure(
+                    $"Исполнитель не является администратором: {assignee.Username} и его отдел: {assignee.Department?.Name}");
             }
-            
+
             if (ticket.Status == TicketStatus.InWork)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Ticket {id} is already in work",
+                    $"Тикет {id} уже в работе",
                     assigneeId), ct);
-                return Result<Guid>.Failure("Ticket is already in work");
+                return Result<Guid>.Failure("Тикет уже в работе");
             }
 
             ticket.Status = TicketStatus.InWork;
             ticket.AssigneeId = assigneeId;
-            
+
             _database.TicketRepository.Update(ticket, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -627,25 +635,25 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Ticket {id} taken to work successfully by assignee {assigneeId}",
+                    $"Тикет {id} успешно взят в работу исполнителем {assigneeId}",
                     assigneeId), ct);
                 return Result<Guid>.Success(ticket.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when taking ticket {id} to work",
+                $"Не было внесено изменений при взятии тикета {id} в работу",
                 assigneeId), ct);
-            return Result<Guid>.Failure("Failed to update ticket");
+            return Result<Guid>.Failure("Не удалось обновить тикет");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while taking ticket {id} to work: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при взятии тикета {id} в работу: {e.Message}. StackTrace: {e.StackTrace}",
                 assigneeId), ct);
-            return Result<Guid>.Failure($"Error while updating ticket: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении тикета: {e.Message}");
         }
     }
 
@@ -656,7 +664,7 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to complete ticket {id} by assignee {assigneeId}",
+                $"Начало завершения тикета {id} исполнителем {assigneeId}",
                 assigneeId), ct);
 
             var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
@@ -664,44 +672,46 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to complete ticket: ticket with ID {id} not found",
+                    $"Не удалось завершить тикет: тикет с ID {id} не найден",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Ticket not found: {id}");
+                return Result<Guid>.Failure($"Тикет не найден: {id}");
             }
-            
+
             var assignee = await _database.UserRepository.GetByIdAsync(assigneeId, ct);
             if (assignee == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to complete ticket: assignee with ID {assigneeId} not found",
+                    $"Не удалось завершить тикет: исполнитель с ID {assigneeId} не найден",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Assignee not found: {assigneeId}");
+                return Result<Guid>.Failure($"Исполнитель не найден: {assigneeId}");
             }
-            
-            if (!assignee.IsAdmin && ((assignee.Department != null && assignee.DepartmentId != ticket.DepartmentId) || assignee.Department == null))
+
+            if (!assignee.IsAdmin && ((assignee.Department != null && assignee.DepartmentId != ticket.DepartmentId) ||
+                                      assignee.Department == null))
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Assignee {assigneeId} is not admin or from different department",
+                    $"Исполнитель {assigneeId} не является администратором или из другого отдела",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Assignee is not an admin: {assignee.Username} and its department: {assignee.Department?.Name}");
+                return Result<Guid>.Failure(
+                    $"Исполнитель не является администратором: {assignee.Username} и его отдел: {assignee.Department?.Name}");
             }
-            
+
             if (ticket.Status == TicketStatus.Completed)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Ticket {id} is already completed",
+                    $"Тикет {id} уже завершен",
                     assigneeId), ct);
-                return Result<Guid>.Failure("Ticket is already completed");
+                return Result<Guid>.Failure("Тикет уже завершен");
             }
 
             ticket.Status = TicketStatus.Completed;
             ticket.ClosedAt = DateTime.UtcNow;
             ticket.Feedback = feedback;
             ticket.AssigneeId ??= assigneeId;
-            
+
             _database.TicketRepository.Update(ticket, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -710,25 +720,25 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Ticket {id} completed successfully by assignee {assigneeId}",
+                    $"Тикет {id} успешно завершен исполнителем {assigneeId}",
                     assigneeId), ct);
                 return Result<Guid>.Success(ticket.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when completing ticket {id}",
+                $"Не было внесено изменений при завершении тикета {id}",
                 assigneeId), ct);
-            return Result<Guid>.Failure("Failed to update ticket");
+            return Result<Guid>.Failure("Не удалось обновить тикет");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while completing ticket {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при завершении тикета {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 assigneeId), ct);
-            return Result<Guid>.Failure($"Error while updating ticket: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении тикета: {e.Message}");
         }
     }
 
@@ -739,7 +749,7 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to reject ticket {id} by assignee {assigneeId}",
+                $"Начало отклонения тикета {id} исполнителем {assigneeId}",
                 assigneeId), ct);
 
             var ticket = await _database.TicketRepository.GetByIdAsync(id, ct);
@@ -747,44 +757,46 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to reject ticket: ticket with ID {id} not found",
+                    $"Не удалось отклонить тикет: тикет с ID {id} не найден",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Ticket not found: {id}");
+                return Result<Guid>.Failure($"Тикет не найден: {id}");
             }
-            
+
             var assignee = await _database.UserRepository.GetByIdAsync(assigneeId, ct);
             if (assignee == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to reject ticket: assignee with ID {assigneeId} not found",
+                    $"Не удалось отклонить тикет: исполнитель с ID {assigneeId} не найден",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Assignee not found: {assigneeId}");
+                return Result<Guid>.Failure($"Исполнитель не найден: {assigneeId}");
             }
-            
-            if (!assignee.IsAdmin && ((assignee.Department != null && assignee.DepartmentId != ticket.DepartmentId) || assignee.Department == null))
+
+            if (!assignee.IsAdmin && ((assignee.Department != null && assignee.DepartmentId != ticket.DepartmentId) ||
+                                      assignee.Department == null))
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Assignee {assigneeId} is not admin or from different department",
+                    $"Исполнитель {assigneeId} не является администратором или из другого отдела",
                     assigneeId), ct);
-                return Result<Guid>.Failure($"Assignee is not an admin: {assignee.Username} and its department: {assignee.Department?.Name}");
+                return Result<Guid>.Failure(
+                    $"Исполнитель не является администратором: {assignee.Username} и его отдел: {assignee.Department?.Name}");
             }
-            
+
             if (ticket.Status == TicketStatus.Rejected)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Ticket {id} is already rejected",
+                    $"Тикет {id} уже отклонен",
                     assigneeId), ct);
-                return Result<Guid>.Failure("Ticket is already rejected");
+                return Result<Guid>.Failure("Тикет уже отклонен");
             }
 
             ticket.Status = TicketStatus.Rejected;
             ticket.ClosedAt = DateTime.UtcNow;
             ticket.Feedback = feedback;
             ticket.AssigneeId ??= assigneeId;
-            
+
             _database.TicketRepository.Update(ticket, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -793,25 +805,25 @@ public class TicketService : ITicketService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Ticket {id} rejected successfully by assignee {assigneeId}",
+                    $"Тикет {id} успешно отклонен исполнителем {assigneeId}",
                     assigneeId), ct);
                 return Result<Guid>.Success(ticket.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when rejecting ticket {id}",
+                $"Не было внесено изменений при отклонении тикета {id}",
                 assigneeId), ct);
-            return Result<Guid>.Failure("Failed to update ticket");
+            return Result<Guid>.Failure("Не удалось обновить тикет");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while rejecting ticket {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при отклонении тикета {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 assigneeId), ct);
-            return Result<Guid>.Failure($"Error while updating ticket: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении тикета: {e.Message}");
         }
     }
 
@@ -821,22 +833,22 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to count tickets of type {type}",
+                $"Начало подсчета тикетов типа {type}",
                 null), ct);
 
             var allTicketsCount = await _database.TicketRepository.CountAsync(
-                ticket => ticket.Type == type && 
-                         (ticket.Status == TicketStatus.Created || ticket.Status == TicketStatus.InWork), 
+                ticket => ticket.Type == type &&
+                          (ticket.Status == TicketStatus.Created || ticket.Status == TicketStatus.InWork),
                 ct);
-            
+
             var solvedTicketsCount = await _database.TicketRepository.CountAsync(
-                ticket => ticket.Type == type && 
-                         ticket.Status == TicketStatus.Completed,
+                ticket => ticket.Type == type &&
+                          ticket.Status == TicketStatus.Completed,
                 ct);
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Counted tickets: {allTicketsCount} active, {solvedTicketsCount} solved",
+                $"Подсчитано тикетов: {allTicketsCount} активных, {solvedTicketsCount} решенных",
                 null), ct);
 
             return Result<(int, int)>.Success((allTicketsCount, solvedTicketsCount));
@@ -845,9 +857,9 @@ public class TicketService : ITicketService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while counting tickets: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при подсчете тикетов: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<(int, int)>.Failure($"Error while counting tickets: {e.Message}");
+            return Result<(int, int)>.Failure($"Ошибка при подсчете тикетов: {e.Message}");
         }
     }
 }

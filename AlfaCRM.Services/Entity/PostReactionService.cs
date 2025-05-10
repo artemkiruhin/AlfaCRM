@@ -14,7 +14,7 @@ public class PostReactionService : IPostReactionService
     {
         _database = database;
     }
-    
+
     public async Task<Result<Guid>> Create(PostReactionCreateRequest request, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -22,53 +22,54 @@ public class PostReactionService : IPostReactionService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting post reaction creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания реакции на пост. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.SenderId), ct);
 
-            // Validate post exists
+            // Проверка существования поста
             var post = await _database.PostRepository.GetByIdAsync(request.PostId, ct);
             if (post == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create reaction: post with ID {request.PostId} not found",
+                    $"Не удалось создать реакцию: пост с ID {request.PostId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Post not found");
+                return Result<Guid>.Failure("Пост не найден");
             }
 
-            // Validate sender exists
+            // Проверка существования отправителя
             var sender = await _database.UserRepository.GetByIdAsync(request.SenderId, ct);
             if (sender == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create reaction: sender with ID {request.SenderId} not found",
+                    $"Не удалось создать реакцию: отправитель с ID {request.SenderId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Sender not found");
+                return Result<Guid>.Failure("Отправитель не найден");
             }
 
-            // Remove existing reactions from this user for this post
+            // Удаление существующих реакций этого пользователя для данного поста
             var existingReactions = await _database.PostReactionRepository
-                .FindRangeAsync(reaction => 
-                    reaction.PostId == request.PostId && 
-                    reaction.SenderId == request.SenderId, 
-                ct);
+                .FindRangeAsync(reaction =>
+                        reaction.PostId == request.PostId &&
+                        reaction.SenderId == request.SenderId,
+                    ct);
 
             if (existingReactions.Any())
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Removing {existingReactions.Count()} existing reactions for post {request.PostId} from user {request.SenderId}",
+                    $"Удаление {existingReactions.Count()} существующих реакций для поста {request.PostId} от пользователя {request.SenderId}",
                     request.SenderId), ct);
 
                 foreach (var reaction in existingReactions)
                 {
                     _database.PostReactionRepository.Delete(reaction, ct);
                 }
+
                 await _database.SaveChangesAsync(ct);
             }
 
-            // Create new reaction
+            // Создание новой реакции
             var newReaction = PostReactionEntity.Create(
                 postId: request.PostId,
                 senderId: request.SenderId,
@@ -76,7 +77,7 @@ public class PostReactionService : IPostReactionService
             );
 
             await _database.PostReactionRepository.CreateAsync(newReaction, ct);
-            
+
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
 
@@ -84,25 +85,25 @@ public class PostReactionService : IPostReactionService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Reaction created successfully for post {request.PostId} by user {request.SenderId}. Type: {request.Type}",
+                    $"Реакция успешно создана для поста {request.PostId} пользователем {request.SenderId}. Тип: {request.Type}",
                     request.SenderId), ct);
                 return Result<Guid>.Success(request.PostId);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                "No changes were made when creating reaction",
+                "Не было внесено изменений при создании реакции",
                 request.SenderId), ct);
-            return Result<Guid>.Failure("Failed to create reaction");
+            return Result<Guid>.Failure("Не удалось создать реакцию");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating reaction: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при создании реакции: {ex.Message}. StackTrace: {ex.StackTrace}",
                 request?.SenderId), ct);
-            return Result<Guid>.Failure($"Error while creating reaction: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании реакции: {ex.Message}");
         }
     }
 
@@ -113,7 +114,7 @@ public class PostReactionService : IPostReactionService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting reaction deletion process for ID {id}",
+                $"Начало процесса удаления реакции с ID {id}",
                 null), ct);
 
             var dbReaction = await _database.PostReactionRepository.GetByIdAsync(id, ct);
@@ -121,9 +122,9 @@ public class PostReactionService : IPostReactionService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete reaction: reaction with ID {id} not found",
+                    $"Не удалось удалить реакцию: реакция с ID {id} не найдена",
                     null), ct);
-                return Result<Guid>.Failure("Reaction not found");
+                return Result<Guid>.Failure("Реакция не найдена");
             }
 
             _database.PostReactionRepository.Delete(dbReaction, ct);
@@ -134,28 +135,28 @@ public class PostReactionService : IPostReactionService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Reaction {id} deleted successfully from post {dbReaction.PostId}",
+                    $"Реакция {id} успешно удалена с поста {dbReaction.PostId}",
                     null), ct);
                 return Result<Guid>.Success(dbReaction.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when deleting reaction {id}",
+                $"Не было внесено изменений при удалении реакции {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to delete reaction");
+            return Result<Guid>.Failure("Не удалось удалить реакцию");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting reaction {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при удалении реакции {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while deleting reaction: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении реакции: {ex.Message}");
         }
     }
-    
+
     public async Task<Result<bool>> DeleteAll(Guid postId, Guid userId, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -163,7 +164,7 @@ public class PostReactionService : IPostReactionService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to delete all reactions for post {postId} from user {userId}",
+                $"Начало удаления всех реакций для поста {postId} от пользователя {userId}",
                 userId), ct);
 
             var post = await _database.PostRepository.GetByIdAsync(postId, ct);
@@ -171,9 +172,9 @@ public class PostReactionService : IPostReactionService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete reactions: post with ID {postId} not found",
+                    $"Не удалось удалить реакции: пост с ID {postId} не найден",
                     userId), ct);
-                return Result<bool>.Failure("Post not found");
+                return Result<bool>.Failure("Пост не найден");
             }
 
             var userReactions = post.Reactions
@@ -184,14 +185,14 @@ public class PostReactionService : IPostReactionService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"No reactions found for post {postId} from user {userId} to delete",
+                    $"Не найдено реакций для поста {postId} от пользователя {userId} для удаления",
                     userId), ct);
-                return Result<bool>.Failure("No reactions found to delete");
+                return Result<bool>.Failure("Не найдено реакций для удаления");
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Deleting {userReactions.Count} reactions for post {postId} from user {userId}",
+                $"Удаление {userReactions.Count} реакций для поста {postId} от пользователя {userId}",
                 userId), ct);
 
             foreach (var reaction in userReactions)
@@ -206,25 +207,25 @@ public class PostReactionService : IPostReactionService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Successfully deleted {userReactions.Count} reactions for post {postId} from user {userId}",
+                    $"Успешно удалено {userReactions.Count} реакций для поста {postId} от пользователя {userId}",
                     userId), ct);
                 return Result<bool>.Success(true);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when deleting reactions for post {postId} from user {userId}",
+                $"Не было внесено изменений при удалении реакций для поста {postId} от пользователя {userId}",
                 userId), ct);
-            return Result<bool>.Failure("Failed to delete reactions");
+            return Result<bool>.Failure("Не удалось удалить реакции");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting reactions for post {postId} from user {userId}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при удалении реакций для поста {postId} от пользователя {userId}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 userId), ct);
-            return Result<bool>.Failure($"Error while deleting reactions: {ex.Message}");
+            return Result<bool>.Failure($"Ошибка при удалении реакций: {ex.Message}");
         }
     }
 }

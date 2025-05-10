@@ -24,42 +24,43 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"User with id {id} not found during validation",
+                    $"Пользователь с id {id} не найден при проверке",
                     null), ct);
                 return false;
             }
         }
+
         return true;
     }
-    
+
     public async Task<Result<Guid>> Create(ChatCreateRequest request, CancellationToken ct)
-    { 
+    {
         try
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting chat creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания чата. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.Creator), ct);
 
             if (request.IsPersonal && request.MembersIds.Count != 1)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    "Ошибка создания чата: попытка создания беседы с != 1 собеседником",
+                    "Ошибка создания чата: попытка создания личного чата с != 1 собеседником",
                     request.Creator), ct);
-                return Result<Guid>.Failure("Personal chat must have 1 member!");
+                return Result<Guid>.Failure("Личный чат должен иметь 1 участника!");
             }
 
             var membersIdsIncludeCreator = new List<Guid>(request.MembersIds) { request.Creator };
-        
+
             var usersExist = await AllUsersExist(membersIdsIncludeCreator, ct);
             if (!usersExist)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create chat: one or more users don't exist. Members: {string.Join(",", membersIdsIncludeCreator)}",
+                    $"Не удалось создать чат: один или несколько пользователей не существуют. Участники: {string.Join(",", membersIdsIncludeCreator)}",
                     request.Creator), ct);
-                return Result<Guid>.Failure("At least one user does not exist!");
+                return Result<Guid>.Failure("Как минимум один пользователь не существует!");
             }
 
             var name = "";
@@ -70,39 +71,39 @@ public class ChatService : IChatService
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Error,
-                        $"Failed to create personal chat: creator {request.Creator} not found",
+                        $"Не удалось создать личный чат: создатель {request.Creator} не найден",
                         null), ct);
-                    return Result<Guid>.Failure("Cannot create a personal chat!");
+                    return Result<Guid>.Failure("Не удалось создать личный чат!");
                 }
-                
+
                 var member = await _database.UserRepository.GetByIdAsync(request.MembersIds[0], ct);
                 if (member == null)
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Error,
-                        $"Failed to create personal chat: member {request.MembersIds[0]} not found",
+                        $"Не удалось создать личный чат: участник {request.MembersIds[0]} не найден",
                         request.Creator), ct);
-                    return Result<Guid>.Failure($"User with id {request.MembersIds[0]} not found");
+                    return Result<Guid>.Failure($"Пользователь с id {request.MembersIds[0]} не найден");
                 }
 
-                name = $"P: {sender.Username} - {member.Username}";
+                name = $"ЛС: {sender.Username} - {member.Username}";
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Personal chat name generated: {name}",
+                    $"Сгенерировано имя личного чата: {name}",
                     request.Creator), ct);
             }
             else
             {
                 name = request.Name;
             }
-            
+
             var newChat = ChatEntity.Create(name, request.Creator);
             await _database.ChatRepository.CreateAsync(newChat, ct);
             await _database.SaveChangesAsync(ct);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Chat entity created with ID: {newChat.Id}",
+                $"Создана сущность чата с ID: {newChat.Id}",
                 request.Creator), ct);
 
             foreach (var memberId in membersIdsIncludeCreator)
@@ -112,34 +113,34 @@ public class ChatService : IChatService
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Error,
-                        $"Failed to add member {memberId} to chat {newChat.Id}",
+                        $"Не удалось добавить участника {memberId} в чат {newChat.Id}",
                         request.Creator), ct);
-                    return Result<Guid>.Failure($"User with id {memberId} not found");
+                    return Result<Guid>.Failure($"Пользователь с id {memberId} не найден");
                 }
 
                 newChat.Members.Add(member);
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"User {memberId} added to chat {newChat.Id}",
+                    $"Пользователь {memberId} добавлен в чат {newChat.Id}",
                     request.Creator), ct);
             }
 
             await _database.SaveChangesAsync(ct);
-        
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Chat successfully created with ID: {newChat.Id}",
+                $"Чат успешно создан с ID: {newChat.Id}",
                 request.Creator), ct);
-            
+
             return Result<Guid>.Success(newChat.Id);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating chat: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при создании чата: {e.Message}. StackTrace: {e.StackTrace}",
                 request?.Creator), ct);
-            return Result<Guid>.Failure($"Error while creating chat: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании чата: {e.Message}");
         }
     }
 
@@ -150,38 +151,38 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting chat update process for chat ID: {request.Id}",
+                $"Начало процесса обновления чата с ID: {request.Id}",
                 null), ct);
 
             if (string.IsNullOrEmpty(request.Name))
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update chat {request.Id}: name is empty",
+                    $"Не удалось обновить чат {request.Id}: имя пустое",
                     null), ct);
-                return Result<Guid>.Failure("Name is required!");
+                return Result<Guid>.Failure("Имя обязательно!");
             }
-            
+
             var chatExist = await _database.ChatRepository.GetByIdAsync(request.Id, ct);
             if (chatExist == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update chat: chat with ID {request.Id} not found",
+                    $"Не удалось обновить чат: чат с ID {request.Id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Chat doesn't exist!");
+                return Result<Guid>.Failure("Чат не существует!");
             }
-            
+
             chatExist.Name = request.Name;
             _database.ChatRepository.Update(chatExist, ct);
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Chat {request.Id} successfully updated",
+                $"Чат {request.Id} успешно обновлен",
                 null), ct);
-            
+
             return Result<Guid>.Success(chatExist.Id);
         }
         catch (Exception e)
@@ -189,9 +190,9 @@ public class ChatService : IChatService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while updating chat {request?.Id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при обновлении чата {request?.Id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while updating chat: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении чата: {e.Message}");
         }
     }
 
@@ -202,7 +203,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting chat deletion process for chat ID: {id}",
+                $"Начало процесса удаления чата с ID: {id}",
                 null), ct);
 
             var dbChat = await _database.ChatRepository.GetByIdAsync(id, ct);
@@ -210,11 +211,11 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete chat: chat with ID {id} not found",
+                    $"Не удалось удалить чат: чат с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Chat not found");
+                return Result<Guid>.Failure("Чат не найден");
             }
-            
+
             _database.ChatRepository.Delete(dbChat, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -223,25 +224,25 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Chat {id} successfully deleted",
+                    $"Чат {id} успешно удален",
                     null), ct);
                 return Result<Guid>.Success(dbChat.Id);
             }
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"Failed to delete chat {id}: no changes saved",
+                $"Не удалось удалить чат {id}: изменения не сохранены",
                 null), ct);
-            return Result<Guid>.Failure("Failed to delete chat");
+            return Result<Guid>.Failure("Не удалось удалить чат");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting chat {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при удалении чата {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while deleting chat: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении чата: {ex.Message}");
         }
     }
 
@@ -252,7 +253,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting process to add members to chat {chatId}. Members: {string.Join(",", memberIds)}",
+                $"Начало процесса добавления участников в чат {chatId}. Участники: {string.Join(",", memberIds)}",
                 null), ct);
 
             var chat = await _database.ChatRepository.GetByIdAsync(chatId, ct);
@@ -260,9 +261,9 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to add members: chat with ID {chatId} not found",
+                    $"Не удалось добавить участников: чат с ID {chatId} не найден",
                     null), ct);
-                return Result<List<Guid>>.Failure("Chat not found");
+                return Result<List<Guid>>.Failure("Чат не найден");
             }
 
             var membersExist = await AllUsersExist(memberIds, ct);
@@ -270,22 +271,22 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to add members to chat {chatId}: one or more users don't exist",
+                    $"Не удалось добавить участников в чат {chatId}: один или несколько пользователей не существуют",
                     null), ct);
-                return Result<List<Guid>>.Failure("At least one user is not exist!");
+                return Result<List<Guid>>.Failure("Как минимум один пользователь не существует!");
             }
-            
-            foreach (var member in memberIds) 
+
+            foreach (var member in memberIds)
                 await PartAddMember(chat, member, ct);
-            
+
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully added members to chat {chatId}",
+                $"Участники успешно добавлены в чат {chatId}",
                 null), ct);
-            
+
             return Result<List<Guid>>.Success(memberIds);
         }
         catch (Exception e)
@@ -293,9 +294,9 @@ public class ChatService : IChatService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while adding members to chat {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при добавлении участников в чат {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<Guid>>.Failure($"Error while adding members: {e.Message}");
+            return Result<List<Guid>>.Failure($"Ошибка при добавлении участников: {e.Message}");
         }
     }
 
@@ -306,28 +307,28 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"Failed to add member {memberId} to chat {chat.Id}: user not found",
+                $"Не удалось добавить участника {memberId} в чат {chat.Id}: пользователь не найден",
                 null), ct);
-            return Result<Guid>.Failure("User not found!");
+            return Result<Guid>.Failure("Пользователь не найден!");
         }
 
         if (chat.Members.Any(m => m.Id == memberId))
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"User {memberId} is already a member of chat {chat.Id}",
+                $"Пользователь {memberId} уже является участником чата {chat.Id}",
                 null), ct);
-            return Result<Guid>.Failure("User is already a member of this chat");
+            return Result<Guid>.Failure("Пользователь уже является участником этого чата");
         }
 
         chat.Members.Add(member);
         _database.ChatRepository.Update(chat, ct);
-        
+
         await _database.LogRepository.CreateAsync(LogEntity.Create(
             LogType.Info,
-            $"User {memberId} successfully added to chat {chat.Id}",
+            $"Пользователь {memberId} успешно добавлен в чат {chat.Id}",
             null), ct);
-            
+
         return Result<Guid>.Success(member.Id);
     }
 
@@ -338,7 +339,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting process to add member {memberId} to chat {chatId}",
+                $"Начало процесса добавления участника {memberId} в чат {chatId}",
                 null), ct);
 
             var chat = await _database.ChatRepository.GetByIdAsync(chatId, ct);
@@ -346,23 +347,23 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to add member {memberId}: chat with ID {chatId} not found",
+                    $"Не удалось добавить участника {memberId}: чат с ID {chatId} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Chat not found");
+                return Result<Guid>.Failure("Чат не найден");
             }
-            
+
             var result = await PartAddMember(chat, memberId, ct);
             if (!result.IsSuccess)
                 return result;
-                
+
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Member {memberId} successfully added to chat {chatId}",
+                $"Участник {memberId} успешно добавлен в чат {chatId}",
                 null), ct);
-            
+
             return result;
         }
         catch (Exception e)
@@ -370,12 +371,12 @@ public class ChatService : IChatService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while adding member {memberId} to chat {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при добавлении участника {memberId} в чат {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while adding member: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при добавлении участника: {e.Message}");
         }
     }
-    
+
     public async Task<Result<List<Guid>>> RemoveMember(Guid chatId, Guid memberId, CancellationToken ct)
     {
         await _database.BeginTransactionAsync(ct);
@@ -383,7 +384,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting process to remove member {memberId} from chat {chatId}",
+                $"Начало процесса удаления участника {memberId} из чата {chatId}",
                 null), ct);
 
             var chat = await _database.ChatRepository.GetByIdAsync(chatId, ct);
@@ -391,50 +392,50 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to remove member {memberId}: chat with ID {chatId} not found",
+                    $"Не удалось удалить участника {memberId}: чат с ID {chatId} не найден",
                     null), ct);
-                return Result<List<Guid>>.Failure("Chat not found");
+                return Result<List<Guid>>.Failure("Чат не найден");
             }
-            
+
             var member = await _database.UserRepository.GetByIdAsync(memberId, ct);
             if (member == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to remove member {memberId} from chat {chatId}: user not found",
+                    $"Не удалось удалить участника {memberId} из чата {chatId}: пользователь не найден",
                     null), ct);
-                return Result<List<Guid>>.Failure("User not found!");
+                return Result<List<Guid>>.Failure("Пользователь не найден!");
             }
-            
+
             if (chat.Admin?.Id == memberId)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to remove member {memberId} from chat {chatId}: user is chat admin",
+                    $"Не удалось удалить участника {memberId} из чата {chatId}: пользователь является администратором чата",
                     null), ct);
-                return Result<List<Guid>>.Failure("Cannot remove chat admin");
+                return Result<List<Guid>>.Failure("Нельзя удалить администратора чата");
             }
-            
+
             var memberToRemove = chat.Members.FirstOrDefault(m => m.Id == memberId);
             if (memberToRemove == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to remove member {memberId} from chat {chatId}: user is not a member",
+                    $"Не удалось удалить участника {memberId} из чата {chatId}: пользователь не является участником",
                     null), ct);
-                return Result<List<Guid>>.Failure("User is not a member of this chat");
+                return Result<List<Guid>>.Failure("Пользователь не является участником этого чата");
             }
-            
+
             chat.Members.Remove(memberToRemove);
             _database.ChatRepository.Update(chat, ct);
             await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Member {memberId} successfully removed from chat {chatId}",
+                $"Участник {memberId} успешно удален из чата {chatId}",
                 null), ct);
-            
+
             return Result<List<Guid>>.Success(chat.Members.Select(m => m.Id).ToList());
         }
         catch (Exception e)
@@ -442,9 +443,9 @@ public class ChatService : IChatService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while removing member {memberId} from chat {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при удалении участника {memberId} из чата {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<Guid>>.Failure($"Error while removing member: {e.Message}");
+            return Result<List<Guid>>.Failure($"Ошибка при удалении участника: {e.Message}");
         }
     }
 
@@ -454,26 +455,26 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting search for chats by name '{name}' for user {userId}",
+                $"Начало поиска чатов по имени '{name}' для пользователя {userId}",
                 userId), ct);
 
             var chats = await _database.ChatRepository.GetByNameAsync(name, ct);
             var dtos = chats.Select(x => MapToChatShortDTO(x, userId)).ToList();
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Found {dtos.Count} chats by name '{name}' for user {userId}",
+                $"Найдено {dtos.Count} чатов по имени '{name}' для пользователя {userId}",
                 userId), ct);
-            
+
             return Result<List<ChatShortDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting chats by name '{name}' for user {userId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении чатов по имени '{name}' для пользователя {userId}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<List<ChatShortDTO>>.Failure($"Error while getting chats: {e.Message}");
+            return Result<List<ChatShortDTO>>.Failure($"Ошибка при получении чатов: {e.Message}");
         }
     }
 
@@ -483,7 +484,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting search for chats for user {userId}",
+                $"Начало поиска чатов для пользователя {userId}",
                 userId), ct);
 
             var user = await _database.UserRepository.GetByIdAsync(userId, ct);
@@ -491,28 +492,28 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get chats for user {userId}: user not found",
+                    $"Не удалось получить чаты для пользователя {userId}: пользователь не найден",
                     null), ct);
-                return Result<List<ChatShortDTO>>.Failure("User not found");
+                return Result<List<ChatShortDTO>>.Failure("Пользователь не найден");
             }
-            
+
             var chats = await _database.ChatRepository.GetByUserAsync(userId, ct);
             var dtos = chats.Select(x => MapToChatShortDTO(x, userId)).ToList();
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Found {dtos.Count} chats for user {userId}",
+                $"Найдено {dtos.Count} чатов для пользователя {userId}",
                 userId), ct);
-            
+
             return Result<List<ChatShortDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting chats for user {userId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении чатов для пользователя {userId}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<List<ChatShortDTO>>.Failure($"Error while getting chats: {e.Message}");
+            return Result<List<ChatShortDTO>>.Failure($"Ошибка при получении чатов: {e.Message}");
         }
     }
 
@@ -522,26 +523,26 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to get all short chats for user {userId}",
+                $"Начало получения всех кратких чатов для пользователя {userId}",
                 userId), ct);
 
             var chats = await _database.ChatRepository.GetAllAsync(ct);
             var dtos = chats.Select(x => MapToChatShortDTO(x, userId)).ToList();
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} short chats for user {userId}",
+                $"Получено {dtos.Count} кратких чатов для пользователя {userId}",
                 userId), ct);
-            
+
             return Result<List<ChatShortDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting all short chats for user {userId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении всех кратких чатов для пользователя {userId}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<List<ChatShortDTO>>.Failure($"Error while getting chats: {e.Message}");
+            return Result<List<ChatShortDTO>>.Failure($"Ошибка при получении чатов: {e.Message}");
         }
     }
 
@@ -551,26 +552,26 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to get all detailed chats for user {(userId.HasValue ? userId.ToString() : "system")}",
+                $"Начало получения всех детализированных чатов для пользователя {(userId.HasValue ? userId.ToString() : "system")}",
                 userId), ct);
 
             var chats = await _database.ChatRepository.GetAllAsync(ct);
             var dtos = chats.Select(chat => MapToChatDetailedDTO(chat, userId)).ToList();
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} detailed chats for user {(userId.HasValue ? userId.ToString() : "system")}",
+                $"Получено {dtos.Count} детализированных чатов для пользователя {(userId.HasValue ? userId.ToString() : "system")}",
                 userId), ct);
-            
+
             return Result<List<ChatDetailedDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting all detailed chats for user {(userId.HasValue ? userId.ToString() : "system")}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении всех детализированных чатов для пользователя {(userId.HasValue ? userId.ToString() : "system")}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<List<ChatDetailedDTO>>.Failure($"Error while getting chats: {e.Message}");
+            return Result<List<ChatDetailedDTO>>.Failure($"Ошибка при получении чатов: {e.Message}");
         }
     }
 
@@ -580,7 +581,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to get detailed chat {id} for user {(userId.HasValue ? userId.ToString() : "system")}",
+                $"Начало получения детализированного чата {id} для пользователя {(userId.HasValue ? userId.ToString() : "system")}",
                 userId), ct);
 
             var chat = await _database.ChatRepository.GetByIdAsync(id, ct);
@@ -588,27 +589,27 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Chat {id} not found for user {(userId.HasValue ? userId.ToString() : "system")}",
+                    $"Чат {id} не найден для пользователя {(userId.HasValue ? userId.ToString() : "system")}",
                     userId), ct);
-                return Result<ChatDetailedDTO>.Failure("Chat not found");
+                return Result<ChatDetailedDTO>.Failure("Чат не найден");
             }
 
             var dto = MapToChatDetailedDTO(chat, userId);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved chat {id} for user {(userId.HasValue ? userId.ToString() : "system")}",
+                $"Чат {id} успешно получен для пользователя {(userId.HasValue ? userId.ToString() : "system")}",
                 userId), ct);
-            
+
             return Result<ChatDetailedDTO>.Success(dto);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting chat {id} for user {(userId.HasValue ? userId.ToString() : "system")}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении чата {id} для пользователя {(userId.HasValue ? userId.ToString() : "system")}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<ChatDetailedDTO>.Failure($"Error while getting chat: {e.Message}");
+            return Result<ChatDetailedDTO>.Failure($"Ошибка при получении чата: {e.Message}");
         }
     }
 
@@ -618,7 +619,7 @@ public class ChatService : IChatService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to get short chat {id} for user {userId}",
+                $"Начало получения краткого чата {id} для пользователя {userId}",
                 userId), ct);
 
             var chat = await _database.ChatRepository.GetByIdAsync(id, ct);
@@ -626,27 +627,27 @@ public class ChatService : IChatService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Short chat {id} not found for user {userId}",
+                    $"Краткий чат {id} не найден для пользователя {userId}",
                     userId), ct);
-                return Result<ChatShortDTO>.Failure("Chat not found");
+                return Result<ChatShortDTO>.Failure("Чат не найден");
             }
 
             var dto = MapToChatShortDTO(chat, userId);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved short chat {id} for user {userId}",
+                $"Краткий чат {id} успешно получен для пользователя {userId}",
                 userId), ct);
-            
+
             return Result<ChatShortDTO>.Success(dto);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting short chat {id} for user {userId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении краткого чата {id} для пользователя {userId}: {e.Message}. StackTrace: {e.StackTrace}",
                 userId), ct);
-            return Result<ChatShortDTO>.Failure($"Error while getting chat: {e.Message}");
+            return Result<ChatShortDTO>.Failure($"Ошибка при получении чата: {e.Message}");
         }
     }
 
@@ -654,8 +655,8 @@ public class ChatService : IChatService
 
     private ChatShortDTO MapToChatShortDTO(ChatEntity chat, Guid? userId)
     {
-        var chatName = chat.Members.Count == 2 && userId.HasValue 
-            ? chat.Members.First(x => x.Id != userId).Username 
+        var chatName = chat.Members.Count == 2 && userId.HasValue
+            ? chat.Members.First(x => x.Id != userId).Username
             : chat.Name;
         return new ChatShortDTO(
             Id: chat.Id,
@@ -667,8 +668,8 @@ public class ChatService : IChatService
 
     private ChatDetailedDTO MapToChatDetailedDTO(ChatEntity chat, Guid? userId)
     {
-        var chatName = chat.Members.Count == 2 && userId.HasValue 
-            ? chat.Members.First(x => x.Id != userId).Username 
+        var chatName = chat.Members.Count == 2 && userId.HasValue
+            ? chat.Members.First(x => x.Id != userId).Username
             : chat.Name;
 
         return new ChatDetailedDTO(
@@ -697,8 +698,8 @@ public class ChatService : IChatService
             IsDeleted: message.IsDeleted,
             IsPinned: message.IsPinned,
             Sender: MapToUserShortDTO(message.Sender),
-            RepliedMessage: message.RepliedMessage == null 
-                ? null 
+            RepliedMessage: message.RepliedMessage == null
+                ? null
                 : MapToRepliedMessageDTO(message.RepliedMessage, userId),
             Replies: new List<MessageDTO>(),
             IsOwn: userId.HasValue && userId.Value == message.SenderId

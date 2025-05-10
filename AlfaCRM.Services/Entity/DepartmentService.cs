@@ -34,7 +34,7 @@ public class DepartmentService : IDepartmentService
             IsSpecific: entitiy.IsSpecific
         )).ToList();
     }
-    
+
     private DepartmentDetailedDTO MapDetailed(DepartmentEntity entity)
     {
         return new DepartmentDetailedDTO(
@@ -78,7 +78,7 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting department creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания отдела. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 null), ct);
 
             var dbDepartment = await _database.DepartmentRepository.GetDepartmentByName(request.Name, ct);
@@ -86,11 +86,11 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create department: department with name '{request.Name}' already exists",
+                    $"Не удалось создать отдел: отдел с именем '{request.Name}' уже существует",
                     null), ct);
-                return Result<Guid>.Failure($"Department {request.Name} already exists");
+                return Result<Guid>.Failure($"Отдел {request.Name} уже существует");
             }
-            
+
             var newDepartment = DepartmentEntity.Create(request.Name, request.IsSpecific);
             await _database.DepartmentRepository.CreateAsync(newDepartment, ct);
             await _database.SaveChangesAsync(ct);
@@ -98,7 +98,7 @@ public class DepartmentService : IDepartmentService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Department created successfully with ID: {newDepartment.Id}",
+                $"Отдел успешно создан с ID: {newDepartment.Id}",
                 null), ct);
 
             var department = await _database.DepartmentRepository.GetByIdAsync(newDepartment.Id, ct);
@@ -106,11 +106,11 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Error,
-                    $"Department with ID {newDepartment.Id} not found after creation",
+                    $"Отдел с ID {newDepartment.Id} не найден после создания",
                     null), ct);
-                return Result<Guid>.Failure("Department not found");
+                return Result<Guid>.Failure("Отдел не найден");
             }
-            
+
             return Result<Guid>.Success(department.Id);
         }
         catch (Exception ex)
@@ -118,9 +118,9 @@ public class DepartmentService : IDepartmentService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating department: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при создании отдела: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while creating department: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании отдела: {ex.Message}");
         }
     }
 
@@ -131,46 +131,46 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting department update process for ID {request.DepartmentId}. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса обновления отдела с ID {request.DepartmentId}. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 null), ct);
 
             if (!request.IsSpecific.HasValue && string.IsNullOrEmpty(request.Name))
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    "Failed to update department: at least 1 field is required",
+                    "Не удалось обновить отдел: необходимо указать хотя бы одно поле для обновления",
                     null), ct);
-                return Result<Guid>.Failure("At least 1 field is required");
+                return Result<Guid>.Failure("Необходимо указать хотя бы одно поле для обновления");
             }
-            
+
             var dbDepartment = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
             if (dbDepartment == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update department: department with ID {request.DepartmentId} not found",
+                    $"Не удалось обновить отдел: отдел с ID {request.DepartmentId} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Department not found");
+                return Result<Guid>.Failure("Отдел не найден");
             }
-            
-            if (!string.IsNullOrEmpty(request.Name) && dbDepartment.Name != request.Name) 
+
+            if (!string.IsNullOrEmpty(request.Name) && dbDepartment.Name != request.Name)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating department {request.DepartmentId} name from '{dbDepartment.Name}' to '{request.Name}'",
+                    $"Обновление названия отдела {request.DepartmentId} с '{dbDepartment.Name}' на '{request.Name}'",
                     null), ct);
                 dbDepartment.Name = request.Name;
             }
-            
-            if (request.IsSpecific.HasValue && request.IsSpecific != dbDepartment.IsSpecific) 
+
+            if (request.IsSpecific.HasValue && request.IsSpecific != dbDepartment.IsSpecific)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating department {request.DepartmentId} IsSpecific from {dbDepartment.IsSpecific} to {request.IsSpecific.Value}",
+                    $"Обновление свойства IsSpecific отдела {request.DepartmentId} с {dbDepartment.IsSpecific} на {request.IsSpecific.Value}",
                     null), ct);
                 dbDepartment.IsSpecific = request.IsSpecific.Value;
             }
-            
+
             _database.DepartmentRepository.Update(dbDepartment, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -179,25 +179,25 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Department {request.DepartmentId} updated successfully",
+                    $"Отдел {request.DepartmentId} успешно обновлен",
                     null), ct);
                 return Result<Guid>.Success(dbDepartment.Id);
             }
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made to department {request.DepartmentId}",
+                $"Не было внесено изменений в отдел {request.DepartmentId}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to update department");
+            return Result<Guid>.Failure("Не удалось обновить отдел");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while updating department {request?.DepartmentId}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при обновлении отдела {request?.DepartmentId}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while updating department: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении отдела: {ex.Message}");
         }
     }
 
@@ -208,7 +208,7 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting department deletion process for ID {id}",
+                $"Начало процесса удаления отдела с ID {id}",
                 null), ct);
 
             var dbDepartment = await _database.DepartmentRepository.GetByIdAsync(id, ct);
@@ -216,11 +216,11 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete department: department with ID {id} not found",
+                    $"Не удалось удалить отдел: отдел с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Department not found");
+                return Result<Guid>.Failure("Отдел не найден");
             }
-            
+
             _database.DepartmentRepository.Delete(dbDepartment, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -229,25 +229,25 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Department {id} deleted successfully",
+                    $"Отдел {id} успешно удален",
                     null), ct);
                 return Result<Guid>.Success(dbDepartment.Id);
             }
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when trying to delete department {id}",
+                $"Не было внесено изменений при попытке удаления отдела {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to delete department");
+            return Result<Guid>.Failure("Не удалось удалить отдел");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting department {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при удалении отдела {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while deleting department: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении отдела: {ex.Message}");
         }
     }
 
@@ -257,26 +257,26 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                "Starting to retrieve all departments (short version)",
+                "Начало получения списка всех отделов (краткая версия)",
                 null), ct);
 
             var entities = await _database.DepartmentRepository.GetAllAsync(ct);
             var dtos = MapShortRange(entities);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} departments (short version)",
+                $"Получено {dtos.Count} отделов (краткая версия)",
                 null), ct);
-            
+
             return Result<List<DepartmentShortDTO>>.Success(dtos);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving all departments (short version): {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при получении списка всех отделов (краткая версия): {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<List<DepartmentShortDTO>>.Failure($"Error while retrieving departments: {ex.Message}");
+            return Result<List<DepartmentShortDTO>>.Failure($"Ошибка при получении отделов: {ex.Message}");
         }
     }
 
@@ -286,26 +286,26 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                "Starting to retrieve all departments (detailed version)",
+                "Начало получения списка всех отделов (подробная версия)",
                 null), ct);
 
             var entities = await _database.DepartmentRepository.GetAllAsync(ct);
             var dtos = MapDetailedRange(entities);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} departments (detailed version)",
+                $"Получено {dtos.Count} отделов (подробная версия)",
                 null), ct);
-            
+
             return Result<List<DepartmentDetailedDTO>>.Success(dtos);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving all departments (detailed version): {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при получении списка всех отделов (подробная версия): {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<List<DepartmentDetailedDTO>>.Failure($"Error while retrieving departments: {ex.Message}");
+            return Result<List<DepartmentDetailedDTO>>.Failure($"Ошибка при получении отделов: {ex.Message}");
         }
     }
 
@@ -315,7 +315,7 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve department (detailed) with ID {id}",
+                $"Начало получения отдела (подробная версия) с ID {id}",
                 null), ct);
 
             var entity = await _database.DepartmentRepository.GetByIdAsync(id, ct);
@@ -323,27 +323,27 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Department with ID {id} not found",
+                    $"Отдел с ID {id} не найден",
                     null), ct);
-                return Result<DepartmentDetailedDTO>.Failure("Department not found");
+                return Result<DepartmentDetailedDTO>.Failure("Отдел не найден");
             }
-            
+
             var dto = MapDetailed(entity);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved department (detailed) with ID {id}",
+                $"Отдел (подробная версия) с ID {id} успешно получен",
                 null), ct);
-            
+
             return Result<DepartmentDetailedDTO>.Success(dto);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving department (detailed) with ID {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при получении отдела (подробная версия) с ID {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<DepartmentDetailedDTO>.Failure($"Error while retrieving department: {ex.Message}");
+            return Result<DepartmentDetailedDTO>.Failure($"Ошибка при получении отдела: {ex.Message}");
         }
     }
 
@@ -353,7 +353,7 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve department (short) with ID {id}",
+                $"Начало получения отдела (краткая версия) с ID {id}",
                 null), ct);
 
             var entity = await _database.DepartmentRepository.GetByIdAsync(id, ct);
@@ -361,27 +361,27 @@ public class DepartmentService : IDepartmentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Department with ID {id} not found",
+                    $"Отдел с ID {id} не найден",
                     null), ct);
-                return Result<DepartmentShortDTO>.Failure("Department not found");
+                return Result<DepartmentShortDTO>.Failure("Отдел не найден");
             }
 
             var dto = MapShort(entity);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved department (short) with ID {id}",
+                $"Отдел (краткая версия) с ID {id} успешно получен",
                 null), ct);
-            
+
             return Result<DepartmentShortDTO>.Success(dto);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving department (short) with ID {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при получении отдела (краткая версия) с ID {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<DepartmentShortDTO>.Failure($"Error while retrieving department: {ex.Message}");
+            return Result<DepartmentShortDTO>.Failure($"Ошибка при получении отдела: {ex.Message}");
         }
     }
 
@@ -391,25 +391,25 @@ public class DepartmentService : IDepartmentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                "Starting to count departments",
+                "Начало подсчета количества отделов",
                 null), ct);
 
             var departmentCount = await _database.DepartmentRepository.CountAsync(ct);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Department count completed: {departmentCount} departments found",
+                $"Подсчет отделов завершен: найдено {departmentCount} отделов",
                 null), ct);
-            
+
             return Result<int>.Success(departmentCount);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while counting departments: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при подсчете количества отделов: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<int>.Failure($"Error while counting departments: {ex.Message}");
+            return Result<int>.Failure($"Ошибка при подсчете отделов: {ex.Message}");
         }
     }
 }

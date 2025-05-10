@@ -22,7 +22,7 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting message creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания сообщения. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.SenderId), ct);
 
             var sender = await _database.UserRepository.GetByIdAsync(request.SenderId, ct);
@@ -30,9 +30,9 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create message: sender with ID {request.SenderId} not found",
+                    $"Не удалось создать сообщение: отправитель с ID {request.SenderId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Sender does not exist!");
+                return Result<Guid>.Failure("Отправитель не существует!");
             }
 
             var chat = await _database.ChatRepository.GetByIdAsync(request.ChatId, ct);
@@ -40,9 +40,9 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create message: chat with ID {request.ChatId} not found",
+                    $"Не удалось создать сообщение: чат с ID {request.ChatId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Chat does not exist!");
+                return Result<Guid>.Failure("Чат не существует!");
             }
 
             var isMember = await _database.ChatRepository.FindAsync(
@@ -53,9 +53,9 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create message: sender {request.SenderId} is not a member of chat {request.ChatId}",
+                    $"Не удалось создать сообщение: отправитель {request.SenderId} не является участником чата {request.ChatId}",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Sender is not a member of this chat");
+                return Result<Guid>.Failure("Отправитель не является участником этого чата");
             }
 
             MessageEntity? repliedMessage = null;
@@ -66,18 +66,18 @@ public class MessageService : IMessageService
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"Failed to create message: replied message with ID {request.RepliedMessageId} not found",
+                        $"Не удалось создать сообщение: ответное сообщение с ID {request.RepliedMessageId} не найдено",
                         request.SenderId), ct);
-                    return Result<Guid>.Failure("Replied message does not exist!");
+                    return Result<Guid>.Failure("Ответное сообщение не существует!");
                 }
 
                 if (repliedMessage.ChatId != request.ChatId)
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"Failed to create message: replied message {request.RepliedMessageId} belongs to another chat (expected: {request.ChatId}, actual: {repliedMessage.ChatId})",
+                        $"Не удалось создать сообщение: ответное сообщение {request.RepliedMessageId} принадлежит другому чату (ожидалось: {request.ChatId}, фактически: {repliedMessage.ChatId})",
                         request.SenderId), ct);
-                    return Result<Guid>.Failure("Replied message belongs to another chat");
+                    return Result<Guid>.Failure("Ответное сообщение принадлежит другому чату");
                 }
             }
 
@@ -93,7 +93,7 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Message created successfully with ID: {newMessage.Id} in chat {request.ChatId}",
+                $"Сообщение успешно создано с ID: {newMessage.Id} в чате {request.ChatId}",
                 request.SenderId), ct);
 
             return Result<Guid>.Success(newMessage.Id);
@@ -103,9 +103,9 @@ public class MessageService : IMessageService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating message: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при создании сообщения: {e.Message}. StackTrace: {e.StackTrace}",
                 request?.SenderId), ct);
-            return Result<Guid>.Failure($"Failed to create message: {e.Message}");
+            return Result<Guid>.Failure($"Не удалось создать сообщение: {e.Message}");
         }
     }
 
@@ -116,16 +116,16 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting message update process for ID {request.Id}. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса обновления сообщения с ID {request.Id}. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 null), ct);
 
             if (string.IsNullOrWhiteSpace(request.Content))
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update message {request.Id}: empty content provided",
+                    $"Не удалось обновить сообщение {request.Id}: пустое содержимое",
                     null), ct);
-                return Result<Guid>.Failure("Message content cannot be empty");
+                return Result<Guid>.Failure("Содержимое сообщения не может быть пустым");
             }
 
             var message = await _database.MessageRepository.GetByIdAsync(request.Id, ct);
@@ -133,23 +133,23 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update message: message with ID {request.Id} not found",
+                    $"Не удалось обновить сообщение: сообщение с ID {request.Id} не найдено",
                     null), ct);
-                return Result<Guid>.Failure("Message does not exist!");
+                return Result<Guid>.Failure("Сообщение не существует!");
             }
 
             if (message.IsDeleted)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update message {request.Id}: message is deleted",
+                    $"Не удалось обновить сообщение {request.Id}: сообщение удалено",
                     null), ct);
-                return Result<Guid>.Failure("Cannot update deleted message");
+                return Result<Guid>.Failure("Нельзя обновить удаленное сообщение");
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Updating message {request.Id} content from '{message.Content}' to '{request.Content}'",
+                $"Обновление содержимого сообщения {request.Id} с '{message.Content}' на '{request.Content}'",
                 null), ct);
 
             message.Content = request.Content;
@@ -161,7 +161,7 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Message {request.Id} updated successfully",
+                $"Сообщение {request.Id} успешно обновлено",
                 null), ct);
 
             return Result<Guid>.Success(message.Id);
@@ -171,9 +171,9 @@ public class MessageService : IMessageService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while updating message {request?.Id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при обновлении сообщения {request?.Id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Failed to update message: {e.Message}");
+            return Result<Guid>.Failure($"Не удалось обновить сообщение: {e.Message}");
         }
     }
 
@@ -184,7 +184,7 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting message deletion process for ID {id}. Lite mode: {isLite}",
+                $"Начало процесса удаления сообщения с ID {id}. Режим: {(isLite ? "Lite" : "Hard")}",
                 null), ct);
 
             var message = await _database.MessageRepository.GetByIdAsync(id, ct);
@@ -192,16 +192,16 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete message: message with ID {id} not found",
+                    $"Не удалось удалить сообщение: сообщение с ID {id} не найдено",
                     null), ct);
-                return Result<Guid>.Failure("Message does not exist!");
+                return Result<Guid>.Failure("Сообщение не существует!");
             }
 
             if (isLite)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Performing lite deletion for message {id}",
+                    $"Выполнение мягкого удаления для сообщения {id}",
                     null), ct);
 
                 message.IsDeleted = true;
@@ -213,7 +213,7 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Performing hard deletion for message {id}",
+                    $"Выполнение полного удаления для сообщения {id}",
                     null), ct);
 
                 _database.MessageRepository.Delete(message, ct);
@@ -224,7 +224,7 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Message {id} deleted successfully. Mode: {(isLite ? "Lite" : "Hard")}",
+                $"Сообщение {id} успешно удалено. Режим: {(isLite ? "Lite" : "Hard")}",
                 null), ct);
 
             return Result<Guid>.Success(message.Id);
@@ -234,9 +234,9 @@ public class MessageService : IMessageService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting message {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при удалении сообщения {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Failed to delete message: {e.Message}");
+            return Result<Guid>.Failure($"Не удалось удалить сообщение: {e.Message}");
         }
     }
 
@@ -246,7 +246,7 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve all messages for chat {chatId}",
+                $"Начало получения всех сообщений для чата {chatId}",
                 null), ct);
 
             var chatExists = await _database.ChatRepository.FindAsync(c => c.Id == chatId, ct);
@@ -254,9 +254,9 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get messages: chat with ID {chatId} not found",
+                    $"Не удалось получить сообщения: чат с ID {chatId} не найден",
                     null), ct);
-                return Result<List<MessageDTO>>.Failure("Chat does not exist");
+                return Result<List<MessageDTO>>.Failure("Чат не существует");
             }
 
             var messages = await _database.MessageRepository.GetMessagesAsync(chatId, ct);
@@ -264,7 +264,7 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Found {filteredMessages.Count} active messages in chat {chatId}",
+                $"Найдено {filteredMessages.Count} активных сообщений в чате {chatId}",
                 null), ct);
 
             var senderIds = filteredMessages.Select(m => m.SenderId).Distinct();
@@ -304,7 +304,7 @@ public class MessageService : IMessageService
                             FullName: sender.FullName,
                             Username: sender.Username,
                             Email: sender.Email,
-                            DepartmentName: sender.Department?.Name ?? "No department",
+                            DepartmentName: sender.Department?.Name ?? "Без отдела",
                             IsAdmin: sender?.IsAdmin ?? false,
                             IsBlocked: sender?.IsBlocked ?? false),
                     RepliedMessage: repliedMessage == null
@@ -329,7 +329,7 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved {dtos.Count} message DTOs for chat {chatId}",
+                $"Успешно получено {dtos.Count} DTO сообщений для чата {chatId}",
                 null), ct);
 
             return Result<List<MessageDTO>>.Success(dtos);
@@ -338,9 +338,9 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting messages for chat {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении сообщений для чата {chatId}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<MessageDTO>>.Failure($"Failed to get messages: {e.Message}");
+            return Result<List<MessageDTO>>.Failure($"Не удалось получить сообщения: {e.Message}");
         }
     }
 
@@ -350,7 +350,7 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve message with ID {id}",
+                $"Начало получения сообщения с ID {id}",
                 null), ct);
 
             var message = await _database.MessageRepository.GetByIdAsync(id, ct);
@@ -358,18 +358,18 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get message: message with ID {id} not found",
+                    $"Не удалось получить сообщение: сообщение с ID {id} не найдено",
                     null), ct);
-                return Result<MessageDTO>.Failure("Message not found");
+                return Result<MessageDTO>.Failure("Сообщение не найдено");
             }
 
             if (message.IsDeleted)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get message: message {id} is deleted",
+                    $"Не удалось получить сообщение: сообщение {id} удалено",
                     null), ct);
-                return Result<MessageDTO>.Failure("Message is deleted");
+                return Result<MessageDTO>.Failure("Сообщение удалено");
             }
 
             var sender = await _database.UserRepository.GetByIdAsync(message.SenderId, ct);
@@ -397,7 +397,7 @@ public class MessageService : IMessageService
                                 FullName: repliedMessageSender.FullName,
                                 Username: repliedMessageSender.Username,
                                 Email: repliedMessageSender.Email,
-                                DepartmentName: repliedMessageSender.Department?.Name ?? "No department",
+                                DepartmentName: repliedMessageSender.Department?.Name ?? "Без отдела",
                                 IsAdmin: repliedMessageSender?.IsAdmin ?? false,
                                 IsBlocked: repliedMessageSender?.IsBlocked ?? false),
                         RepliedMessage: null,
@@ -422,7 +422,7 @@ public class MessageService : IMessageService
                         FullName: sender.FullName,
                         Username: sender.Username,
                         Email: sender.Email,
-                        DepartmentName: sender.Department?.Name ?? "No department",
+                        DepartmentName: sender.Department?.Name ?? "Без отдела",
                         IsAdmin: sender?.IsAdmin ?? false,
                         IsBlocked: sender?.IsBlocked ?? false),
                 RepliedMessage: repliedMessageDto,
@@ -432,7 +432,7 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved message with ID {id}",
+                $"Успешно получено сообщение с ID {id}",
                 null), ct);
 
             return Result<MessageDTO>.Success(dto);
@@ -441,9 +441,9 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while getting message {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении сообщения {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<MessageDTO>.Failure($"Failed to get message: {e.Message}");
+            return Result<MessageDTO>.Failure($"Не удалось получить сообщение: {e.Message}");
         }
     }
 
@@ -454,7 +454,7 @@ public class MessageService : IMessageService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to {(isPinned ? "pin" : "unpin")} message {messageId}",
+                $"Начало процесса {(isPinned ? "закрепления" : "открепления")} сообщения {messageId}",
                 null), ct);
 
             var message = await _database.MessageRepository.GetByIdAsync(messageId, ct);
@@ -462,18 +462,18 @@ public class MessageService : IMessageService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to pin message: message with ID {messageId} not found",
+                    $"Не удалось закрепить сообщение: сообщение с ID {messageId} не найдено",
                     null), ct);
-                return Result<MessageDTO>.Failure("Message not found");
+                return Result<MessageDTO>.Failure("Сообщение не найдено");
             }
 
             if (message.IsDeleted)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to pin message {messageId}: message is deleted",
+                    $"Не удалось закрепить сообщение {messageId}: сообщение удалено",
                     null), ct);
-                return Result<MessageDTO>.Failure("Cannot pin deleted message");
+                return Result<MessageDTO>.Failure("Нельзя закрепить удаленное сообщение");
             }
 
             message.IsPinned = isPinned;
@@ -485,9 +485,9 @@ public class MessageService : IMessageService
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Message {messageId} {(isPinned ? "pinned" : "unpinned")} successfully",
+                $"Сообщение {messageId} успешно {(isPinned ? "закреплено" : "откреплено")}",
                 null), ct);
-            
+
             return await GetById(messageId, ct);
         }
         catch (Exception e)
@@ -495,9 +495,9 @@ public class MessageService : IMessageService
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while pinning message {messageId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при закреплении сообщения {messageId}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<MessageDTO>.Failure($"Failed to pin message: {e.Message}");
+            return Result<MessageDTO>.Failure($"Не удалось закрепить сообщение: {e.Message}");
         }
     }
 }

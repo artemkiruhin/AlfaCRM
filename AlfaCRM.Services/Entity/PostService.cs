@@ -24,7 +24,7 @@ public class PostService : IPostService
             _ => "Unknown"
         };
     }
-    
+
     private PostShortDTO MapToShortDTO(PostEntity entity)
     {
         return new PostShortDTO(
@@ -36,7 +36,7 @@ public class PostService : IPostService
             DepartmentId: entity.DepartmentId
         );
     }
-    
+
     private List<PostShortDTO> MapToShortDTORange(IEnumerable<PostEntity> entities)
     {
         return entities.Select(entity => new PostShortDTO(
@@ -48,7 +48,7 @@ public class PostService : IPostService
             DepartmentId: entity.DepartmentId
         )).ToList();
     }
-    
+
     private PostDetailedDTO MapToDetailedDTO(PostEntity entity)
     {
         return new PostDetailedDTO(
@@ -108,7 +108,7 @@ public class PostService : IPostService
             )).ToList()
         );
     }
-    
+
     private List<PostDetailedDTO> MapToDetailedDTORange(IEnumerable<PostEntity> entities)
     {
         return entities.Select(entity => new PostDetailedDTO(
@@ -176,21 +176,21 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting post creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания поста. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.PublisherId), ct);
 
-            // Validate publisher exists
+            // Проверка существования автора
             var publisher = await _database.UserRepository.GetByIdAsync(request.PublisherId, ct);
             if (publisher == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create post: publisher with ID {request.PublisherId} not found",
+                    $"Не удалось создать пост: автор с ID {request.PublisherId} не найден",
                     request.PublisherId), ct);
-                return Result<Guid>.Failure("Publisher not found");
+                return Result<Guid>.Failure("Автор не найден");
             }
 
-            // Validate department exists if specified
+            // Проверка существования отдела, если указан
             if (request.DepartmentId.HasValue)
             {
                 var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId.Value, ct);
@@ -198,9 +198,9 @@ public class PostService : IPostService
                 {
                     await _database.LogRepository.CreateAsync(LogEntity.Create(
                         LogType.Warning,
-                        $"Failed to create post: department with ID {request.DepartmentId} not found",
+                        $"Не удалось создать пост: отдел с ID {request.DepartmentId} не найден",
                         request.PublisherId), ct);
-                    return Result<Guid>.Failure("Department not found");
+                    return Result<Guid>.Failure("Отдел не найден");
                 }
             }
 
@@ -221,25 +221,25 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Post created successfully with ID: {newPost.Id}",
+                    $"Пост успешно создан с ID: {newPost.Id}",
                     request.PublisherId), ct);
                 return Result<Guid>.Success(newPost.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                "No changes were made when creating post",
+                "Не было внесено изменений при создании поста",
                 request.PublisherId), ct);
-            return Result<Guid>.Failure("Failed to create post");
+            return Result<Guid>.Failure("Не удалось создать пост");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating post: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при создании поста: {e.Message}. StackTrace: {e.StackTrace}",
                 request?.PublisherId), ct);
-            return Result<Guid>.Failure($"Error while creating post: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании поста: {e.Message}");
         }
     }
 
@@ -250,7 +250,7 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting post update process for ID {request.PostId}. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса обновления поста с ID {request.PostId}. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 null), ct);
 
             var dbPost = await _database.PostRepository.GetByIdAsync(request.PostId, ct);
@@ -258,17 +258,17 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to update post: post with ID {request.PostId} not found",
+                    $"Не удалось обновить пост: пост с ID {request.PostId} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Post not found");
+                return Result<Guid>.Failure("Пост не найден");
             }
 
-            // Log changes
+            // Логирование изменений
             if (!string.IsNullOrEmpty(request.Title) && dbPost.Title != request.Title)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating post {request.PostId} title from '{dbPost.Title}' to '{request.Title}'",
+                    $"Обновление заголовка поста {request.PostId} с '{dbPost.Title}' на '{request.Title}'",
                     null), ct);
                 dbPost.Title = request.Title;
             }
@@ -277,7 +277,7 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating post {request.PostId} subtitle from '{dbPost.Subtitle}' to '{request.Subtitle}'",
+                    $"Обновление подзаголовка поста {request.PostId} с '{dbPost.Subtitle}' на '{request.Subtitle}'",
                     null), ct);
                 dbPost.Subtitle = request.Subtitle;
             }
@@ -286,7 +286,7 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating post {request.PostId} content",
+                    $"Обновление содержимого поста {request.PostId}",
                     null), ct);
                 dbPost.Content = request.Content;
             }
@@ -295,7 +295,7 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating post {request.PostId} IsImportant from {dbPost.IsImportant} to {request.IsImportant.Value}",
+                    $"Обновление важности поста {request.PostId} с {dbPost.IsImportant} на {request.IsImportant.Value}",
                     null), ct);
                 dbPost.IsImportant = request.IsImportant.Value;
             }
@@ -309,15 +309,15 @@ public class PostService : IPostService
                     {
                         await _database.LogRepository.CreateAsync(LogEntity.Create(
                             LogType.Warning,
-                            $"Failed to update post: department with ID {request.DepartmentId} not found",
+                            $"Не удалось обновить пост: отдел с ID {request.DepartmentId} не найден",
                             null), ct);
-                        return Result<Guid>.Failure("Department not found");
+                        return Result<Guid>.Failure("Отдел не найден");
                     }
                 }
 
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Updating post {request.PostId} DepartmentId from {dbPost.DepartmentId} to {request.DepartmentId}",
+                    $"Обновление отдела поста {request.PostId} с {dbPost.DepartmentId} на {request.DepartmentId}",
                     null), ct);
                 dbPost.DepartmentId = request.DepartmentId;
             }
@@ -332,25 +332,25 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Post {request.PostId} updated successfully",
+                    $"Пост {request.PostId} успешно обновлен",
                     null), ct);
                 return Result<Guid>.Success(dbPost.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when updating post {request.PostId}",
+                $"Не было внесено изменений при обновлении поста {request.PostId}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to update post");
+            return Result<Guid>.Failure("Не удалось обновить пост");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while updating post {request?.PostId}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при обновлении поста {request?.PostId}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while updating post: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при обновлении поста: {e.Message}");
         }
     }
 
@@ -361,7 +361,7 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting post deletion process for ID {id}",
+                $"Начало процесса удаления поста с ID {id}",
                 null), ct);
 
             var dbPost = await _database.PostRepository.GetByIdAsync(id, ct);
@@ -369,15 +369,15 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete post: post with ID {id} not found",
+                    $"Не удалось удалить пост: пост с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Post not found");
+                return Result<Guid>.Failure("Пост не найден");
             }
 
-            // Log related entities that will be deleted
+            // Логирование связанных сущностей, которые будут удалены
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Deleting post {id} with {dbPost.Reactions.Count} reactions and {dbPost.Comments.Count} comments",
+                $"Удаление поста {id} с {dbPost.Reactions.Count} реакциями и {dbPost.Comments.Count} комментариями",
                 null), ct);
 
             _database.PostRepository.Delete(dbPost, ct);
@@ -388,25 +388,25 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Post {id} deleted successfully",
+                    $"Пост {id} успешно удален",
                     null), ct);
                 return Result<Guid>.Success(dbPost.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when deleting post {id}",
+                $"Не было внесено изменений при удалении поста {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to delete post");
+            return Result<Guid>.Failure("Не удалось удалить пост");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting post {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при удалении поста {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while deleting post: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении поста: {e.Message}");
         }
     }
 
@@ -416,31 +416,31 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve all short posts{(departmentId.HasValue ? $" for department {departmentId}" : "")}",
+                $"Начало получения краткой информации о постах{(departmentId.HasValue ? $" для отдела {departmentId}" : "")}",
                 null), ct);
 
             var posts = departmentId.HasValue
                 ? await _database.PostRepository.FindRangeAsync(
-                    post => post.DepartmentId == departmentId.Value || !post.DepartmentId.HasValue, 
+                    post => post.DepartmentId == departmentId.Value || !post.DepartmentId.HasValue,
                     ct)
                 : await _database.PostRepository.GetAllAsync(ct);
 
             var dtos = MapToShortDTORange(posts);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} short posts{(departmentId.HasValue ? $" for department {departmentId}" : "")}",
+                $"Получено {dtos.Count} кратких описаний постов{(departmentId.HasValue ? $" для отдела {departmentId}" : "")}",
                 null), ct);
-            
+
             return Result<List<PostShortDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving short posts{(departmentId.HasValue ? $" for department {departmentId}" : "")}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении краткой информации о постах{(departmentId.HasValue ? $" для отдела {departmentId}" : "")}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<PostShortDTO>>.Failure($"Error while retrieving posts: {e.Message}");
+            return Result<List<PostShortDTO>>.Failure($"Ошибка при получении постов: {e.Message}");
         }
     }
 
@@ -450,31 +450,31 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve all detailed posts{(departmentId.HasValue ? $" for department {departmentId}" : "")}",
+                $"Начало получения подробной информации о постах{(departmentId.HasValue ? $" для отдела {departmentId}" : "")}",
                 null), ct);
 
             var posts = departmentId.HasValue
                 ? await _database.PostRepository.FindRangeAsync(
-                    post => post.DepartmentId == departmentId.Value || !post.DepartmentId.HasValue, 
+                    post => post.DepartmentId == departmentId.Value || !post.DepartmentId.HasValue,
                     ct)
                 : await _database.PostRepository.GetAllAsync(ct);
 
             var dtos = MapToDetailedDTORange(posts);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} detailed posts{(departmentId.HasValue ? $" for department {departmentId}" : "")}",
+                $"Получено {dtos.Count} подробных описаний постов{(departmentId.HasValue ? $" для отдела {departmentId}" : "")}",
                 null), ct);
-            
+
             return Result<List<PostDetailedDTO>>.Success(dtos);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving detailed posts{(departmentId.HasValue ? $" for department {departmentId}" : "")}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении подробной информации о постах{(departmentId.HasValue ? $" для отдела {departmentId}" : "")}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<List<PostDetailedDTO>>.Failure($"Error while retrieving posts: {e.Message}");
+            return Result<List<PostDetailedDTO>>.Failure($"Ошибка при получении постов: {e.Message}");
         }
     }
 
@@ -484,7 +484,7 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve detailed post with ID {id}",
+                $"Начало получения подробной информации о посте с ID {id}",
                 null), ct);
 
             var post = await _database.PostRepository.GetByIdAsync(id, ct);
@@ -492,27 +492,27 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get post: post with ID {id} not found",
+                    $"Не удалось получить пост: пост с ID {id} не найден",
                     null), ct);
-                return Result<PostDetailedDTO>.Failure("Post not found");
+                return Result<PostDetailedDTO>.Failure("Пост не найден");
             }
 
             var dto = MapToDetailedDTO(post);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved detailed post with ID {id}",
+                $"Подробная информация о посте с ID {id} успешно получена",
                 null), ct);
-            
+
             return Result<PostDetailedDTO>.Success(dto);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving post {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении поста {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<PostDetailedDTO>.Failure($"Error while retrieving post: {e.Message}");
+            return Result<PostDetailedDTO>.Failure($"Ошибка при получении поста: {e.Message}");
         }
     }
 
@@ -522,7 +522,7 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve short post with ID {id}",
+                $"Начало получения краткой информации о посте с ID {id}",
                 null), ct);
 
             var post = await _database.PostRepository.GetByIdAsync(id, ct);
@@ -530,27 +530,27 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get post: post with ID {id} not found",
+                    $"Не удалось получить пост: пост с ID {id} не найден",
                     null), ct);
-                return Result<PostShortDTO>.Failure("Post not found");
+                return Result<PostShortDTO>.Failure("Пост не найден");
             }
 
             var dto = MapToShortDTO(post);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved short post with ID {id}",
+                $"Краткая информация о посте с ID {id} успешно получена",
                 null), ct);
-            
+
             return Result<PostShortDTO>.Success(dto);
         }
         catch (Exception e)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving short post {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при получении краткой информации о посте {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<PostShortDTO>.Failure($"Error while retrieving post: {e.Message}");
+            return Result<PostShortDTO>.Failure($"Ошибка при получении поста: {e.Message}");
         }
     }
 
@@ -561,7 +561,7 @@ public class PostService : IPostService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to block post with ID {id}",
+                $"Начало блокировки поста с ID {id}",
                 null), ct);
 
             var dbPost = await _database.PostRepository.GetByIdAsync(id, ct);
@@ -569,18 +569,18 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to block post: post with ID {id} not found",
+                    $"Не удалось заблокировать пост: пост с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Post not found");
+                return Result<Guid>.Failure("Пост не найден");
             }
 
             if (!dbPost.IsActual)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Post {id} is already blocked",
+                    $"Пост {id} уже заблокирован",
                     null), ct);
-                return Result<Guid>.Failure("Post is already blocked");
+                return Result<Guid>.Failure("Пост уже заблокирован");
             }
 
             dbPost.ModifiedAt = DateTime.UtcNow;
@@ -594,25 +594,25 @@ public class PostService : IPostService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Post {id} blocked successfully",
+                    $"Пост {id} успешно заблокирован",
                     null), ct);
                 return Result<Guid>.Success(dbPost.Id);
             }
 
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when blocking post {id}",
+                $"Не было внесено изменений при блокировке поста {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to block post");
+            return Result<Guid>.Failure("Не удалось заблокировать пост");
         }
         catch (Exception e)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while blocking post {id}: {e.Message}. StackTrace: {e.StackTrace}",
+                $"Ошибка при блокировке поста {id}: {e.Message}. StackTrace: {e.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while blocking post: {e.Message}");
+            return Result<Guid>.Failure($"Ошибка при блокировке поста: {e.Message}");
         }
     }
 }

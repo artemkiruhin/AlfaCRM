@@ -61,29 +61,29 @@ public class PostCommentService : IPostCommentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting post comment creation process. Request: {System.Text.Json.JsonSerializer.Serialize(request)}",
+                $"Начало процесса создания комментария к посту. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.SenderId), ct);
 
-            // Validate post exists
+            // Проверка существования поста
             var postExists = await _database.PostRepository.FindAsync(p => p.Id == request.PostId, ct);
             if (postExists == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create comment: post with ID {request.PostId} not found",
+                    $"Не удалось создать комментарий: пост с ID {request.PostId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Post not found");
+                return Result<Guid>.Failure("Пост не найден");
             }
 
-            // Validate sender exists
+            // Проверка существования отправителя
             var senderExists = await _database.UserRepository.FindAsync(u => u.Id == request.SenderId, ct);
             if (senderExists == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to create comment: sender with ID {request.SenderId} not found",
+                    $"Не удалось создать комментарий: отправитель с ID {request.SenderId} не найден",
                     request.SenderId), ct);
-                return Result<Guid>.Failure("Sender not found");
+                return Result<Guid>.Failure("Отправитель не найден");
             }
 
             var newComment = PostCommentEntity.Create(
@@ -91,7 +91,7 @@ public class PostCommentService : IPostCommentService
                 postId: request.PostId,
                 senderId: request.SenderId
             );
-            
+
             await _database.PostCommentRepository.CreateAsync(newComment, ct);
             var result = await _database.SaveChangesAsync(ct);
             await _database.CommitTransactionAsync(ct);
@@ -100,25 +100,25 @@ public class PostCommentService : IPostCommentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Post comment created successfully with ID: {newComment.Id} for post {request.PostId}",
+                    $"Комментарий к посту успешно создан с ID: {newComment.Id} для поста {request.PostId}",
                     request.SenderId), ct);
                 return Result<Guid>.Success(newComment.Id);
             }
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                "No changes were made when creating post comment",
+                "Не было внесено изменений при создании комментария",
                 request.SenderId), ct);
-            return Result<Guid>.Failure("Failed to create comment");
+            return Result<Guid>.Failure("Не удалось создать комментарий");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while creating post comment: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при создании комментария: {ex.Message}. StackTrace: {ex.StackTrace}",
                 request?.SenderId), ct);
-            return Result<Guid>.Failure($"Error while creating comment: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при создании комментария: {ex.Message}");
         }
     }
 
@@ -129,7 +129,7 @@ public class PostCommentService : IPostCommentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting post comment deletion process for ID {id}",
+                $"Начало процесса удаления комментария с ID {id}",
                 null), ct);
 
             var dbComment = await _database.PostCommentRepository.GetByIdAsync(id, ct);
@@ -137,9 +137,9 @@ public class PostCommentService : IPostCommentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to delete comment: comment with ID {id} not found",
+                    $"Не удалось удалить комментарий: комментарий с ID {id} не найден",
                     null), ct);
-                return Result<Guid>.Failure("Comment not found");
+                return Result<Guid>.Failure("Комментарий не найден");
             }
 
             _database.PostCommentRepository.Delete(dbComment, ct);
@@ -150,25 +150,25 @@ public class PostCommentService : IPostCommentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Info,
-                    $"Post comment {id} deleted successfully",
+                    $"Комментарий {id} успешно удален",
                     null), ct);
                 return Result<Guid>.Success(dbComment.Id);
             }
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Warning,
-                $"No changes were made when deleting post comment {id}",
+                $"Не было внесено изменений при удалении комментария {id}",
                 null), ct);
-            return Result<Guid>.Failure("Failed to delete comment");
+            return Result<Guid>.Failure("Не удалось удалить комментарий");
         }
         catch (Exception ex)
         {
             await _database.RollbackTransactionAsync(ct);
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while deleting post comment {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при удалении комментария {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<Guid>.Failure($"Error while deleting comment: {ex.Message}");
+            return Result<Guid>.Failure($"Ошибка при удалении комментария: {ex.Message}");
         }
     }
 
@@ -178,40 +178,40 @@ public class PostCommentService : IPostCommentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve all comments for post {postId}",
+                $"Начало получения всех комментариев для поста {postId}",
                 null), ct);
 
-            // Validate post exists
+            // Проверка существования поста
             var postExists = await _database.PostRepository.FindAsync(p => p.Id == postId, ct);
             if (postExists == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get comments: post with ID {postId} not found",
+                    $"Не удалось получить комментарии: пост с ID {postId} не найден",
                     null), ct);
-                return Result<List<PostCommentShortDTO>>.Failure("Post not found");
+                return Result<List<PostCommentShortDTO>>.Failure("Пост не найден");
             }
 
             var comments = await _database.PostCommentRepository.FindRangeAsync(
-                comment => comment.PostId == postId, 
+                comment => comment.PostId == postId,
                 ct);
-            
+
             var dtos = MapShortRange(comments);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Retrieved {dtos.Count} comments for post {postId}",
+                $"Получено {dtos.Count} комментариев для поста {postId}",
                 null), ct);
-            
+
             return Result<List<PostCommentShortDTO>>.Success(dtos);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving comments for post {postId}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при получении комментариев для поста {postId}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<List<PostCommentShortDTO>>.Failure($"Error while retrieving comments: {ex.Message}");
+            return Result<List<PostCommentShortDTO>>.Failure($"Ошибка при получении комментариев: {ex.Message}");
         }
     }
 
@@ -221,7 +221,7 @@ public class PostCommentService : IPostCommentService
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Starting to retrieve post comment with ID {id}",
+                $"Начало получения комментария с ID {id}",
                 null), ct);
 
             var comment = await _database.PostCommentRepository.GetByIdAsync(id, ct);
@@ -229,27 +229,27 @@ public class PostCommentService : IPostCommentService
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
-                    $"Failed to get comment: comment with ID {id} not found",
+                    $"Не удалось получить комментарий: комментарий с ID {id} не найден",
                     null), ct);
-                return Result<PostCommentShortDTO>.Failure("Comment not found");
+                return Result<PostCommentShortDTO>.Failure("Комментарий не найден");
             }
 
             var dto = MapShort(comment);
-            
+
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Info,
-                $"Successfully retrieved post comment with ID {id}",
+                $"Комментарий с ID {id} успешно получен",
                 null), ct);
-            
+
             return Result<PostCommentShortDTO>.Success(dto);
         }
         catch (Exception ex)
         {
             await _database.LogRepository.CreateAsync(LogEntity.Create(
                 LogType.Error,
-                $"Error while retrieving post comment {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
+                $"Ошибка при получении комментария {id}: {ex.Message}. StackTrace: {ex.StackTrace}",
                 null), ct);
-            return Result<PostCommentShortDTO>.Failure($"Error while retrieving comment: {ex.Message}");
+            return Result<PostCommentShortDTO>.Failure($"Ошибка при получении комментария: {ex.Message}");
         }
     }
 }
