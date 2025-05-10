@@ -29,6 +29,7 @@ namespace AlfaCRM.Api.Controllers
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 return BadRequest(e.Message);
             }
         }
