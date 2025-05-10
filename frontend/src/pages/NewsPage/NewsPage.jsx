@@ -63,7 +63,7 @@ const NewsPage = () => {
         fetchData();
     }, []);
 
-    const isAdminOrPublisher = true;
+    const isAdminOrPublisher = localStorage.getItem('adm') === true || localStorage.getItem('spec') === true;
 
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
