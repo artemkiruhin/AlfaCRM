@@ -25,7 +25,6 @@ public class TicketService : ITicketService
                 $"Начало процесса создания тикета. Запрос: {System.Text.Json.JsonSerializer.Serialize(request)}",
                 request.CreatorId), ct);
 
-            // Проверка существования создателя
             var creator = await _database.UserRepository.GetByIdAsync(request.CreatorId, ct);
             if (creator == null)
             {
@@ -35,10 +34,9 @@ public class TicketService : ITicketService
                     request.CreatorId), ct);
                 return Result<Guid>.Failure("Создатель не найден");
             }
-
-            // Проверка существования отдела
-            var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
-            if (department == null)
+            
+            var departmentDb = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
+            if (departmentDb == null)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
                     LogType.Warning,
@@ -51,15 +49,69 @@ public class TicketService : ITicketService
                 request.Title,
                 request.Text,
                 request.DepartmentId,
-                TicketStatus.Created,
+                TicketStatus.Created, 
                 null,
                 null,
                 request.CreatorId,
                 request.Type);
 
-            await _database.TicketRepository.CreateAsync(ticket, ct);
-            var result = await _database.SaveChangesAsync(ct);
-            await _database.CommitTransactionAsync(ct);
+        await _database.TicketRepository.CreateAsync(ticket, ct);
+        
+        try
+        {
+            var department = await _database.DepartmentRepository.GetByIdAsync(request.DepartmentId, ct);
+            if (department != null)
+            {
+                var usersInDepartment = (await _database.UserRepository.FindRangeAsync(user => user.DepartmentId == department.Id, ct))
+                    .Where(u => !u.IsBlocked)
+                    .ToList();
+
+                if (usersInDepartment.Any())
+                {
+                    var assigneeLoads = new List<(UserEntity User, int Load)>();
+                    
+                    foreach (var user in usersInDepartment)
+                    {
+                        var load = await _database.TicketRepository.CountAsync(t => 
+                            t.AssigneeId == user.Id && t.Status == TicketStatus.InWork, ct);
+                        assigneeLoads.Add((user, load));
+                    }
+
+                    var minLoad = assigneeLoads.Min(al => al.Load);
+                    var candidates = assigneeLoads.Where(al => al.Load == minLoad).ToList();
+
+                    if (candidates.Count != 0)
+                    {
+                        var selected = candidates.First();
+                        ticket.AssigneeId = selected.User.Id;
+                        ticket.Status = TicketStatus.InWork;
+
+                        await _database.LogRepository.CreateAsync(LogEntity.Create(
+                            LogType.Info,
+                            $"Тикет {ticket.Id} автоматически назначен на сотрудника {selected.User.Username} (ID: {selected.User.Id}) с нагрузкой {selected.Load}",
+                            request.CreatorId), ct);
+                    }
+                }
+                else
+                {
+                    await _database.LogRepository.CreateAsync(LogEntity.Create(
+                        LogType.Warning,
+                        $"В отделе {department.Name} (ID: {department.Id}) нет активных сотрудников",
+                        request.CreatorId), ct);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await _database.LogRepository.CreateAsync(LogEntity.Create(
+                LogType.Error,
+                $"Ошибка при автоматическом назначении: {ex.Message}",
+                request.CreatorId), ct);
+        }
+
+        var result = await _database.SaveChangesAsync(ct);
+        await _database.CommitTransactionAsync(ct);
+
 
             if (result > 0)
             {
