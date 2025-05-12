@@ -5,11 +5,13 @@ using AlfaCRM.Api.Hubs;
 using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Database.Repositories;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
+using AlfaCRM.Domain.Interfaces.Services.Extensions;
 using AlfaCRM.Domain.Interfaces.Services.Security;
 using AlfaCRM.Domain.Models.Settings;
 using AlfaCRM.Infrastructure;
 using AlfaCRM.Infrastructure.Repositories;
 using AlfaCRM.Services.Entity;
+using AlfaCRM.Services.Extensions;
 using AlfaCRM.Services.Report;
 using AlfaCRM.Services.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -124,6 +126,7 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<IHashService, SHA256Hasher>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IJwtService>(provider => new JwtService(new JwtSettings(
     Audience: configuration["JWT:Audience"] ?? throw new ApplicationException("Missing JWT:Audience"),
     Issuer: configuration["JWT:Issuer"] ?? throw new ApplicationException("Missing JWT:Issuer"),
