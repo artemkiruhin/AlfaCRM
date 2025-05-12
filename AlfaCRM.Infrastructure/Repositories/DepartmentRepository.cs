@@ -11,4 +11,9 @@ public class DepartmentRepository(AppDbContext context) : BaseRepository<Departm
     {
         return await DbSet.AsNoTracking().FirstOrDefaultAsync(department => department.Name == name, ct);
     }
+
+    public async Task<IEnumerable<DepartmentEntity>> GetDepartmentsBySpecific(bool isSpecific, CancellationToken ct)
+    {
+        return await DbSet.AsNoTracking().Where(department => department.IsSpecific == isSpecific).ToListAsync(ct);
+    }
 }
