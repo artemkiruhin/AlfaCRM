@@ -1,5 +1,6 @@
 using AlfaCRM.Domain.Interfaces.Database;
 using AlfaCRM.Domain.Interfaces.Services.Entity;
+using AlfaCRM.Domain.Interfaces.Services.Extensions;
 using AlfaCRM.Domain.Models.DTOs;
 using AlfaCRM.Domain.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -15,14 +16,32 @@ namespace AlfaCRM.Api.Controllers
         private readonly IUserService _userService;
         private readonly IDepartmentService _departmentService;
         private readonly ITicketService _ticketService;
+        private readonly IStatisticsService _statisticsService;
         private readonly IUnitOfWork _database;
 
-        public AdminController(IUserService userService, IDepartmentService departmentService, ITicketService ticketService, IUnitOfWork database)
+        public AdminController(IUserService userService, IDepartmentService departmentService, 
+            ITicketService ticketService, IStatisticsService statisticsService, IUnitOfWork database)
         {
             _userService = userService;
             _departmentService = departmentService;
             _ticketService = ticketService;
+            _statisticsService = statisticsService;
             _database = database;
+        }
+
+        [HttpGet("businesses")]
+        public async Task<IActionResult> GetBusinessStats(CancellationToken ct)
+        {
+            try
+            {
+                var result = await _statisticsService.GetUsersByTicketBusiness(ct);
+                if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+                return Ok(new {data = result.Data});
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
         
         [HttpGet("stats")]
@@ -39,7 +58,7 @@ namespace AlfaCRM.Api.Controllers
                 if (!usersAmount.IsSuccess) return BadRequest(usersAmount.ErrorMessage);
                 if (!departmentsAmount.IsSuccess) return BadRequest(departmentsAmount.ErrorMessage);
                 if (!problemCasesCount.IsSuccess) return BadRequest(problemCasesCount.ErrorMessage);
-                if (!suggestionsCount.IsSuccess) return BadRequest(problemCasesCount.ErrorMessage);
+                if (!suggestionsCount.IsSuccess) return BadRequest(suggestionsCount.ErrorMessage);
 
                 var result = new AdminStatisticsDTO(
                     DepartmentsAmount: departmentsAmount.Data,
@@ -71,12 +90,62 @@ namespace AlfaCRM.Api.Controllers
                     Message: x.Message,
                     Type: GetLogTypeString(x.Type),
                     UserIdString: x.UserId.HasValue ? x.UserId.Value.ToString() : "",
-                    Username: x.User.Username ?? "",
+                    Username: x.User?.Username ?? "",
                     CreatedAt: x.CreatedAt
                 ));
-                
 
                 return Ok(new { data = dtos });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("users/workload")]
+        public async Task<IActionResult> GetUsersWorkload(CancellationToken ct)
+        {
+            try
+            {
+                var result = await _statisticsService.GetUsersByTicketBusiness(ct);
+                if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+                
+                return Ok(new { data = result.Data });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("tickets/assign")]
+        public async Task<IActionResult> AssignTicketToUser([FromBody] AssignTicketRequest request, CancellationToken ct)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var result = await _statisticsService.DistributeTicketToUser(request.UserId, request.TicketId, ct);
+                if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+                
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("tickets/distribute")]
+        public async Task<IActionResult> DistributeTickets(CancellationToken ct)
+        {
+            try
+            {
+                var result = await _statisticsService.DistributeTicketsByUsers(ct);
+                if (!result.IsSuccess) return BadRequest(result.ErrorMessage);
+                
+                return Ok(new { success = true });
             }
             catch (Exception ex)
             {
@@ -88,11 +157,17 @@ namespace AlfaCRM.Api.Controllers
         {
             return logType switch
             {
-                LogType.Info => "Info",
-                LogType.Error => "Error",
-                LogType.Warning => "Warning",
-                _ => throw new ArgumentOutOfRangeException(nameof(logType), logType, null)
+                LogType.Info => "Информация",
+                LogType.Error => "Ошибка",
+                LogType.Warning => "Предупреждение",
+                _ => "Неизвестный тип"
             };
         }
+    }
+
+    public class AssignTicketRequest
+    {
+        public Guid UserId { get; set; }
+        public Guid TicketId { get; set; }
     }
 }
