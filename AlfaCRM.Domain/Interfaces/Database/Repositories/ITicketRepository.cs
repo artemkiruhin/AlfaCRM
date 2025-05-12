@@ -8,4 +8,5 @@ public interface ITicketRepository : ICrudRepository<TicketEntity>
     Task<IEnumerable<TicketEntity>> GetByDepartmentIdAsync(Guid departmentId, CancellationToken ct);
     Task<IEnumerable<TicketEntity>> GetByCreatorIdAsync(Guid creatorId, CancellationToken ct);
     Task<IEnumerable<TicketEntity>> GetByTypeAsync(TicketType type, CancellationToken ct);
+    Task<IEnumerable<TicketEntity>> GetByStatusAsync(TicketStatus status, CancellationToken ct);
 }

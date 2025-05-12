@@ -24,4 +24,9 @@ public class TicketRepository(AppDbContext context) : BaseRepository<TicketEntit
         var tickets = await DbSet.AsNoTracking().Where(ticket => ticket.Type == type).ToListAsync(ct);
         return tickets;
     }
+
+    public async Task<IEnumerable<TicketEntity>> GetByStatusAsync(TicketStatus status, CancellationToken ct)
+    {
+        return await DbSet.AsNoTracking().Where(ticket => ticket.Status == status).ToListAsync(ct);
+    }
 }
