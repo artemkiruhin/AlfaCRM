@@ -1,129 +1,210 @@
-/* MyTicketsPage.css */
-
 .my-tickets-page {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 24px;
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .create-ticket-button {
-    display: inline-block;
-    padding: 12px 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
     background-color: var(--primary-color);
     color: white;
     text-decoration: none;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    transition: background-color 0.2s ease;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+    gap: 0.5rem;
 }
 
 .create-ticket-button:hover {
     background-color: var(--primary-dark);
-    cursor: pointer;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.create-ticket-button:active {
+    transform: translateY(0);
 }
 
 .ticket-list-container {
-    margin-top: 16px;
+    margin-top: 1.5rem;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .ticket-list-controls {
     display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .ticket-search-input {
     flex: 1;
-    padding: 8px;
+    padding: 0.75rem 1rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.ticket-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
 .ticket-filter-checkbox {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: 0.5rem;
+    font-size: 1rem;
 }
 
 .ticket-item {
-    padding: 16px;
+    padding: 1.5rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: 12px;
-    background-color: var(--bg-white);
-    transition: box-shadow 0.2s ease;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    background-color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .ticket-item:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
 }
 
 .ticket-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
 }
 
 .ticket-title {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--text-dark);
+    margin: 0;
+    flex: 1;
 }
 
 .ticket-status {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Status colors */
+.ticket-status[data-status="open"] {
+    background-color: #4CAF50;
+}
+.ticket-status[data-status="in_progress"] {
+    background-color: #2196F3;
+}
+.ticket-status[data-status="closed"] {
+    background-color: #9E9E9E;
+}
+.ticket-status[data-status="rejected"] {
+    background-color: #F44336;
 }
 
 .ticket-text {
-    font-size: 14px;
+    font-size: 1rem;
     color: var(--text-medium);
-    margin-bottom: 8px;
+    margin-bottom: 1rem;
+    line-height: 1.5;
 }
 
 .ticket-meta {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    font-size: 12px;
+    gap: 0.5rem;
+    font-size: 0.875rem;
     color: var(--text-light);
-    margin-bottom: 8px;
+    margin-bottom: 1rem;
+}
+
+.ticket-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.ticket-meta-item svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
 }
 
 .ticket-feedback {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-color);
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
 }
 
-.ticket-feedback p {
-    font-size: 14px;
+.ticket-feedback-label {
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.ticket-feedback-content {
+    font-size: 0.9375rem;
+    color: var(--text-medium);
+    line-height: 1.5;
+    background: #f9f9f9;
+    padding: 0.75rem;
+    border-radius: 8px;
 }
 
 .ticket-assignee {
-    font-size: 12px;
-    color: var(--text-light);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: #f0f0f0;
+    border-radius: 20px;
+    font-size: 0.8125rem;
 }
 
 .ticket-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 0.75rem;
+    margin-top: 1rem;
 }
 
 .ticket-details-button, .ticket-delete-button {
-    padding: 8px 16px;
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 0.875rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .ticket-details-button {
@@ -134,13 +215,107 @@
 
 .ticket-details-button:hover {
     background-color: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 .ticket-delete-button {
-    background-color: var(--error-color);
-    color: white;
+    background-color: #f8f8f8;
+    color: var(--error-color);
+    border: 1px solid var(--error-light);
 }
 
 .ticket-delete-button:hover {
-    background-color: var(--error-dark);
+    background-color: var(--error-light);
+    color: white;
+}
+
+.ticket-empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-light);
+}
+
+.ticket-empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--border-color);
+}
+
+.ticket-empty-state-text {
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+}
+
+.ticket-loading {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+
+@media (max-width: 768px) {
+    .my-tickets-page {
+        padding: 1rem;
+    }
+
+    .ticket-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ticket-status {
+        align-self: flex-start;
+    }
+
+    .ticket-meta {
+        flex-direction: column;
+    }
+}
+
+.ticket-text {
+    font-size: 1rem;
+    color: var(--text-medium);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    min-height: 100px;
+    resize: vertical;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: inherit;
+}
+
+.ticket-text:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.ticket-delete-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.ticket-delete-button:hover {
+    background-color: #d32f2f;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-delete-button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
