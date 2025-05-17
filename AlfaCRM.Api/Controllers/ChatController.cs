@@ -76,19 +76,6 @@ namespace AlfaCRM.Api.Controllers
             if (!result.IsSuccess) return BadRequest();
             
             var message = await _messageService.GetById(result.Data, ct);
-
-            /*var culture = new CultureInfo("ru-RU");
-            var d = message.Data.CreatedAt.ToString("dd MMMM yyyy 'в' HH:mm", culture);
-            
-            Console.WriteLine(d);
-            
-            await _hub.Clients.Group(chat.Data.Name).SendAsync("ReceiveMessage", new MessageResponse(
-                Id: message.Data.Id,
-                Content: message.Data.Content,
-                CreatedAt: d,
-                Username: message.Data.Sender.Username,
-                IsOwn: message.Data.Sender.Id == userId.Data
-            ), cancellationToken: ct);*/
             
             return Ok(new {data = result.Data});
         }
