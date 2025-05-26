@@ -76,7 +76,7 @@ const TopNavigation = ({ menuItems }) => {
         <nav className={`top-nav ${scrolled ? 'scrolled' : ''}`}>
             <div className="nav-container">
                 <div className="nav-left">
-                    <div className="nav-logo">Alfa CRM</div>
+                    <div className="nav-logo" onClick={() => {navigate('/news')}}>Alfa CRM</div>
                     <button
                         className="mobile-menu-button"
                         onClick={toggleMobileMenu}

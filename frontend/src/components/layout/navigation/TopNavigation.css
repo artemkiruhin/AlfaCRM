@@ -56,6 +56,10 @@
     white-space: nowrap;
 }
 
+.nav-logo:hover {
+    cursor: pointer;
+}
+
 .nav-center {
     display: flex;
     justify-content: center;
