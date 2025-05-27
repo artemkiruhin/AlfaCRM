@@ -32,8 +32,7 @@ namespace AlfaCRM.Api.Controllers
             }
             catch (OperationCanceledException)
             {
-                // Specifically handle cancellation
-                return StatusCode(499); // Client Closed Request
+                return StatusCode(499);
             }
             catch (Exception e)
             {
@@ -53,8 +52,7 @@ namespace AlfaCRM.Api.Controllers
             }
             catch (OperationCanceledException)
             {
-                // Specifically handle cancellation
-                return StatusCode(499); // Client Closed Request
+                return StatusCode(499);
             }
             catch (Exception e)
             {

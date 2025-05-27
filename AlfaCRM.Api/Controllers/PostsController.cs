@@ -126,9 +126,6 @@ namespace AlfaCRM.Api.Controllers
         {
             try
             {
-                // var isUserValid = await _userValidator.IsAdminOrPublisher(User, ct);
-                // if (!isUserValid.IsSuccess) return Unauthorized();
-                
                 var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
                 var userId = Guid.Parse(userIdClaim);
 
