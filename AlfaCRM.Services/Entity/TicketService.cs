@@ -190,8 +190,7 @@ public class TicketService : ITicketService
                 if (!string.IsNullOrEmpty(request.Text)) ticket.Text = request.Text;
                 if (request.DepartmentId.HasValue) ticket.DepartmentId = request.DepartmentId.Value;
             }
-
-            // Если отправитель - эксперт отдела
+            
             if (sender.DepartmentId.HasValue && ticket.DepartmentId == sender.DepartmentId)
             {
                 await _database.LogRepository.CreateAsync(LogEntity.Create(
