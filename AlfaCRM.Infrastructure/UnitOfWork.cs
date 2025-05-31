@@ -114,7 +114,6 @@ public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
         {
             if (disposing)
             {
-                // Не утилизируем _context, так как его жизненным циклом управляет DI
                 _currentTransaction?.Dispose();
                 _currentTransaction = null;
             }
@@ -133,7 +132,6 @@ public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
     {
         if (!_disposed)
         {
-            // Не утилизируем _context, так как его жизненным циклом управляет DI
             if (_currentTransaction != null)
             {
                 await _currentTransaction.DisposeAsync();
