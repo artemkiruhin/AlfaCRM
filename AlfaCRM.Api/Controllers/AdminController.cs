@@ -16,17 +16,48 @@ namespace AlfaCRM.Api.Controllers
         private readonly IUserService _userService;
         private readonly IDepartmentService _departmentService;
         private readonly ITicketService _ticketService;
-        private readonly IStatisticsService _statisticsService;
         private readonly IUnitOfWork _database;
 
         public AdminController(IUserService userService, IDepartmentService departmentService, 
-            ITicketService ticketService, IStatisticsService statisticsService, IUnitOfWork database)
+            ITicketService ticketService, IUnitOfWork database)
         {
             _userService = userService;
             _departmentService = departmentService;
             _ticketService = ticketService;
-            _statisticsService = statisticsService;
             _database = database;
+        }
+        
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats(CancellationToken ct)
+        {
+            try
+            {
+                var usersAmount = await _userService.GetUserCount(ct);
+                var departmentsAmount = await _departmentService.GetDepartmentCount(ct);
+                var problemCasesCount = await _ticketService.GetTicketsCount(TicketType.ProblemCase, ct);
+                var suggestionsCount = await _ticketService.GetTicketsCount(TicketType.Suggestion, ct);
+                var logsCount = await _database.LogRepository.CountAsync(ct);
+            
+                if (!usersAmount.IsSuccess) return BadRequest(usersAmount.ErrorMessage);
+                if (!departmentsAmount.IsSuccess) return BadRequest(departmentsAmount.ErrorMessage);
+                if (!problemCasesCount.IsSuccess) return BadRequest(problemCasesCount.ErrorMessage);
+                if (!suggestionsCount.IsSuccess) return BadRequest(suggestionsCount.ErrorMessage);
+
+                var result = new AdminStatisticsDTO(
+                    DepartmentsAmount: departmentsAmount.Data,
+                    ProblemCasesCount: problemCasesCount.Data.Item1,
+                    SuggestionsCount: suggestionsCount.Data.Item1,
+                    UsersAmount: usersAmount.Data,
+                    SolvedProblemCasesCount: problemCasesCount.Data.Item2,
+                    SolvedSuggestionsCount: suggestionsCount.Data.Item2,
+                    LogsCount: logsCount
+                );
+                return Ok(new { data = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         
         [HttpGet("logs")]
