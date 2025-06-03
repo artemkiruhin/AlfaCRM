@@ -22,12 +22,35 @@
     gap: 16px;
 }
 
+/* Блок управления распределением */
+.distribution-controls {
+    margin-bottom: 32px;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.distribution-controls .section-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text-dark);
+}
+
+.distribution-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Основная сетка карточек */
 .admin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
 }
 
+/* Стили карточек */
 .admin-card {
     background-color: var(--bg-white);
     border-radius: 12px;
@@ -73,6 +96,7 @@
 
 .stat-item {
     text-align: center;
+    flex: 1;
 }
 
 .stat-value {
@@ -96,6 +120,7 @@
     margin-top: 16px;
 }
 
+/* Стили кнопок */
 .admin-btn {
     display: flex;
     align-items: center;
@@ -130,42 +155,12 @@
     background-color: var(--primary-light);
 }
 
-.admin-btn-icon {
-    width: 18px;
-    height: 18px;
-}
-
-.departments-section {
-    margin-top: 40px;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.section-title {
-    font-size: 20px;
-    font-weight: 600;
+.admin-btn-tertiary {
+    background-color: var(--bg-light);
     color: var(--text-dark);
+    border: 1px solid var(--border-color);
 }
 
-@media (max-width: 768px) {
-    .admin-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .admin-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .admin-card-actions {
-        grid-template-columns: 1fr;
-    }
+.admin-btn-tertiary:hover {
+    background-color: var(--bg-white);
 }
