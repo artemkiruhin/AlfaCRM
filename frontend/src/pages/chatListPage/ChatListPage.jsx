@@ -26,7 +26,7 @@ const ChatListPage = () => {
                         name: chat.name,
                         lastMessage: chat.messages && chat.messages.length > 0
                             ? chat.messages[0].content
-                            : 'Нет сообщений',
+                            : '',
                         time: chat.messages && chat.messages.length > 0
                             ? formatTime(chat.messages[0].createdAt)
                             : '',
